@@ -39,6 +39,12 @@ app.use((req, res, next) => {
         lang = 'tr';
     }
 
+    // HTTP Header: Sunulan içeriğin dilini Google'a bildirir
+    res.setHeader('Content-Language', lang);
+
+    // HTTP Header: Arama motorlarına sayfayı indeksleme izni verir
+    res.setHeader('X-Robots-Tag', 'index, follow');
+
     // Eğer URL üzerinden dil değiştirildiyse çerezi güncelle
     if (req.query.lang) {
         res.cookie('lang', lang, { maxAge: 30 * 24 * 60 * 60 * 1000 }); // 30 gün geçerli

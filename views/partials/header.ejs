@@ -1,12 +1,33 @@
-<!-- Parallax Giriş Alanı -->
-<div class="hero-parallax">
-    <div class="hero-content">
-        <div class="lang-switcher">
-            <a href="/lang/tr" class="<%= lang === 'tr' ? 'active' : '' %>">TR</a>
-            <span>|</span>
-            <a href="/lang/en" class="<%= lang === 'en' ? 'active' : '' %>">EN</a>
-        </div>
-        <h1>Mahmut Tüysüz</h1>
-        <div class="subtitle">Senior Software Developer & DevOps Expert</div>
-    </div>
-</div>
+<!DOCTYPE html>
+<html lang="<%= lang %>">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mahmut Tüysüz <%= lang === 'en' ? '| Senior Software & DevOps Specialist' : '| Kıdemli Yazılım & DevOps Uzmanı' %></title>
+    <meta name="description" content="<%= aboutMe.description %>">
+    <meta name="robots" content="index, follow">
+
+    <link rel="canonical" href="https://mahmuttuysuz.net/<%= lang === 'en' ? '?lang=en' : '' %>">
+    <link rel="alternate" hreflang="tr" href="https://mahmuttuysuz.net/" />
+    <link rel="alternate" hreflang="en" href="https://mahmuttuysuz.net/?lang=en" />
+    <link rel="alternate" hreflang="x-default" href="https://mahmuttuysuz.net/" />
+
+    <link rel="icon" href="/images/favicon.ico" type="image/x-icon" />
+
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="<%= lang === 'en' ? 'en_US' : 'tr_TR' %>">
+    <meta property="og:title" content="Mahmut Tüysüz">
+    <meta property="og:description" content="<%= aboutMe.description %>">
+    <meta property="og:image" content="https://mahmuttuysuz.net/images/banner.jpg">
+    <meta property="og:url" content="https://mahmuttuysuz.net/<%= lang === 'en' ? '?lang=en' : '' %>">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Mahmut Tüysüz">
+    <meta name="twitter:description" content="<%= aboutMe.description %>">
+    <meta name="twitter:image" content="https://mahmuttuysuz.net/images/banner.jpg">
+
+    <link rel="stylesheet" href="/css/main.css" />
+</head>
+
+<body>
