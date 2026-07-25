@@ -19,6 +19,7 @@ CREATE TABLE `about_me`  (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `language` varchar(4) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `meta_description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
   `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
