@@ -15,8 +15,6 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-
-
 async function sendVisitorMail(toEmail, fullName, lang = 'tr') {
     const safeFullName = escapeHtml(fullName);
 
