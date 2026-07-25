@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# Canonical domain adresini buraya yaz
+Sitemap: https://mahmuttuysuz.net/sitemap.xml
