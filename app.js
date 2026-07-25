@@ -1,85 +1,76 @@
 const express = require('express');
+const dotenv = require('dotenv');
+const dotenvExpand = require('dotenv-expand');
 const cookieParser = require('cookie-parser');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const path = require('path');
 const { pool, sqlCommand } = require('./utils/db');
-const { sendConfirmationMail, sendNotificationMailToAdmin } = require('./utils/mailer');
+const { sendVisitorMail, sendNotificationMailToAdmin } = require('./utils/mailer');
 const { formatDate } = require('./utils/helper');
 const locales = require('./utils/locales');
 
-require('dotenv').config();
-
+dotenvExpand.expand(dotenv.config());
 const app = express();
 
 app.locals.formatDate = formatDate;
-// Middleware Ayarları
-app.use(express.urlencoded({ extended: true })); // Form verilerini okumak için
-app.use(express.json()); // AJAX / JSON istekleri için
-app.use(express.static(path.join(__dirname, 'public'))); // CSS, JS, Resimler için
+
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(helmet());
 
 app.set('trust proxy', 1);
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-
 app.use(cookieParser());
-
-// DİL MIDDLEWARE'İ (Tüm rotalardan önce tanımlanmalı)
 app.use((req, res, next) => {
-    // 1. Dil Tercihi Belirleme Sırası:
-    // a) URL Query Parametresi (?lang=en)
-    // b) Tarayıcıdaki Cookie (req.cookies.lang)
-    // c) Varsayılan Dil ('tr')
+    res.locals.siteUrl = process.env.SITE_URL || `http://localhost:${process.env.PORT || 3000}`;
     let lang = req.query.lang || req.cookies.lang || 'tr';
 
-    // Geçerli bir dil değilse 'tr' yap
     if (!['tr', 'en'].includes(lang)) {
         lang = 'tr';
     }
-
-    // HTTP Header: Sunulan içeriğin dilini Google'a bildirir
     res.setHeader('Content-Language', lang);
 
-    // HTTP Header: Arama motorlarına sayfayı indeksleme izni verir
     res.setHeader('X-Robots-Tag', 'index, follow');
 
-    // Eğer URL üzerinden dil değiştirildiyse çerezi güncelle
     if (req.query.lang) {
-        res.cookie('lang', lang, { maxAge: 30 * 24 * 60 * 60 * 1000 }); // 30 gün geçerli
+        res.cookie('lang', lang, { maxAge: 30 * 24 * 60 * 60 * 1000 });
     }
 
-    // Tüm EJS dosyalarından erişilebilecek değişkenler:
-    res.locals.lang = lang;                       // Aktif dil kodu ('tr' veya 'en')
-    res.locals.t = locales[lang];                // Statik metin sözlüğü
+    res.locals.lang = lang;
+    res.locals.t = locales[lang];
 
     next();
 });
 
-// Dil Değiştirme Rotası (Butona tıklandığında)
 app.get('/lang/:langCode', (req, res) => {
     const langCode = req.params.langCode;
     if (['tr', 'en'].includes(langCode)) {
         res.cookie('lang', langCode, { maxAge: 30 * 24 * 60 * 60 * 1000 });
     }
-    // Kullanıcıyı geldiği sayfaya (veya ana sayfaya) geri yönlendir
+
     res.redirect(req.get('referer') || '/');
 });
 
-// ANA SAYFA (GET)
 app.get('/', async (req, res) => {
     let conn;
-    const activeLang = res.locals.lang;
+    const currentLang = res.locals.lang;
     try {
         conn = await pool.getConnection();
 
-        const aboutMe = await conn.query(sqlCommand.select.aboutMe, [activeLang]).catch(() => []);
-        const experiences = await conn.query(sqlCommand.select.experiences, [activeLang]).catch(() => []);
+        const aboutMe = await conn.query(sqlCommand.select.aboutMe, [currentLang]);
+        const experiences = await conn.query(sqlCommand.select.experiences, [currentLang]);
+        const projects = await conn.query(sqlCommand.select.projects, [currentLang]);
+        const socialMedias = await conn.query(sqlCommand.select.socialMedias);
 
         res.render('index', {
             aboutMe: aboutMe[0] || {},
-            experiences: experiences
+            experiences: experiences || [],
+            projects: projects || [],
+            socialMedias: socialMedias || []
         });
 
     } catch (err) {
@@ -90,19 +81,22 @@ app.get('/', async (req, res) => {
     }
 });
 
-
 const contactLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 dakika
-    max: 5, // IP başına max 5 mesaj
-    message: { success: false, message: 'Çok fazla istek gönderdiniz. Lütfen 15 dakika sonra tekrar deneyin.' }
+    windowMs: 15 * 60 * 1000,
+    max: 5,
+    handler: (req, res) => {
+        return res.status(429).json({
+            success: false,
+            message: res.locals.t.form.tooManyRequests
+        });
+    }
 });
-// İLETİŞİM FORMU (POST)
+
 app.post('/contact', contactLimiter, async (req, res) => {
     const { fullName, email, subject, message } = req.body;
 
-    // Basit Validasyon
     if (!fullName || !email || !message) {
-        return res.status(400).json({ success: false, message: 'Lütfen gerekli alanları doldurun.' });
+        return res.status(400).json({ success: false, message: res.locals.t.form.emptyCells });
     }
 
     let conn;
@@ -111,20 +105,26 @@ app.post('/contact', contactLimiter, async (req, res) => {
         const clientIp = req.headers['cf-connecting-ip'] ||
             req.headers['x-forwarded-for']?.split(',')[0] ||
             req.ip;
-        // 1. Veritabanına Kaydet
-        await conn.query(sqlCommand.insert.contact, [fullName, email, subject, message, clientIp, 'tr']);
 
-        // 2. İletişime Geçen Kişiye E-Posta Gönder
-        await sendConfirmationMail(email, fullName);
+        let sendMail = await Promise.allSettled([
+            sendVisitorMail(email, fullName, res.locals.lang),
+            sendNotificationMailToAdmin(fullName, email, subject, message, res.locals.lang)
+        ]).catch(mailErr => console.error('Arka Plan Mail Gönderim Hatası:', mailErr));
 
-        // 3. Kendinize Bildirim Maili Gönder (Opsiyonel)
-        await sendNotificationMailToAdmin(fullName, email, subject, message);
-
-        return res.json({ success: true, message: 'Mesajınız başarıyla iletildi.' });
+        let mailStatus = sendMail.every(mail => mail.status === 'fulfilled');
+        let mailLog = {
+            visitorMail: sendMail[0],
+            adminMail: sendMail[1]
+        };
+        await conn.query(sqlCommand.insert.contact, [fullName, email, subject, message, clientIp, JSON.stringify(mailLog), res.locals.lang]);
+        return res.json({
+            success: mailStatus,
+            message: mailStatus ? res.locals.t.form.success : res.locals.t.form.error
+        });
 
     } catch (err) {
         console.error('İletişim İşlem Hatası:', err);
-        return res.status(500).json({ success: false, message: 'Mesaj gönderilirken bir hata oluştu.' });
+        return res.status(500).json({ success: false, message: res.locals.t.form.error });
     } finally {
         if (conn) conn.release();
     }
@@ -136,5 +136,5 @@ process.on('unhandledRejection', (reason, promise) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`Sunucu aktif: http://localhost:${PORT}`);
+    console.log(`Sunucu aktif: ${process.env.APP_URL || `http://localhost:${PORT}`}`);
 });

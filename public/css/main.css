@@ -21,7 +21,7 @@ body {
   line-height: 1.6;
 }
 
-/* Pure CSS Parallax Hero Section */
+/* Hero & Parallax Section */
 .hero-parallax {
   position: relative;
   height: 60vh;
@@ -54,7 +54,41 @@ body {
   text-transform: uppercase;
 }
 
-/* Main Content Container */
+/* Modern Language Switcher */
+.lang-switcher {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.lang-switcher span {
+  color: var(--border);
+}
+
+.lang-btn {
+  text-decoration: none;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.lang-btn:hover {
+  color: var(--text-main);
+}
+
+.active-lang {
+  border-color: var(--accent);
+  background: rgba(56, 189, 248, 0.1);
+  color: var(--accent) !important;
+}
+
+/* Main Layout Wrapper */
 .wrapper {
   max-width: 800px;
   margin: 0 auto;
@@ -65,7 +99,7 @@ section {
   margin-bottom: 5rem;
 }
 
-h2 {
+.section-title {
   font-size: 1.5rem;
   font-weight: 700;
   letter-spacing: -0.03em;
@@ -77,7 +111,7 @@ h2 {
   gap: 0.5rem;
 }
 
-h2::before {
+.section-title::before {
   content: "//";
   color: var(--accent);
 }
@@ -87,7 +121,7 @@ h2::before {
   font-size: 1.05rem;
 }
 
-/* Professional Experience Timeline */
+/* Timeline Section */
 .timeline {
   position: relative;
   border-left: 2px solid var(--border);
@@ -104,7 +138,6 @@ h2::before {
   margin-bottom: 0;
 }
 
-/* Timeline Noktası */
 .timeline-item::before {
   content: "";
   position: absolute;
@@ -145,25 +178,11 @@ h2::before {
   font-size: 0.95rem;
 }
 
-/* Dynamic Projects Section (Grid) */
+/* Projects Grid */
 .projects-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1.5rem;
-}
-
-@media (max-width: 640px) {
-  .projects-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .job-header {
-    flex-direction: column;
-  }
-
-  .job-date {
-    margin-top: 0.25rem;
-  }
 }
 
 .project-card {
@@ -226,7 +245,7 @@ h2::before {
   font-weight: 500;
 }
 
-/* Minimal Contact Form */
+/* Contact Form */
 .contact-form {
   background: var(--card-bg);
   border: 1px solid var(--border);
@@ -241,12 +260,6 @@ h2::before {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
-}
-
-@media (max-width: 640px) {
-  .form-row {
-    grid-template-columns: 1fr;
-  }
 }
 
 .form-group {
@@ -297,18 +310,27 @@ button:hover {
   opacity: 0.9;
 }
 
-/* ==========================================
-   FOOTER STYLES
-========================================== */
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+#formMessage {
+  font-size: 0.95rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.message-textarea {
+  resize: none !important;
+}
+
+/* Footer Section */
 .site-footer {
-  background-color: #0f172a; /* Modern Slate Koyu Mavi */
+  background-color: #0f172a;
   color: #94a3b8;
   padding-top: 60px;
   margin-top: 80px;
-  font-family:
-    system-ui,
-    -apple-system,
-    sans-serif;
   border-top: 1px solid #1e293b;
 }
 
@@ -317,11 +339,10 @@ button:hover {
   margin: 0 auto;
   padding: 0 20px 40px 20px;
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr;
+  grid-template-columns: 2fr 1fr;
   gap: 40px;
 }
 
-/* Kolon Başlıkları */
 .footer-col h4 {
   color: #f8fafc;
   font-size: 1.1rem;
@@ -330,7 +351,6 @@ button:hover {
   letter-spacing: 0.5px;
 }
 
-/* Logosal İsim & Tanım */
 .footer-logo {
   color: #f8fafc;
   font-size: 1.5rem;
@@ -344,33 +364,6 @@ button:hover {
   max-width: 360px;
 }
 
-/* Navigasyon Linkleri */
-.footer-links {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.footer-links li {
-  margin-bottom: 12px;
-}
-
-.footer-links a {
-  color: #94a3b8;
-  text-decoration: none;
-  font-size: 0.95rem;
-  transition:
-    color 0.2s ease,
-    transform 0.2s ease;
-  display: inline-block;
-}
-
-.footer-links a:hover {
-  color: #38bdf8; /* Açık Mavi Vurgu */
-  transform: translateX(4px);
-}
-
-/* Sosyal Medya İkonları & Linkleri */
 .social-links {
   display: flex;
   flex-direction: column;
@@ -392,6 +385,9 @@ button:hover {
 }
 
 .social-links svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
   transition: transform 0.2s ease;
 }
 
@@ -399,9 +395,8 @@ button:hover {
   transform: scale(1.1);
 }
 
-/* Alt Telif ve Bilgi Şeridi */
 .footer-bottom {
-  background-color: #020617; /* Daha Koyu Alt Şerit */
+  background-color: #020617;
   padding: 20px 0;
   border-top: 1px solid #1e293b;
   font-size: 0.875rem;
@@ -418,16 +413,20 @@ button:hover {
   gap: 10px;
 }
 
-.tech-stack {
-  color: #64748b;
-  font-style: italic;
-}
-
-/* Mobil Uyumluluk (Responsive) */
-@media (max-width: 768px) {
+@media (max-width: 640px) {
+  .projects-grid,
+  .form-row,
   .footer-container {
     grid-template-columns: 1fr;
-    gap: 30px;
+    gap: 1.5rem;
+  }
+
+  .job-header {
+    flex-direction: column;
+  }
+
+  .job-date {
+    margin-top: 0.25rem;
   }
 
   .footer-bottom-container {

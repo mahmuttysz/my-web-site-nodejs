@@ -1,31 +1,69 @@
 <%- include('partials/header') %>
+
     <div class="hero-parallax">
         <div class="hero-content">
             <div class="lang-switcher">
-                <a href="/lang/tr" class="<%= lang === 'tr' ? 'active' : '' %>">TR</a>
+                <a href="/lang/tr" class="lang-btn <%= lang === 'tr' ? 'active-lang' : '' %>">TR</a>
                 <span>|</span>
-                <a href="/lang/en" class="<%= lang === 'en' ? 'active' : '' %>">EN</a>
+                <a href="/lang/en" class="lang-btn <%= lang === 'en' ? 'active-lang' : '' %>">EN</a>
             </div>
             <h1>Mahmut Tüysüz</h1>
-            <div class="subtitle">Senior Software Developer & DevOps Expert</div>
+            <div class="subtitle">
+                <%= t.hero.badge %>
+            </div>
         </div>
     </div>
     <div class="wrapper">
-        <!-- Hakkımda -->
         <section id="about">
-            <h2>
-                <%= aboutMe && aboutMe.title ? aboutMe.title : "Hakkımda" %>
+            <h2 class="section-title">
+                <%= aboutMe && aboutMe.title ? aboutMe.title : t.nav.hakkimda %>
             </h2>
             <p class="about-text">
-                <%= aboutMe && aboutMe.description ? aboutMe.description
-                    : "Senior Software Developer & DevOps Uzmanı. Ölçeklenebilir sistemler ve modern web teknolojileri geliştiriyorum."
-                    %>
+                <%= aboutMe && aboutMe.description ? aboutMe.description : t.hero.desc %>
             </p>
         </section>
-
-        <!-- Deneyim Zaman Tüneli -->
-        <section id="experience">
-            <h2>Deneyimler</h2>
+        <section id="projects">
+            <h2 class="section-title">
+                <%= t.nav.projects %>
+            </h2>
+            <% if (projects && projects.length> 0) { %>
+                <% projects.forEach(project=> { %>
+                    <div class="project-card">
+                        <div class="project-top">
+                            <div class="project-title-area">
+                                <div class="project-title">
+                                    <%= project.title %>
+                                </div>
+                                <a href="<%= project.link_url %>" target="_blank" rel="noopener noreferrer"
+                                    class="project-link">
+                                    <%= project.link_text || (lang==='tr' ? 'Daha Fazla Bilgi' : 'Learn More' ) %> ↗
+                                </a>
+                            </div>
+                            <p class="project-desc">
+                                <%= project.description %>
+                            </p>
+                        </div>
+                        <div class="tags">
+                            <% if (project.tags && project.tags.length> 0) { %>
+                                <% project.tags.forEach(tag=> { %>
+                                    <span class="tag">
+                                        <%= tag %>
+                                    </span>
+                                    <% }); %>
+                                        <% } %>
+                        </div>
+                    </div>
+                    <% }); %>
+                        <% } else { %>
+                            <p>
+                                <%= lang==='tr' ? 'Henüz proje eklenmedi.' : 'No projects added yet.' %>
+                            </p>
+                            <% } %>
+        </section>
+        <section id="experiences">
+            <h2 class="section-title">
+                <%= t.nav.experiences %>
+            </h2>
             <div class="timeline">
                 <% if (experiences && experiences.length> 0) { %>
                     <% experiences.forEach(experience=> { %>
@@ -35,8 +73,8 @@
                                     <%= experience.title %>
                                 </div>
                                 <div class="job-date">
-                                    <%= formatDate(experience.begin_date) %>
-                                        — <%= formatDate(experience.end_date) || "Devam Ediyor" %>
+                                    <%= formatDate(experience.begin_date, lang) %> — <%= formatDate(experience.end_date,
+                                            lang) %>
                                 </div>
                             </div>
                             <div class="job-company">
@@ -48,36 +86,50 @@
                         </div>
                         <% }); %>
                             <% } else { %>
-                                <p>Henüz deneyim eklenmemiş.</p>
+                                <p>
+                                    <%= lang==='tr' ? 'Henüz deneyim eklenmedi.' : 'No experience added yet.' %>
+                                </p>
                                 <% } %>
             </div>
         </section>
-
-        <!-- İletişim Formu -->
         <section id="contact">
-            <h2>İletişim</h2>
+            <h2 class="section-title">
+                <%= t.form.title %>
+            </h2>
             <div id="formMessage"></div>
             <form class="contact-form" id="contactForm">
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="name">İsim</label>
-                        <input type="text" id="name" name="fullName" placeholder="Adınız Soyadınız" required>
+                        <label for="name">
+                            <%= t.form.fullName %>
+                        </label>
+                        <input type="text" id="name" name="fullName" placeholder="<%= t.form.fullName %>" required />
                     </div>
                     <div class="form-group">
-                        <label for="email">E-posta</label>
-                        <input type="email" id="email" name="email" placeholder="E-Posta Adresiniz" required>
+                        <label for="email">
+                            <%= t.form.email %>
+                        </label>
+                        <input type="email" id="email" name="email" placeholder="<%= t.form.email %>" required />
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="subject">Konu</label>
-                    <input type="text" id="subject" name="subject" placeholder="Konu">
+                    <label for="subject">
+                        <%= t.form.subject %>
+                    </label>
+                    <input type="text" id="subject" name="subject" placeholder="<%= t.form.subject %>" />
                 </div>
                 <div class="form-group">
-                    <label for="message">Mesaj</label>
-                    <textarea id="message" name="message" rows="5" placeholder="Mesajınız" required></textarea>
+                    <label for="message">
+                        <%= t.form.message %>
+                    </label>
+                    <textarea id="message" name="message" class="message-textarea" rows="5" placeholder="<%= t.form.message %>"
+                        required></textarea>
                 </div>
-                <button type="submit" id="gonderBtn">Mesaj Gönder</button>
+                <button type="submit" id="sendBtn">
+                    <%= t.form.send %>
+                </button>
             </form>
         </section>
     </div>
+
     <%- include('partials/footer') %>

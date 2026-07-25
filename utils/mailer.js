@@ -1,48 +1,58 @@
 const nodemailer = require('nodemailer');
-require('dotenv').config();
+const dotenv = require('dotenv');
+const dotenvExpand = require('dotenv-expand');
+dotenvExpand.expand(dotenv.config());
+const locales = require('./locales');
+const { escapeHtml } = require('./helper');
 
 const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
-    port: process.env.SMTP_PORT,
-    secure: process.env.SMTP_PORT == 465, // 465 ise true, 587 ise false
+    port: Number(process.env.SMTP_PORT) || 587,
+    secure: Number(process.env.SMTP_PORT) === 465,
     auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS
     }
 });
-// Ziyaretçiye Onay Maili Gönderen Fonksiyon
-async function sendConfirmationMail(toEmail, fullName) {
+
+
+
+async function sendVisitorMail(toEmail, fullName, lang = 'tr') {
+    const safeFullName = escapeHtml(fullName);
+
     const mailOptions = {
         from: `"mahmuttuysuz.net" <${process.env.SMTP_USER}>`,
         to: toEmail,
-        subject: 'Mesajınız Alındı',
+        subject: locales[lang].visitorMail.subject,
         html: `
-            <h3>Merhaba ${fullName},</h3>
-            <p>Web sitem üzerinden gönderdiğiniz iletişim mesajı tarafıma ulaşmıştır.</p>
-            <p>En kısa sürede size dönüş yapacağım. İyi günler dilerim!</p>
+            <h3>${locales[lang].visitorMail.hello} ${safeFullName},</h3>
+            <blockquote>${locales[lang].visitorMail.body}</blockquote>
         `
     };
 
-    return await transporter.sendMail(mailOptions);
+    return ((await transporter.sendMail(mailOptions)));
 }
 
-// Opsiyonel: Size (Site Sahibine) Bildirim Maili Gönderen Fonksiyon
-async function sendNotificationMailToAdmin(fullName, email, subject, message) {
-    // return true;
+async function sendNotificationMailToAdmin(fullName, email, subject, message, lang = 'tr') {
+    const safeName = escapeHtml(fullName);
+    const safeEmail = escapeHtml(email);
+    const safeSubject = escapeHtml(subject || 'Konusuz');
+    const safeMessage = escapeHtml(message).replace(/\n/g, '<br>');
+
     const mailOptions = {
         from: `"mahmuttuysuz.net" <${process.env.SMTP_USER}>`,
-        to: process.env.ADMIN_EMAIL || process.env.SMTP_USER, // Kendi adresiniz
-        subject: `Yeni İletişim Mesajı: ${subject || 'Konusuz'}`,
+        to: process.env.ADMIN_EMAIL || process.env.SMTP_USER,
+        subject: `${locales[lang].adminMail.subject}: ${safeSubject}`,
         html: `
-            <h3>Siteden Yeni Bir İletişim Formu Dolduruldu</h3>
-            <p><strong>Gönderen:</strong> ${fullName} (${email})</p>
-            <p><strong>Konu:</strong> ${subject}</p>
-            <p><strong>Mesaj:</strong></p>
-            <blockquote>${message}</blockquote>
+            <h3>${locales[lang].adminMail.newMessage}</h3>
+            <p><strong>${locales[lang].adminMail.sender}:</strong> ${safeName} (${safeEmail})</p>
+            <p><strong>${locales[lang].adminMail.subjectLabel}:</strong> ${safeSubject}</p>
+            <p><strong>${locales[lang].adminMail.messageLabel}:</strong></p>
+            <blockquote>${safeMessage}</blockquote>
         `
     };
 
-    return await transporter.sendMail(mailOptions);
+    return transporter.sendMail(mailOptions);
 }
 
-module.exports = { sendConfirmationMail, sendNotificationMailToAdmin };
+module.exports = { sendVisitorMail, sendNotificationMailToAdmin };

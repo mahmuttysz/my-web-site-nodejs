@@ -1,9 +1,12 @@
 PORT=3000
 
-APP_URL=https://mahmuttuysuz.net
+APP_URL=http://localhost:${PORT}
 APP_ENV=prod
 
+SITE_URL=https://mahmuttuysuz.net
+
 DB_HOST=127.0.0.1
+DB_PORT=3306
 DB_USER=website_db_user
 DB_PASS='abc123'
 DB_NAME=website_db
