@@ -103,27 +103,30 @@
                         <label for="name">
                             <%= t.form.fullName %>
                         </label>
-                        <input type="text" id="name" name="fullName" placeholder="<%= t.form.fullName %>" required />
+                        <input type="text" id="name" name="fullName" autocomplete="off"
+                            placeholder="<%= t.form.fullName %>" required />
                     </div>
                     <div class="form-group">
                         <label for="email">
                             <%= t.form.email %>
                         </label>
-                        <input type="email" id="email" name="email" placeholder="<%= t.form.email %>" required />
+                        <input type="email" id="email" name="email" autocomplete="off" placeholder="<%= t.form.email %>"
+                            required />
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="subject">
                         <%= t.form.subject %>
                     </label>
-                    <input type="text" id="subject" name="subject" placeholder="<%= t.form.subject %>" />
+                    <input type="text" id="subject" name="subject" autocomplete="off"
+                        placeholder="<%= t.form.subject %>" />
                 </div>
                 <div class="form-group">
                     <label for="message">
                         <%= t.form.message %>
                     </label>
-                    <textarea id="message" name="message" class="message-textarea" rows="5" placeholder="<%= t.form.message %>"
-                        required></textarea>
+                    <textarea id="message" name="message" class="message-textarea" rows="5"
+                        placeholder="<%= t.form.message %>" required></textarea>
                 </div>
                 <button type="submit" id="sendBtn">
                     <%= t.form.send %>
