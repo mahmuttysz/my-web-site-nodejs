@@ -18,10 +18,10 @@ const sqlCommand = {
         contact: "INSERT INTO contacts (full_name, email, subject, message, ip, mail_log, language) VALUES (?, ?, ?, ?, ?, ?, ?)"
     },
     select: {
-        aboutMe: "SELECT * FROM about_me WHERE language = ? LIMIT 1",
+        aboutMe: "SELECT * FROM about_me WHERE language = ? AND active = 1 LIMIT 1",
         experiences: "SELECT * FROM experiences WHERE language = ? ORDER BY begin_date DESC",
-        projects: "SELECT * FROM projects WHERE language = ? ORDER BY created_at DESC",
-        socialMedias: "SELECT * FROM social_medias WHERE active = 1 ORDER BY order_index ASC"
+        projects: "SELECT * FROM projects WHERE language = ? AND active = 1 ORDER BY turn ASC",
+        socialMedias: "SELECT * FROM social_medias WHERE active = 1 ORDER BY turn ASC"
     }
 }
 
