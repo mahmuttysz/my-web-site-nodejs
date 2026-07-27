@@ -5,7 +5,7 @@ const cookieParser = require('cookie-parser');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const path = require('path');
-const { pool, sqlCommand } = require('./utils/db');
+const { pool, dbTables } = require('./utils/db');
 const { sendVisitorMail, sendNotificationMailToAdmin } = require('./utils/mailer');
 const { formatDate } = require('./utils/helper');
 const locales = require('./utils/locales');
@@ -61,10 +61,10 @@ app.get('/', async (req, res) => {
     try {
         conn = await pool.getConnection();
 
-        const aboutMe = await conn.query(sqlCommand.select.aboutMe, [currentLang]);
-        const experiences = await conn.query(sqlCommand.select.experiences, [currentLang]);
-        const projects = await conn.query(sqlCommand.select.projects, [currentLang]);
-        const socialMedias = await conn.query(sqlCommand.select.socialMedias);
+        const aboutMe = await conn.query(dbTables.aboutMe.get, [currentLang]);
+        const experiences = await conn.query(dbTables.experiences.get, [currentLang]);
+        const projects = await conn.query(dbTables.projects.get, [currentLang]);
+        const socialMedias = await conn.query(dbTables.socialMedias.get);
 
         res.render('index', {
             aboutMe: aboutMe[0] || {},
@@ -116,7 +116,7 @@ app.post('/contact', contactLimiter, async (req, res) => {
             visitorMail: sendMail[0],
             adminMail: sendMail[1]
         };
-        await conn.query(sqlCommand.insert.contact, [fullName, email, subject, message, clientIp, JSON.stringify(mailLog), res.locals.lang]);
+        await conn.query(dbTables.contacts.add, [fullName, email, subject, message, clientIp, JSON.stringify(mailLog), res.locals.lang]);
         return res.json({
             success: mailStatus,
             message: mailStatus ? res.locals.t.form.success : res.locals.t.form.error

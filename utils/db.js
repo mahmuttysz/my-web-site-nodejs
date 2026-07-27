@@ -13,16 +13,37 @@ const pool = mariadb.createPool({
     dateStrings: true
 });
 
-const sqlCommand = {
-    insert: {
-        contact: "INSERT INTO contacts (full_name, email, subject, message, ip, mail_log, language) VALUES (?, ?, ?, ?, ?, ?, ?)"
+const dbTables = {
+    aboutMe: {
+        getAll: "SELECT * FROM about_me",
+        get: "SELECT * FROM about_me WHERE language = ? AND active = 1 LIMIT 1",
+        add: "INSERT INTO about_me (title, description, meta_description, created_by, updated_by, language, active) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        update: ""
     },
-    select: {
-        aboutMe: "SELECT * FROM about_me WHERE language = ? AND active = 1 LIMIT 1",
-        experiences: "SELECT * FROM experiences WHERE language = ? ORDER BY begin_date DESC",
-        projects: "SELECT * FROM projects WHERE language = ? AND active = 1 ORDER BY turn ASC",
-        socialMedias: "SELECT * FROM social_medias WHERE active = 1 ORDER BY turn ASC"
+    experiences: {
+        getAll: "SELECT * FROM experiences",
+        get: "SELECT * FROM experiences WHERE language = ? AND active = 1 ORDER BY begin_date DESC",
+        add: "INSERT INTO experiences (company_name, title, description, begin_date, end_date, language, created_by, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        update: ""
+    },
+    projects: {
+        getAll: "SELECT * FROM projects",
+        get: "SELECT * FROM projects WHERE language = ? AND active = 1 ORDER BY turn ASC",
+        add: "INSERT INTO projects () VALUES()",
+        update: ""
+    },
+    socialMedias: {
+        getAll: "SELECT * FROM social_medias",
+        get: "SELECT * FROM social_medias WHERE active = 1 ORDER BY turn ASC",
+        add: "INSERT INTO social_medias () VALUES()",
+        update: ""
+    },
+    contacts: {
+        getAll: "SELECT * FROM contacts",
+        get: "SELECT * FROM contacts WHERE language = ?",
+        add: "INSERT INTO contacts (full_name, email, subject, message, ip, mail_log, language) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        update: ""
     }
-}
+};
 
-module.exports = { pool, sqlCommand };
+module.exports = { pool, dbTables };
