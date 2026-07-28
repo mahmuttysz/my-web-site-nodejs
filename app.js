@@ -18,8 +18,23 @@ app.locals.formatDate = formatDate;
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(helmet());
 
+app.use(
+    helmet({
+        contentSecurityPolicy: {
+            useDefaults: true,
+            directives: {
+                "script-src": ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://www.googletagmanager.com", "https://www.clarity.ms"],
+                "script-src-elem": ["'self'", "'unsafe-inline'", "https://www.googletagmanager.com", "https://www.clarity.ms"],
+                "script-src-attr": ["'unsafe-inline'"],
+
+                "connect-src": ["'self'", "https://*.google-analytics.com", "https://www.googletagmanager.com", "https://*.analytics.google.com", "https://www.clarity.ms"],
+                "img-src": ["'self'", "data:", "https://www.googletagmanager.com", "https://*.google-analytics.com", "https://*.g.doubleclick.net", "https://www.clarity.ms"],
+                "upgrade-insecure-requests": null
+            },
+        },
+    })
+);
 app.set('trust proxy', 1);
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
