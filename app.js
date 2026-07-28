@@ -24,12 +24,11 @@ app.use(
         contentSecurityPolicy: {
             useDefaults: true,
             directives: {
-                "script-src": ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://www.googletagmanager.com", "https://www.clarity.ms"],
-                "script-src-elem": ["'self'", "'unsafe-inline'", "https://www.googletagmanager.com", "https://www.clarity.ms"],
+                "script-src": ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://www.googletagmanager.com"],
+                "script-src-elem": ["'self'", "'unsafe-inline'", "https://www.googletagmanager.com"],
                 "script-src-attr": ["'unsafe-inline'"],
-
-                "connect-src": ["'self'", "https://*.google-analytics.com", "https://www.googletagmanager.com", "https://*.analytics.google.com", "https://www.clarity.ms"],
-                "img-src": ["'self'", "data:", "https://www.googletagmanager.com", "https://*.google-analytics.com", "https://*.g.doubleclick.net", "https://www.clarity.ms"],
+                "connect-src": ["'self'", "https://*.google-analytics.com", "https://www.googletagmanager.com", "https://*.analytics.google.com"],
+                "img-src": ["'self'", "data:", "https://www.googletagmanager.com", "https://*.google-analytics.com", "https://*.g.doubleclick.net"],
                 "upgrade-insecure-requests": null
             },
         },
