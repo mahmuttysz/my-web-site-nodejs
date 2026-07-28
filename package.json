@@ -2,6 +2,10 @@
   "name": "my-website-nodejs",
   "version": "1.0.0",
   "description": "",
+  "eslintConfig": {
+    "$schema": "https://json.schemastore.org/eslintrc.json",
+    "allowTrailingComma": true
+  },
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
@@ -15,7 +19,7 @@
     "dotenv-expand": "^13.0.0",
     "ejs": "^6.0.1",
     "express": "^5.2.1",
-    "express-rate-limit": "^8.6.0",
+    "express-rate-limit": "^8.6.1",
     "helmet": "^8.3.0",
     "mariadb": "^3.5.3",
     "nodemailer": "^9.0.3"
