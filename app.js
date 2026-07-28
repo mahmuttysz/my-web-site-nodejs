@@ -19,21 +19,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use(
-    helmet({
-        contentSecurityPolicy: {
-            useDefaults: true,
-            directives: {
-                "script-src": ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://www.googletagmanager.com"],
-                "script-src-elem": ["'self'", "'unsafe-inline'", "https://www.googletagmanager.com"],
-                "script-src-attr": ["'unsafe-inline'"],
-                "connect-src": ["'self'", "https://*.google-analytics.com", "https://www.googletagmanager.com", "https://*.analytics.google.com"],
-                "img-src": ["'self'", "data:", "https://www.googletagmanager.com", "https://*.google-analytics.com", "https://*.g.doubleclick.net"],
-                "upgrade-insecure-requests": null
-            },
-        },
-    })
-);
+app.use(helmet());
 app.set('trust proxy', 1);
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -107,8 +93,18 @@ const contactLimiter = rateLimit({
 });
 
 app.post('/contact', contactLimiter, async (req, res) => {
-    const { fullName, email, subject, message } = req.body;
+    const { fullName, email, subject, message, websiteUrl, formLoadedAt } = req.body;
 
+    if (websiteUrl) {
+        console.log('🐝 Honeypot bir bot yakaladı!');
+        return res.json({ success: true, message: 'Mesajınız başarıyla iletildi.' });
+    }
+
+    const fillTimeInSeconds = (Date.now() - parseInt(formLoadedAt || 0)) / 1000;
+    if (fillTimeInSeconds < 2) {
+        console.log('⏱️ Zaman Tuzağı bir bot yakaladı!');
+        return res.json({ success: true, message: 'Mesajınız başarıyla iletildi.' });
+    }
     if (!fullName || !email || !message) {
         return res.status(400).json({ success: false, message: res.locals.t.form.emptyCells });
     }

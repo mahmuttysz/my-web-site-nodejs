@@ -97,6 +97,10 @@
             </h2>
             <div id="formMessage"></div>
             <form class="contact-form" id="contactForm">
+                <div style="display: none;" aria-hidden="true">
+                    <input type="text" name="websiteUrl" tabindex="-1" autocomplete="off" />
+                    <input type="hidden" name="formLoadedAt" value="<%= Date.now() %>" />
+                </div>
                 <div class="form-row">
                     <div class="form-group">
                         <label for="name">
