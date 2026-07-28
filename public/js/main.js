@@ -12,6 +12,8 @@ document.getElementById('contactForm').addEventListener('submit', async function
     formMessage.innerText = '';
 
     const formData = {
+        websiteUrl: this.websiteUrl.value,
+        formLoadedAt: this.formLoadedAt.value,
         fullName: this.fullName.value,
         email: this.email.value,
         subject: this.subject.value,
