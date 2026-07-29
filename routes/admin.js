@@ -30,19 +30,30 @@ router.post('/login', loginLimiter, async (req, res) => {
     const { username, password } = req.body;
 
     try {
+        const clientIp = req.headers['cf-connecting-ip'] ||
+            req.headers['x-forwarded-for']?.split(',')[0] ||
+            req.ip;
         const user = await pool.query('SELECT * FROM admin_users WHERE username = ? LIMIT 1', [username]);
         if (user.length === 0) {
             return res.render('admin/login', { error: 'Kullanıcı adı veya şifre hatalı.' });
         }
+        else {
+            const match = await bcrypt.compare(password, user[0].password_hash);
 
-        const match = await bcrypt.compare(password, user[0].password_hash);
-
-        if (!match) {
-            return res.render('admin/login', { error: 'Kullanıcı adı veya şifre hatalı.' });
+            if (!match) {
+                await pool.query('UPDATE admin_users SET last_wrong_try = ?, wrong_try = wrong_try + 1, ip = ? WHERE id = ?', [new Date(), clientIp, user[0].id]);
+                return res.render('admin/login', { error: 'Kullanıcı adı veya şifre hatalı.' });
+            }
+            else {
+                req.session.adminUser = {
+                    id: user[0].id,
+                    username: user[0].username
+                };
+                await pool.query('UPDATE admin_users SET last_success_login = ?, ip = ? WHERE id = ?', [new Date(), clientIp, user[0].id]);
+                res.redirect('/admin');
+            }
         }
 
-        req.session.adminUser = { id: user[0].id, username: user[0].username };
-        res.redirect('/admin');
     } catch (err) {
         console.error('Login Hatası:', err);
         res.render('admin/login', { error: 'Veritabanı hatası oluştu.' });
