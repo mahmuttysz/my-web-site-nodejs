@@ -4,22 +4,46 @@ const dotenvExpand = require('dotenv-expand');
 const cookieParser = require('cookie-parser');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
+const session = require('express-session');
+const { RedisStore } = require('connect-redis');
+const redisClient = require('./config/redis');
 const path = require('path');
-const { pool, dbTables } = require('./utils/db');
+const { pool, dbTables } = require('./config/db');
 const { sendVisitorMail, sendNotificationMailToAdmin } = require('./utils/mailer');
-const { formatDate } = require('./utils/helper');
+const { formatDate, formatLongDate, formatLongDateTime } = require('./utils/helper');
 const locales = require('./utils/locales');
+
+const adminRoutes = require('./routes/admin');
+const blogRoutes = require('./routes/blog');
 
 dotenvExpand.expand(dotenv.config());
 const app = express();
 
 app.locals.formatDate = formatDate;
+app.locals.formatLongDate = formatLongDate;
+app.locals.formatLongDateTime = formatLongDateTime;
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use(helmet());
+app.use(helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
+
+app.use(session({
+    store: new RedisStore({ client: redisClient }),
+    secret: process.env.SESSION_SECRET || 'very_secret_key_must_be_change',
+    resave: false,
+    saveUninitialized: false,
+    name: 'sid_admin',
+    cookie: {
+        secure: process.env.APP_ENV === 'prod',
+        httpOnly: true,
+        maxAge: 1000 * 60 * 60 * 8,
+        sameSite: 'lax'
+    }
+}));
 app.set('trust proxy', 1);
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -55,16 +79,16 @@ app.get('/lang/:langCode', (req, res) => {
     res.redirect(req.get('referer') || '/');
 });
 
+app.use('/blog', blogRoutes);
+app.use('/admin', adminRoutes);
+
 app.get('/', async (req, res) => {
-    let conn;
     const currentLang = res.locals.lang;
     try {
-        conn = await pool.getConnection();
-
-        const aboutMe = await conn.query(dbTables.aboutMe.get, [currentLang]);
-        const experiences = await conn.query(dbTables.experiences.get, [currentLang]);
-        const projects = await conn.query(dbTables.projects.get, [currentLang]);
-        const socialMedias = await conn.query(dbTables.socialMedias.get);
+        const aboutMe = await pool.query(dbTables.aboutMe.get, [currentLang]);
+        const experiences = await pool.query(dbTables.experiences.get, [currentLang]);
+        const projects = await pool.query(dbTables.projects.get, [currentLang]);
+        const socialMedias = await pool.query(dbTables.socialMedias.get);
 
         res.render('index', {
             aboutMe: aboutMe[0] || {},
@@ -76,8 +100,6 @@ app.get('/', async (req, res) => {
     } catch (err) {
         console.error('Veritabanı Okuma Hatası:', err);
         res.status(500).send('Sunucu hatası oluştu.');
-    } finally {
-        if (conn) conn.release();
     }
 });
 
@@ -109,9 +131,7 @@ app.post('/contact', contactLimiter, async (req, res) => {
         return res.status(400).json({ success: false, message: res.locals.t.form.emptyCells });
     }
 
-    let conn;
     try {
-        conn = await pool.getConnection();
         const clientIp = req.headers['cf-connecting-ip'] ||
             req.headers['x-forwarded-for']?.split(',')[0] ||
             req.ip;
@@ -126,7 +146,7 @@ app.post('/contact', contactLimiter, async (req, res) => {
             visitorMail: sendMail[0],
             adminMail: sendMail[1]
         };
-        await conn.query(dbTables.contacts.add, [fullName, email, subject, message, clientIp, JSON.stringify(mailLog), res.locals.lang]);
+        await pool.query(dbTables.contacts.add, [fullName, email, subject, message, clientIp, JSON.stringify(mailLog), res.locals.lang]);
         return res.json({
             success: mailStatus,
             message: mailStatus ? res.locals.t.form.success : res.locals.t.form.error
@@ -135,8 +155,6 @@ app.post('/contact', contactLimiter, async (req, res) => {
     } catch (err) {
         console.error('İletişim İşlem Hatası:', err);
         return res.status(500).json({ success: false, message: res.locals.t.form.error });
-    } finally {
-        if (conn) conn.release();
     }
 });
 

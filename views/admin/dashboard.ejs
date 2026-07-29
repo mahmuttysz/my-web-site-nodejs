@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="tr" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard | Admin Panel</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="bg-slate-950 text-slate-100">
+
+<div class="flex min-h-screen">
+  <%- include('partials/sidebar') %>
+  <main class="flex-1 p-8 overflow-y-auto">
+    <header class="mb-8">
+      <h1 class="text-2xl font-bold text-white">Hoş geldin, <%= user.username %> 👋</h1>
+      <p class="text-slate-400 text-sm mt-1">Sitenin genel durumuna buradan göz atabilirsin.</p>
+    </header>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
+        <span class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Tüm Makaleler</span>
+        <p class="text-3xl font-bold text-white mt-2"><%= stats.totalArticles %></p>
+      </div>
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
+        <span class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Toplam Okunma</span>
+        <p class="text-3xl font-bold text-blue-400 mt-2"><%= stats.totalViews %></p>
+      </div>
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
+        <span class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Okunmamış Mesajlar</span>
+        <p class="text-3xl font-bold <%= stats.unreadMessages > 0 ? 'text-amber-400' : 'text-slate-500' %> mt-2">
+          <%= stats.unreadMessages %>
+        </p>
+      </div>
+    </div>
+    <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-lg font-bold text-white">Son İletişim Mesajları</h2>
+        <a href="/admin/messages" class="text-xs text-blue-400 hover:text-blue-300 font-medium">Tümünü Gör →</a>
+      </div>
+
+      <% if (recentMessages && recentMessages.length > 0) { %>
+        <div class="space-y-4">
+          <% recentMessages.forEach(msg => { %>
+            <div class="p-4 bg-slate-950/60 border border-slate-800/80 rounded-lg flex items-start justify-between">
+              <div>
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="font-semibold text-white text-sm"><%= msg.name %></span>
+                  <span class="text-xs text-slate-500">&lt;<%= msg.email %>&gt;</span>
+                </div>
+                <p class="text-slate-300 text-sm line-clamp-2"><%= msg.message %></p>
+              </div>
+              <span class="text-xs text-slate-500 whitespace-nowrap ml-4">
+                <%= formatLongDateTime(msg.created_at) %>
+              </span>
+            </div>
+          <% }); %>
+        </div>
+      <% } else { %>
+        <p class="text-slate-500 text-sm text-center py-6">Henüz hiç mesaj yok.</p>
+      <% } %>
+    </div>
+  </main>
+</div>
+
+</body>
+</html>
