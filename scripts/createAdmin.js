@@ -1,11 +1,14 @@
 const bcrypt = require('bcrypt');
 const { pool, dbTables } = require('../config/db'); // Hazırladığımız MariaDB havuzu
+const dotenv = require('dotenv');
+const dotenvExpand = require('dotenv-expand');
+dotenvExpand.expand(dotenv.config());
 
 async function createAdmin() {
     const name = process.env.ADMIN_NAME || 'Mahmut';
     const surname = process.env.ADMIN_SURNAME || 'Tüysüz';
     const username = process.env.ADMIN_USERNAME || 'mahmut';
-    const rawPassword = process.env.ADMIN_PASSWORD || 'FB1907';
+    const rawPassword = process.env.ADMIN_PASSWORD || 'pwd123';
     try {
         console.log('🔄 Admin kullanıcısı oluşturuluyor...');
         const existingUsers = await pool.query(
