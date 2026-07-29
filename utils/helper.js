@@ -11,6 +11,31 @@ function formatDate(dateString, lang = 'tr') {
     return formatted.charAt(0).toUpperCase() + formatted.slice(1);
 }
 
+function formatLongDate(dateString, lang = 'tr') {
+    const date = new Date(dateString);
+    let formatted = new Date(date).toLocaleDateString(lang === 'tr' ? 'tr-TR' : 'en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+
+    return formatted.charAt(0).toUpperCase() + formatted.slice(1);
+}
+
+function formatLongDateTime(dateString, lang = 'tr') {
+    const date = new Date(dateString);
+    let formatted = new Date(date).toLocaleDateString(lang === 'tr' ? 'tr-TR' : 'en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        second: 'numeric'
+    });
+
+    return formatted.charAt(0).toUpperCase() + formatted.slice(1);
+}
+
 function escapeHtml(text) {
     if (!text) return '';
     return String(text)
@@ -21,4 +46,4 @@ function escapeHtml(text) {
         .replace(/'/g, "&#039;");
 }
 
-module.exports = { formatDate, escapeHtml };
+module.exports = { formatDate, formatLongDate, formatLongDateTime, escapeHtml };
