@@ -1,44 +1,18 @@
-<!DOCTYPE html>
-<html lang="<%= lang ? lang : 'tr' %>" class="dark">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>
-        <%= t.alert.serverErrorWithCode %> | Mahmut Tüysüz
-    </title>
-    <link rel="stylesheet" href="/css/main.css">
-</head>
-<div class="wrapper">
-    <section class="error-section">
-        <div class="error-container">
-            <h1 class="error-code error-code-500">500</h1>
-            <h2 class="error-title">
-                <%= t.alert.serverError %>
-            </h2>
-            <p class="error-desc">
-                <%= t.alert.serverErrorDesc %>
-            </p>
-
-            <a href="/" class="project-link error-btn">
-                <%= lang==='tr' ? '← Ana Sayfaya Dön' : '← Back to Home' %>
-            </a>
-        </div>
-    </section>
-</div>
-<footer class="site-footer">
-    <div class="footer-bottom">
-        <div class="footer-bottom-container">
-            <p>
-                &copy; <%= new Date().getFullYear() %> Mahmut Tüysüz. <%=t.footer.rights%>
-            </p>
-            <p class="tech-stack">
-                <%= t.footer.techStack %>
-            </p>
-        </div>
+<%- include('partials/header') %>
+    <div class="wrapper">
+        <section class="error-section">
+            <div class="error-container">
+                <h1 class="error-code error-code-500">500</h1>
+                <h2 class="error-title">
+                    <%= t.alert.serverError %>
+                </h2>
+                <p class="error-desc">
+                    <%= t.alert.serverErrorDesc %>
+                </p>
+                <a href="/" class="project-link error-btn">
+                    ← <%= t.alert.backToHome %>
+                </a>
+            </div>
+        </section>
     </div>
-</footer>
-
-</body>
-
-</html>
+    <%- include('partials/footer') %>
