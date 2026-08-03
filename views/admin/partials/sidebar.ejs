@@ -3,9 +3,8 @@
     <div>
         <!-- Logo / Panel Adı -->
         <div class="flex items-center gap-3 mb-8 px-2">
-            <div
-                class="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-white shadow-md shadow-blue-500/20">
-                M
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center">
+                <img src="/favicon-32x32.png" alt="Logo" class="w-8 h-8" />
             </div>
             <div>
                 <h2 class="font-bold text-white text-sm">Yönetim Paneli</h2>
@@ -15,7 +14,7 @@
 
         <!-- Gezinti Menüsü -->
         <nav class="space-y-1">
-            <a href="/admin"
+            <a href="<%=adminEndpoint%>"
                 class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
                 <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -25,7 +24,7 @@
                 Dashboard
             </a>
 
-            <a href="/admin/articles"
+            <a href="<%=adminEndpoint%>/articles"
                 class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
                 <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -35,7 +34,7 @@
                 Makaleler
             </a>
 
-            <a href="/admin/messages"
+            <a href="<%=adminEndpoint%>/messages"
                 class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
                 <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -58,7 +57,7 @@
             Siteyi Görüntüle
         </a>
 
-        <a href="/admin/logout"
+        <a href="<%=adminEndpoint%>/logout"
             class="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-red-400 hover:bg-red-500/10 transition-colors">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

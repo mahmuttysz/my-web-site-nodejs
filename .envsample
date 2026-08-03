@@ -7,6 +7,14 @@ APP_ENV=prod
 SITE_URL=https://mahmuttuysuz.net
 REDIS_URL='redis://127.0.0.1:${REDIS_PORT}'
 
+ARTICLE_IMG_UPLOAD_PATH='public/uploads/articles'
+PROJECT_IMG_UPLOAD_PATH='public/uploads/projects'
+
+FILE_UPLOAD_MB_LIMIT=3
+
+RATE_LIMIT_MINUTES=15
+RATE_LIMIT_MAX_REQUESTS=5
+
 DB_HOST=127.0.0.1
 DB_PORT=3306
 DB_USER=website_db_user
@@ -24,4 +32,6 @@ ADMIN_SURNAME='Tüysüz'
 ADMIN_USERNAME=mahmut
 ADMIN_PASSWORD='pwd123'
 
-SESSION_SECRET='very_secret_code' 
+ADMIN_PANEL_ENDPOINT='/admin'
+
+SESSION_SECRET='very_secret_code'

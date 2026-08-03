@@ -1,3 +1,15 @@
+async function getIndexPageData(lang = 'tr') {
+    const { pool, dbTables } = require('../config/db');
+
+    const aboutMe = await pool.query(dbTables.aboutMe.get, [lang]) || [];
+    const experiences = await pool.query(dbTables.experiences.get, [lang]) || [];
+    const projects = await pool.query(dbTables.projects.get, [lang]) || [];
+    const articles = await pool.query(dbTables.articles.get, [lang]) || [];
+    const socialMedias = await pool.query(dbTables.socialMedias.get) || [];
+
+    return { aboutMe: aboutMe[0] || {}, experiences, projects, articles, socialMedias };
+}
+
 function formatDate(dateString, lang = 'tr') {
     if (!dateString) return lang === 'tr' ? 'Devam Ediyor' : 'Ongoing';
     const date = new Date(dateString);
@@ -46,4 +58,4 @@ function escapeHtml(text) {
         .replace(/'/g, "&#039;");
 }
 
-module.exports = { formatDate, formatLongDate, formatLongDateTime, escapeHtml };
+module.exports = { getIndexPageData, formatDate, formatLongDate, formatLongDateTime, escapeHtml };

@@ -1,5 +1,5 @@
 const bcrypt = require('bcrypt');
-const { pool, dbTables } = require('../config/db'); // Hazırladığımız MariaDB havuzu
+const { pool, dbTables } = require('../config/db');
 const dotenv = require('dotenv');
 const dotenvExpand = require('dotenv-expand');
 dotenvExpand.expand(dotenv.config());
@@ -11,10 +11,7 @@ async function createAdmin() {
     const rawPassword = process.env.ADMIN_PASSWORD || 'pwd123';
     try {
         console.log('🔄 Admin kullanıcısı oluşturuluyor...');
-        const existingUsers = await pool.query(
-            'SELECT id FROM admin_users WHERE username = ?',
-            [username]
-        );
+        const existingUsers = await pool.query(dbTables.adminUsers.getByUsername, [username]);
 
         if (existingUsers.length > 0) {
             console.log(`⚠️ '${username}' adında bir kullanıcı zaten veritabanında mevcut! İşlem durduruldu.`);
@@ -23,10 +20,7 @@ async function createAdmin() {
 
         const saltRounds = 10;
         const passwordHash = await bcrypt.hash(rawPassword, saltRounds);
-        await pool.query(
-            'INSERT INTO admin_users (name, surname, username, password_hash) VALUES (?, ?, ?, ?)',
-            [name, surname, username, passwordHash]
-        );
+        await pool.query(dbTables.adminUsers.add, [name, surname, username, passwordHash]);
 
         console.log('----------------------------------------------------');
         console.log('✅ Admin kullanıcısı başarıyla oluşturuldu!');

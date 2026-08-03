@@ -1,9 +1,10 @@
 const multer = require('multer');
 const path = require('path');
+const { env } = require('./env');
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'public/uploads/articles/');
+    cb(null, env.ARTICLE_IMG_UPLOAD_PATH || 'public/uploads/articles/');
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
@@ -13,7 +14,9 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage,
-  limits: { fileSize: 3 * 1024 * 1024 }, // Max 3MB
+  limits: { 
+    fileSize: parseInt(env.FILE_UPLOAD_MB_LIMIT) || 3 * 1024 * 1024 
+  }, 
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith('image/')) {
       cb(null, true);
