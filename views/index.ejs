@@ -1,5 +1,4 @@
 <%- include('partials/header') %>
-
     <div class="hero-parallax">
         <div class="hero-content">
             <div class="lang-switcher">
@@ -65,50 +64,52 @@
             <h2 class="section-title">
                 <%= t.nav.blog %>
             </h2>
-            <div class="section-header">
-                <a href="/blog" class="see-all-link">
-                    <%= t.alert.viewAll %>
-                        <span class="arrow">→</span>
-                </a>
-            </div>
-            <div class="projects-grid">
-                <% if (articles && articles.length> 0) { %>
-                    <% articles.forEach(article=> { %>
-                        <div class="project-card blog-card">
-                            <% if (article.cover_image) { %>
-                                <a href="/blog/<%= article.slug %>" class="blog-cover-link">
-                                    <img src="<%= article.cover_image %>" alt="<%= article.title %>"
-                                        class="blog-cover-img" loading="lazy" />
-                                </a>
-                                <% } %>
-                                    <div class="blog-card-body">
-                                        <div class="blog-date">
-                                            <%= formatLongDate(article.created_at, lang) %>
-                                        </div>
-                                        <h3 class="blog-title">
-                                            <a href="/blog/<%= article.slug %>">
-                                                <%= article.title %>
-                                            </a>
-                                        </h3>
-                                        <p class="blog-desc">
-                                            <%= article.excerpt || (article.content ? article.content.substring(0, 100)
-                                                + '...' : '' ) %>
-                                        </p>
-                                        <div class="blog-footer">
-                                            <a href="/blog/<%= article.slug %>" class="blog-link">
-                                                <%= t.alert.readMore %>
-                                                    <span class="arrow">↗</span>
-                                            </a>
-                                        </div>
-                                    </div>
+            <% if (articles && articles.length> 0) { %>
+                <div class="section-header">
+                    <a href="/blog" class="see-all-link">
+                        <%= t.alert.viewAll %>
+                            <span class="arrow">→</span>
+                    </a>
+                </div>
+                <% } %>
+                    <div class="projects-grid">
+                        <% if (articles && articles.length> 0) { %>
+                            <% articles.forEach(article=> { %>
+                                <div class="project-card blog-card">
+                                    <% if (article.cover_image) { %>
+                                        <a href="/blog/<%= article.slug %>" class="blog-cover-link">
+                                            <img src="<%= article.cover_image %>" alt="<%= article.title %>"
+                                                class="blog-cover-img" loading="lazy" />
+                                        </a>
+                                        <% } %>
+                                            <div class="blog-card-body">
+                                                <div class="blog-date">
+                                                    <%= formatLongDate(article.created_at, lang) %>
+                                                </div>
+                                                <h3 class="blog-title">
+                                                    <a href="/blog/<%= article.slug %>">
+                                                        <%= article.title %>
+                                                    </a>
+                                                </h3>
+                                                <p class="blog-desc">
+                                                    <%= article.excerpt || (article.content ?
+                                                        article.content.substring(0, 100) + '...' : '' ) %>
+                                                </p>
+                                                <div class="blog-footer">
+                                                    <a href="/blog/<%= article.slug %>" class="blog-link">
+                                                        <%= t.alert.readMore %>
+                                                            <span class="arrow">↗</span>
+                                                    </a>
+                                                </div>
+                                            </div>
 
-                        </div>
-                        <% }); } else { %>
-                            <p>
-                                <%= t.alert.doesntAddedArticles %>
-                            </p>
-                            <% } %>
-            </div>
+                                </div>
+                                <% }); } else { %>
+                                    <p>
+                                        <%= t.alert.doesntAddedArticles %>
+                                    </p>
+                                    <% } %>
+                    </div>
         </section>
         <section id="experiences">
             <h2 class="section-title">

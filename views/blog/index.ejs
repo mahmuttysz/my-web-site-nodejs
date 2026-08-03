@@ -1,10 +1,12 @@
 <!DOCTYPE html>
-<html lang="tr" class="dark">
+<html lang="<%= lang ? lang : 'tr' %>" class="dark">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blog & Yazılar | Mahmut Tüysüz</title>
+    <title>
+        <%= title %> | Mahmut Tüysüz
+    </title>
     <link rel="stylesheet" href="/css/style.css">
 </head>
 
@@ -32,7 +34,7 @@
     <main class="max-w-5xl mx-auto px-6 py-12 flex-1 w-full">
         <div class="mb-12">
             <h1 class="text-3xl font-extrabold text-white tracking-tight sm:text-4xl">
-               <%= t.nav.blog %>
+                <%= t.nav.blog %>
             </h1>
             <p class="text-slate-400 mt-2 text-base">
                 <%= t.nav.blogDescription %>

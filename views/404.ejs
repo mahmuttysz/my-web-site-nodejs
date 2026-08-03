@@ -1,0 +1,21 @@
+<%- include('partials/header') %>
+    <div class="wrapper">
+        <section class="error-section">
+            <div class="error-container">
+                <h1 class="error-code">
+                    404
+                </h1>
+                <h2 class="error-title">
+                    <%= t.alert.pageNotFound %>
+                </h2>
+
+                <p class="error-desc">
+                    <%= t.alert.pageNotFoundDesc %>
+                </p>
+                <a href="/" class="project-link error-btn">
+                    ← <%= t.alert.backToHome %>
+                </a>
+            </div>
+        </section>
+    </div>
+    <%- include('partials/footer') %>
