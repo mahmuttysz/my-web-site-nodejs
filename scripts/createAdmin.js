@@ -1,14 +1,12 @@
 const bcrypt = require('bcrypt');
 const { pool, dbTables } = require('../config/db');
-const dotenv = require('dotenv');
-const dotenvExpand = require('dotenv-expand');
-dotenvExpand.expand(dotenv.config());
+const { env } = require('../config/env');
 
 async function createAdmin() {
-    const name = process.env.ADMIN_NAME || 'Mahmut';
-    const surname = process.env.ADMIN_SURNAME || 'Tüysüz';
-    const username = process.env.ADMIN_USERNAME || 'mahmut';
-    const rawPassword = process.env.ADMIN_PASSWORD || 'pwd123';
+    const name = env.ADMIN_NAME || 'Mahmut';
+    const surname = env.ADMIN_SURNAME || 'Tüysüz';
+    const username = env.ADMIN_USERNAME || 'mahmut';
+    const rawPassword = env.ADMIN_PASSWORD || 'pwd123';
     try {
         console.log('🔄 Admin kullanıcısı oluşturuluyor...');
         const existingUsers = await pool.query(dbTables.adminUsers.getByUsername, [username]);
