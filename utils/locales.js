@@ -49,6 +49,12 @@ module.exports = {
             rights: "Tüm hakları saklıdır."
         },
         alert: {
+            pageNotFound: "Sayfa Bulunamadı",
+            pageNotFoundWithCode: "404 - Sayfa Bulunamadı",
+            pageNotFoundDesc: "Ulaşmaya çalıştığınız adres silinmiş, adı değiştirilmiş veya geçici olarak kullanım dışı kalmış olabilir.",
+            serverError: "Bir Sunucu Hatası Oluştu",
+            serverErrorWithCode: "500 - Bir Sunucu Hatası Oluştu",
+            serverErrorDesc: "Üzgünüz, sunucularımızda beklenmedik bir sorun meydana geldi. Durumdan haberdarız ve çözmek için çalışıyoruz.",
             error: "Hata",
             success: "Başarılı",
             warning: "Uyarı",
@@ -57,6 +63,7 @@ module.exports = {
             learnMore: "Daha Fazla Bilgi",
             viewAll: "Tümünü Gör",
             goBack: "Geri Dön",
+            backToHome: "Ana Sayfaya Dön",
             allArticles: "Tüm Yazılar",
             minutesToRead: " dakika okuma",
             doesntAddedExperiences: "Henüz eklenmiş deneyim bulunmamaktadır.",
@@ -114,6 +121,12 @@ module.exports = {
             rights: "All rights reserved."
         },
         alert: {
+            pageNotFound: "Page Not Found",
+            pageNotFoundWithCode: "404 - Page Not Found",
+            pageNotFoundDesc: "The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.",
+            serverError: "Internal Server Error",
+            serverErrorWithCode: "500 - Internal Server Error",
+            serverErrorDesc: "Sorry, something went wrong on our server. We are working on fixing the issue.",
             error: "Error",
             success: "Success",
             warning: "Warning",
@@ -122,6 +135,7 @@ module.exports = {
             learnMore: "Learn More",
             viewAll: "View All",
             goBack: "Go Back",
+            backToHome: "Back to Home",
             allArticles: "All Articles",
             minutesToRead: " minutes to read",
             doesntAddedExperiences: "No experiences added yet.",

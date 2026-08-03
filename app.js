@@ -48,10 +48,28 @@ app.get('/', async (req, res) => {
         res.status(500).send('Sunucu hatası oluştu.');
     }
 });
+
 app.use(adminEndpoint, adminRoutes);
 app.use('/lang', languageRoutes);
 app.use('/blog', blogRoutes);
 app.use('/contact', contactRoutes);
+
+app.use(async (req, res) => {
+    const lang = res.locals.lang || req.session?.lang || 'tr';
+    let pageData = await getIndexPageData(lang);
+    res.status(404).render('404', pageData);
+});
+
+if (env.APP_ENV === 'prod') {
+    app.use(async (err, req, res, next) => {
+        console.error('❌ Sunucu Hatası (500):', err.stack);
+
+        const lang = res.locals.lang || req.session?.lang || 'tr';
+        let pageData = await getIndexPageData(lang);
+
+        res.status(500).render('500', pageData);
+    });
+}
 
 process.on('unhandledRejection', (reason, promise) => {
     console.error('Yakalanmamış Söz (Promise) Hatası:', reason);
