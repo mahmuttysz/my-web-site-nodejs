@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="tr" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= article.title %> | Mahmut Tüysüz
+    </title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .article-body h1 {
+            font-size: 1.875rem;
+            font-weight: 800;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            color: #fff;
+        }
+
+        .article-body h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-top: 1.75rem;
+            margin-bottom: 0.75rem;
+            color: #f8fafc;
+        }
+
+        .article-body h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: #f1f5f9;
+        }
+
+        .article-body p {
+            margin-bottom: 1.25rem;
+            line-height: 1.8;
+            color: #cbd5e1;
+        }
+
+        .article-body ul {
+            list-style-type: disc;
+            padding-left: 1.5rem;
+            margin-bottom: 1.25rem;
+            color: #cbd5e1;
+        }
+
+        .article-body ol {
+            list-style-type: decimal;
+            padding-left: 1.5rem;
+            margin-bottom: 1.25rem;
+            color: #cbd5e1;
+        }
+
+        .article-body li {
+            margin-bottom: 0.5rem;
+        }
+
+        .article-body code {
+            background-color: #0f172a;
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-family: monospace;
+            font-size: 0.875em;
+            color: #38bdf8;
+        }
+
+        .article-body pre {
+            background-color: #0f172a;
+            border: 1px solid #1e293b;
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+        }
+
+        .article-body pre code {
+            background: none;
+            padding: 0;
+            color: #e2e8f0;
+        }
+
+        .article-body blockquote {
+            border-left: 4px solid #2563eb;
+            padding-left: 1rem;
+            font-style: italic;
+            color: #94a3b8;
+            margin-bottom: 1.25rem;
+        }
+
+        .article-body a {
+            color: #60a5fa;
+            text-decoration: underline;
+            text-underline-offset: 4px;
+        }
+
+        .article-body a:hover {
+            color: #93c5fd;
+        }
+
+        .article-body img {
+            border-radius: 0.75rem;
+            margin: 1.5rem 0;
+            width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between">
+    <header class="border-b border-slate-800/80 bg-slate-950/80 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
+            <a href="/" class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center">
+                    <img src="/favicon-32x32.png" alt="Logo" class="w-5 h-5" />
+                </div>
+                <span class="font-bold text-white tracking-tight text-lg">
+                    Mahmut Tüysüz
+                </span>
+            </a>
+            <a href="/blog" class="text-xs text-slate-400 hover:text-white transition-colors">
+                ← <%= t.alert.allArticles %>
+            </a>
+        </div>
+    </header>
+    <main class="max-w-3xl mx-auto px-6 py-12 flex-1 w-full">
+        <div class="mb-8 border-b border-slate-800/80 pb-8">
+            <div class="flex items-center gap-3 text-xs text-slate-400 mb-4">
+                <time datetime="<%= article.created_at %>">
+                    <%= formatLongDate(article.created_at) %>
+                </time>
+                <span>•</span>
+                <span>
+                    <%= article.reading_time %> <%= t.alert.minutesToRead %>
+                </span>
+            </div>
+
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
+                <%= article.title %>
+            </h1>
+            <% if (article.excerpt) { %>
+                <p class="text-slate-400 text-lg mt-4 leading-relaxed font-light">
+                    <%= article.excerpt %>
+                </p>
+                <% } %>
+        </div>
+        <% if (article.cover_image) { %>
+            <div class="mb-10 rounded-2xl overflow-hidden border border-slate-800 bg-slate-900">
+                <img src="<%= article.cover_image %>" alt="<%= article.title %>"
+                    class="w-full max-h-[450px] object-cover">
+            </div>
+            <% } %>
+
+                <div class="article-body text-slate-300 text-base leading-relaxed">
+                    <%- article.contentHtml %>
+                </div>
+                <div class="mt-16 pt-8 border-t border-slate-800/80 flex items-center justify-between">
+                    <a href="/blog"
+                        class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors">
+                        ← <%= t.alert.goBack %>
+                    </a>
+                </div>
+
+    </main>
+
+    <footer class="border-t border-slate-800/80 py-8 text-center text-xs text-slate-500">
+        <div class="max-w-4xl mx-auto px-6">
+            © <%= new Date().getFullYear() %> Mahmut Tüysüz. <%= t.footer.rights %>
+        </div>
+    </footer>
+
+</body>
+
+</html>

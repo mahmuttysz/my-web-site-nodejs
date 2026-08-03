@@ -3,6 +3,9 @@ module.exports = {
         nav: {
             homePage: "Ana Sayfa",
             aboutMe: "Hakkımda",
+            articles: "Makaleler",
+            blog: "Blog & Yazılar",
+            blogDescription: "Yazılım mimarileri, backend sistemler ve deneyimler üzerine yazılar.",
             experiences: "Deneyimler",
             projects: "Projeler",
             contact: "İletişim"
@@ -44,12 +47,30 @@ module.exports = {
             desc: "Kıdemli Yazılım Geliştirme & DevOps Uzmanı. Ölçeklenebilir sistemler ve modern web teknolojileri geliştiriyorum.",
             techStack: "Node.js, Express & MariaDB ile geliştirildi.",
             rights: "Tüm hakları saklıdır."
+        },
+        alert: {
+            error: "Hata",
+            success: "Başarılı",
+            warning: "Uyarı",
+            info: "Bilgi",
+            readMore: "Devamını Oku",
+            learnMore: "Daha Fazla Bilgi",
+            viewAll: "Tümünü Gör",
+            goBack: "Geri Dön",
+            allArticles: "Tüm Yazılar",
+            minutesToRead: " dakika okuma",
+            doesntAddedExperiences: "Henüz eklenmiş deneyim bulunmamaktadır.",
+            doesntAddedProjects: "Henüz eklenmiş proje bulunmamaktadır.",
+            doesntAddedArticles: "Henüz eklenmiş blog yazısı bulunmamaktadır."
         }
     },
     en: {
         nav: {
             homePage: "Home",
             aboutMe: "About Me",
+            articles: "Articles",
+            blog: "Blog & Posts",
+            blogDescription: "Articles about software architectures, backend systems and experiences.",
             experiences: "Experiences",
             projects: "Projects",
             contact: "Contact"
@@ -91,6 +112,21 @@ module.exports = {
             desc: "Senior Software Developer and DevOps Specialist. I develop scalable systems and modern web technologies.",
             techStack: "Built with Node.js, Express & MariaDB.",
             rights: "All rights reserved."
+        },
+        alert: {
+            error: "Error",
+            success: "Success",
+            warning: "Warning",
+            info: "Info",
+            readMore: "Read More",
+            learnMore: "Learn More",
+            viewAll: "View All",
+            goBack: "Go Back",
+            allArticles: "All Articles",
+            minutesToRead: " minutes to read",
+            doesntAddedExperiences: "No experiences added yet.",
+            doesntAddedProjects: "No projects added yet.",
+            doesntAddedArticles: "No blog posts added yet."
         }
     }
 };

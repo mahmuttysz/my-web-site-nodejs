@@ -1,17 +1,15 @@
 const nodemailer = require('nodemailer');
-const dotenv = require('dotenv');
-const dotenvExpand = require('dotenv-expand');
-dotenvExpand.expand(dotenv.config());
+const { env } = require('../config/env');
 const locales = require('./locales');
 const { escapeHtml } = require('./helper');
 
 const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT) || 587,
-    secure: Number(process.env.SMTP_PORT) === 465,
+    host: env.SMTP_HOST,
+    port: parseInt(env.SMTP_PORT) || 587,
+    secure: parseInt(env.SMTP_PORT) === 465,
     auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS
+        user: env.SMTP_USER,
+        pass: env.SMTP_PASS
     }
 });
 
@@ -19,7 +17,7 @@ async function sendVisitorMail(toEmail, fullName, lang = 'tr') {
     const safeFullName = escapeHtml(fullName);
 
     const mailOptions = {
-        from: `"mahmuttuysuz.net" <${process.env.SMTP_USER}>`,
+        from: `"mahmuttuysuz.net" <${env.SMTP_USER}>`,
         to: toEmail,
         subject: locales[lang].visitorMail.subject,
         html: `
@@ -35,11 +33,11 @@ async function sendNotificationMailToAdmin(fullName, email, subject, message, la
     const safeName = escapeHtml(fullName);
     const safeEmail = escapeHtml(email);
     const safeSubject = escapeHtml(subject || 'Konusuz');
-    const safeMessage = escapeHtml(message).replace(/\n/g, '<br>');
+    const safeMessage = escapeHtml(message).replace(/\n/g, '<br />');
 
     const mailOptions = {
-        from: `"mahmuttuysuz.net" <${process.env.SMTP_USER}>`,
-        to: process.env.ADMIN_EMAIL || process.env.SMTP_USER,
+        from: `"mahmuttuysuz.net" <${env.SMTP_USER}>`,
+        to: env.ADMIN_EMAIL || env.SMTP_USER,
         subject: `${locales[lang].adminMail.subject}: ${safeSubject}`,
         html: `
             <h3>${locales[lang].adminMail.newMessage}</h3>
