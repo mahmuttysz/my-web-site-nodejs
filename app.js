@@ -13,8 +13,29 @@ const adminRoutes = require('./routes/admin');
 const blogRoutes = require('./routes/blog');
 const contactRoutes = require('./routes/contact');
 
-const app = express();
 const adminEndpoint = env.ADMIN_PANEL_ENDPOINT || '/admin';
+
+const app = express();
+app.use(
+    helmet({
+        crossOriginResourcePolicy: {
+            policy: "cross-origin"
+        },
+        contentSecurityPolicy: {
+            directives: {
+                defaultSrc: ["'self'"],
+                scriptSrc: ["'self'", "'unsafe-inline'", "https://challenges.cloudflare.com", "blob:"],
+                scriptSrcAttr: ["'unsafe-inline'"],
+                styleSrc: ["'self'", "'unsafe-inline'"],
+                frameSrc: ["'self'", "https://challenges.cloudflare.com"],
+                workerSrc: ["'self'", "blob:", "https://challenges.cloudflare.com"],
+                childSrc: ["'self'", "blob:", "https://challenges.cloudflare.com"],
+                connectSrc: ["'self'", "https://challenges.cloudflare.com"],
+                imgSrc: ["'self'", "data:", "blob:", "https:"]
+            }
+        }
+    })
+);
 
 app.locals.formatDate = formatDate;
 app.locals.formatLongDate = formatLongDate;
@@ -23,10 +44,6 @@ app.locals.formatLongDateTime = formatLongDateTime;
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
-
-app.use(helmet({
-    crossOriginResourcePolicy: { policy: "cross-origin" }
-}));
 
 app.use(session(sessionOpt));
 app.set('trust proxy', 1);
@@ -40,7 +57,7 @@ app.get('/', async (req, res) => {
     const currentLang = res.locals.lang;
     try {
         let pageData = await getIndexPageData(currentLang);
-
+        pageData.turnstileSiteKey = env.TURNSTILE_SITE_KEY;
         res.render('index', pageData);
 
     } catch (err) {

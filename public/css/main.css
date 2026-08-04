@@ -625,3 +625,30 @@ button:disabled {
 .error-code-500 {
   color: #ef4444;
 }
+
+.form-group.turnstile-box {
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 1.25rem;
+}
+
+.turnstile-box .cf-turnstile {
+  width: 300px;
+}
+
+.turnstile-box iframe {
+  width: 300px !important;
+  height: 65px !important;
+  border-radius: 8px;
+}
+
+@media (max-width: 340px) {
+  .form-group.turnstile-box {
+    justify-content: center;
+  }
+  .turnstile-box .cf-turnstile {
+    transform: scale(0.88);
+    transform-origin: center;
+  }
+}

@@ -147,10 +147,6 @@
             </h2>
             <div id="formMessage"></div>
             <form class="contact-form" id="contactForm">
-                <div style="display: none;" aria-hidden="true">
-                    <input type="text" name="websiteUrl" tabindex="-1" autocomplete="off" />
-                    <input type="hidden" name="formLoadedAt" value="<%= Date.now() %>" />
-                </div>
                 <div class="form-row">
                     <div class="form-group">
                         <label for="name">
@@ -180,6 +176,11 @@
                     </label>
                     <textarea id="message" name="message" class="message-textarea" rows="5"
                         placeholder="<%= t.form.message %>" required></textarea>
+                </div>
+                <div class="form-group turnstile-box">
+                    <div class="cf-turnstile" data-sitekey="<%= turnstileSiteKey %>" data-theme="dark"
+                        data-size="flexible">
+                    </div>
                 </div>
                 <button type="submit" id="sendBtn">
                     <%= t.form.send %>

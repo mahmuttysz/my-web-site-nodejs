@@ -41,7 +41,10 @@ module.exports = {
             emptyCells: "Lütfen gerekli alanları doldurun.",
             success: "Mesajınız başarıyla iletildi.",
             error: "Mesaj gönderilirken bir hata oluştu.",
-            tooManyRequests: "Çok fazla istek gönderdiniz. Lütfen 15 dakika sonra tekrar deneyin."
+            tooManyRequests: "Çok fazla istek gönderdiniz. Lütfen 15 dakika sonra tekrar deneyin.",
+            verifyHuman: "Lütfen insan olduğunuzu doğrulayın (Captcha eksik).",
+            securityVerificationError: "Güvenlik doğrulaması başarısız oldu.",
+            serverVerificationError: "Sunucu doğrulaması sırasında bir sorun oluştu."
         },
         footer: {
             desc: "Kıdemli Yazılım Geliştirme & DevOps Uzmanı. Ölçeklenebilir sistemler ve modern web teknolojileri geliştiriyorum.",
@@ -113,7 +116,10 @@ module.exports = {
             emptyCells: "Please fill in the required fields.",
             success: "Your message has been sent successfully.",
             error: "An error occurred while sending the message.",
-            tooManyRequests: "You have sent too many requests. Please try again after 15 minutes."
+            tooManyRequests: "You have sent too many requests. Please try again after 15 minutes.",
+            verifyHuman: "Please verify that you are human (Captcha missing).",
+            securityVerificationError: "Security verification failed.",
+            serverVerificationError: "An issue occurred on the server."
         },
         footer: {
             desc: "Senior Software Developer and DevOps Specialist. I develop scalable systems and modern web technologies.",
