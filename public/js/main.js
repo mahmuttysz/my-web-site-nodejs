@@ -6,18 +6,18 @@ document.getElementById('contactForm').addEventListener('submit', async function
 
     const currentLang = document.documentElement.lang || 'tr';
     const originalBtnText = btn.innerText;
+    const turnstileToken = document.querySelector('[name="cf-turnstile-response"]');
 
     btn.disabled = true;
     btn.innerText = currentLang === 'tr' ? 'Gönderiliyor...' : 'Sending...';
     formMessage.innerText = '';
 
     const formData = {
-        websiteUrl: this.websiteUrl.value,
-        formLoadedAt: this.formLoadedAt.value,
         fullName: this.fullName.value,
         email: this.email.value,
         subject: this.subject.value,
-        message: this.message.value
+        message: this.message.value,
+        'cf-turnstile-response': turnstileToken?.value
     };
 
     try {

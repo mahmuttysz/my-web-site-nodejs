@@ -1,24 +1,17 @@
 const express = require('express');
 const router = express.Router();
 const { pool, dbTables } = require('../config/db');
-const { rateLimiter } = require('../config/rateLimit');
+const validateTurnstile = require('../middleware/turnstile');
 const { sendVisitorMail, sendNotificationMailToAdmin } = require('../utils/mailer');
 
-router.post('/', rateLimiter(), async (req, res) => {
-    const { fullName, email, subject, message, websiteUrl, formLoadedAt } = req.body;
+router.post('/', validateTurnstile, async (req, res) => {
+    const { fullName, email, subject, message } = req.body;
 
-    if (websiteUrl) {
-        console.log('🐝 Honeypot bir bot yakaladı!');
-        return res.json({ success: true, message: 'Mesajınız başarıyla iletildi.' });
-    }
-
-    const fillTimeInSeconds = (Date.now() - parseInt(formLoadedAt || 0)) / 1000;
-    if (fillTimeInSeconds < 2) {
-        console.log('⏱️ Zaman Tuzağı bir bot yakaladı!');
-        return res.json({ success: true, message: 'Mesajınız başarıyla iletildi.' });
-    }
     if (!fullName || !email || !message) {
-        return res.status(400).json({ success: false, message: res.locals.t.form.emptyCells });
+        return res.status(400).json({
+            success: false,
+            message: res.locals.t.form.emptyCells
+        });
     }
 
     try {
