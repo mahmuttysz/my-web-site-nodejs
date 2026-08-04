@@ -46,6 +46,9 @@ module.exports = {
             securityVerificationError: "Güvenlik doğrulaması başarısız oldu.",
             serverVerificationError: "Sunucu doğrulaması sırasında bir sorun oluştu."
         },
+        button: {
+            contact: "İletişim kurmak için tıklayınız."
+        },
         footer: {
             desc: "Kıdemli Yazılım Geliştirme & DevOps Uzmanı. Ölçeklenebilir sistemler ve modern web teknolojileri geliştiriyorum.",
             techStack: "Node.js, Express & MariaDB ile geliştirildi.",
@@ -120,6 +123,9 @@ module.exports = {
             verifyHuman: "Please verify that you are human (Captcha missing).",
             securityVerificationError: "Security verification failed.",
             serverVerificationError: "An issue occurred on the server."
+        },
+        button: {
+            contact: "Click to contact us."
         },
         footer: {
             desc: "Senior Software Developer and DevOps Specialist. I develop scalable systems and modern web technologies.",
