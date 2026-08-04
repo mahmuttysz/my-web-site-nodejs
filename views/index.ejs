@@ -178,15 +178,29 @@
                         placeholder="<%= t.form.message %>" required></textarea>
                 </div>
                 <div class="form-group turnstile-box">
-                    <div class="cf-turnstile" data-sitekey="<%= turnstileSiteKey %>" data-theme="dark"
-                        data-size="flexible">
-                    </div>
+                    <div id="turnstile-container"></div>
                 </div>
                 <button type="submit" id="sendBtn">
                     <%= t.form.send %>
                 </button>
             </form>
+            <script>
+                window.onloadTurnstileCallback = function () {
+                    turnstile.render('#turnstile-container', {
+                        sitekey: '<%= turnstileSiteKey %>',
+                        theme: 'dark',
+                        size: 'normal',
+                        'expired-callback': function () {
+                            // Token süresi dolarsa kutuyu otomatik sıfırlar
+                            turnstile.reset('#turnstile-container');
+                        }
+                    });
+                };
+            </script>
+            <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback" async
+                defer></script>
         </section>
     </div>
+
 
     <%- include('partials/footer') %>
