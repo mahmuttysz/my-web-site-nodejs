@@ -6,7 +6,7 @@ document.getElementById('contactForm').addEventListener('submit', async function
 
     const currentLang = document.documentElement.lang || 'tr';
     const originalBtnText = btn.innerText;
-    
+
     try {
         const token = turnstile.getResponse('#turnstile-container');
         if (!token) {
@@ -66,5 +66,21 @@ document.getElementById('contactForm').addEventListener('submit', async function
         }, 5000);
         btn.disabled = false;
         btn.innerText = originalBtnText;
+    }
+});
+
+document.getElementById('goToContactBtn')?.addEventListener('click', function (e) {
+    e.preventDefault();
+
+    const contactSection = document.getElementById('contact');
+    const firstInput = document.querySelector('#contact input[type="text"], #contact input[type="email"]');
+
+    if (contactSection) {
+        contactSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        setTimeout(() => {
+            if (firstInput) {
+                firstInput.focus({ preventScroll: true });
+            }
+        }, 600);
     }
 });

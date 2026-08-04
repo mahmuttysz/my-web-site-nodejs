@@ -20,6 +20,14 @@
             <p class="about-text">
                 <%= aboutMe && aboutMe.description ? aboutMe.description : t.hero.desc %>
             </p>
+            <div class="contact-cta-btn-area">
+                <a href="#contact" id="goToContactBtn" class="contact-cta-btn">
+                    <span>
+                        <%= t.button.contact%>
+                    </span>
+                    <span class="arrow-icon">&darr;</span>
+                </a>
+            </div>
         </section>
         <section id="projects">
             <h2 class="section-title">
@@ -191,7 +199,6 @@
                         theme: 'dark',
                         size: 'normal',
                         'expired-callback': function () {
-                            // Token süresi dolarsa kutuyu otomatik sıfırlar
                             turnstile.reset('#turnstile-container');
                         }
                     });
