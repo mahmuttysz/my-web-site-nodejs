@@ -18,20 +18,17 @@ const adminEndpoint = env.ADMIN_PANEL_ENDPOINT || '/admin';
 const app = express();
 app.use(
     helmet({
-        crossOriginResourcePolicy: {
-            policy: "cross-origin"
-        },
+        crossOriginOpenerPolicy: false,
+        crossOriginEmbedderPolicy: false,
+        crossOriginResourcePolicy: false,
         contentSecurityPolicy: {
             directives: {
                 defaultSrc: ["'self'"],
-                scriptSrc: ["'self'", "'unsafe-inline'", "https://challenges.cloudflare.com", "blob:"],
-                scriptSrcAttr: ["'unsafe-inline'"],
-                styleSrc: ["'self'", "'unsafe-inline'"],
-                frameSrc: ["'self'", "https://challenges.cloudflare.com"],
+                scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://challenges.cloudflare.com", "blob:"],
                 workerSrc: ["'self'", "blob:", "https://challenges.cloudflare.com"],
                 childSrc: ["'self'", "blob:", "https://challenges.cloudflare.com"],
-                connectSrc: ["'self'", "https://challenges.cloudflare.com"],
-                imgSrc: ["'self'", "data:", "blob:", "https:"]
+                frameSrc: ["'self'", "https://challenges.cloudflare.com"],
+                connectSrc: ["'self'", "https://challenges.cloudflare.com", "blob:"]
             }
         }
     })

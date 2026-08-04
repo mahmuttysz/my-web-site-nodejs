@@ -29,8 +29,7 @@ const verifyTurnstile = async (req, res, next) => {
                 message: res.locals.t.form.securityVerificationError
             });
         }
-
-        // Doğrulama başarılı, sonraki controller/işleme geç
+        
         next();
     } catch (err) {
         console.error('Turnstile Middleware Hatası:', err);
