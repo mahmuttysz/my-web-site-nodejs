@@ -1,4 +1,4 @@
-async function getIndexPageData(lang = 'tr') {
+const getIndexPageData = async (lang = 'tr') => {
     const { pool, dbTables } = require('../config/db');
 
     const aboutMe = await pool.query(dbTables.aboutMe.get, [lang]) || [];
@@ -8,9 +8,9 @@ async function getIndexPageData(lang = 'tr') {
     const socialMedias = await pool.query(dbTables.socialMedias.get) || [];
 
     return { aboutMe: aboutMe[0] || {}, experiences, projects, articles, socialMedias };
-}
+};
 
-function formatDate(dateString, lang = 'tr') {
+const formatDate = (dateString, lang = 'tr') => {
     if (!dateString) return lang === 'tr' ? 'Devam Ediyor' : 'Ongoing';
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return '';
@@ -21,9 +21,9 @@ function formatDate(dateString, lang = 'tr') {
     });
 
     return formatted.charAt(0).toUpperCase() + formatted.slice(1);
-}
+};
 
-function formatLongDate(dateString, lang = 'tr') {
+const formatLongDate = (dateString, lang = 'tr') => {
     const date = new Date(dateString);
     let formatted = new Date(date).toLocaleDateString(lang === 'tr' ? 'tr-TR' : 'en-US', {
         year: 'numeric',
@@ -32,9 +32,9 @@ function formatLongDate(dateString, lang = 'tr') {
     });
 
     return formatted.charAt(0).toUpperCase() + formatted.slice(1);
-}
+};
 
-function formatLongDateTime(dateString, lang = 'tr') {
+const formatLongDateTime = (dateString, lang = 'tr') => {
     const date = new Date(dateString);
     let formatted = new Date(date).toLocaleDateString(lang === 'tr' ? 'tr-TR' : 'en-US', {
         year: 'numeric',
@@ -46,9 +46,9 @@ function formatLongDateTime(dateString, lang = 'tr') {
     });
 
     return formatted.charAt(0).toUpperCase() + formatted.slice(1);
-}
+};
 
-function escapeHtml(text) {
+const escapeHtml = (text) => {
     if (!text) return '';
     return String(text)
         .replace(/&/g, "&amp;")
@@ -56,6 +56,19 @@ function escapeHtml(text) {
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
-}
+};
 
-module.exports = { getIndexPageData, formatDate, formatLongDate, formatLongDateTime, escapeHtml };
+// Tahmini okuma süresi hesaplama (Kelime sayısı / 200)
+const calculateReadingTime = (content) => {
+    const words = content.trim().split(/\s+/).length;
+    return Math.ceil(words / 200) || 1;
+};
+
+module.exports = {
+    getIndexPageData,
+    formatDate,
+    formatLongDate,
+    formatLongDateTime,
+    escapeHtml,
+    calculateReadingTime
+};
