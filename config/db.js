@@ -3,12 +3,14 @@ const { env } = require('./env');
 
 const pool = mariadb.createPool({
     host: env.DB_HOST,
-    port: env.DB_PORT || 3306,
+    port: parseInt(env.DB_PORT || 3306),
     user: env.DB_USER,
     password: env.DB_PASS,
     database: env.DB_NAME,
     connectionLimit: 10,
-    dateStrings: true
+    dateStrings: true,
+    idleTimeout: 30,
+    minimumIdle: 0
 });
 
 const dbTables = {
@@ -78,5 +80,18 @@ const adminPanel = {
         (SELECT COUNT(*) FROM contacts WHERE is_read = 0) AS unreadMessages
     `
 };
+
+const gracefulShutdown = async () => {
+    try {
+        await pool.end();
+    } catch (err) {
+        console.error(err);
+    } finally {
+        process.exit(0);
+    }
+};
+
+process.on('SIGINT', gracefulShutdown);
+process.on('SIGTERM', gracefulShutdown);
 
 module.exports = { pool, dbTables, adminPanel };

@@ -13,7 +13,7 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-async function sendVisitorMail(toEmail, fullName, lang = 'tr') {
+const sendVisitorMail = async (toEmail, fullName, lang = 'tr') => {
     const safeFullName = escapeHtml(fullName);
 
     const mailOptions = {
@@ -26,10 +26,10 @@ async function sendVisitorMail(toEmail, fullName, lang = 'tr') {
         `
     };
 
-    return ((await transporter.sendMail(mailOptions)));
-}
+    return transporter.sendMail(mailOptions);
+};
 
-async function sendNotificationMailToAdmin(fullName, email, subject, message, lang = 'tr') {
+const sendNotificationMailToAdmin = async (fullName, email, subject, message, lang = 'tr') => {
     const safeName = escapeHtml(fullName);
     const safeEmail = escapeHtml(email);
     const safeSubject = escapeHtml(subject || 'Konusuz');
@@ -38,6 +38,7 @@ async function sendNotificationMailToAdmin(fullName, email, subject, message, la
     const mailOptions = {
         from: `"mahmuttuysuz.net" <${env.SMTP_USER}>`,
         to: env.ADMIN_EMAIL || env.SMTP_USER,
+        replyTo: email,
         subject: `${locales[lang].adminMail.subject}: ${safeSubject}`,
         html: `
             <h3>${locales[lang].adminMail.newMessage}</h3>
@@ -49,6 +50,9 @@ async function sendNotificationMailToAdmin(fullName, email, subject, message, la
     };
 
     return transporter.sendMail(mailOptions);
-}
+};
 
-module.exports = { sendVisitorMail, sendNotificationMailToAdmin };
+module.exports = {
+    sendVisitorMail,
+    sendNotificationMailToAdmin
+};

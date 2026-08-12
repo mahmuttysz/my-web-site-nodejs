@@ -55,11 +55,11 @@ app.get('/', async (req, res) => {
     try {
         let pageData = await getIndexPageData(currentLang);
         pageData.turnstileSiteKey = env.TURNSTILE_SITE_KEY;
-        res.render('index', pageData);
+        return res.render('index', pageData);
 
     } catch (err) {
         console.error('Veritabanı Okuma Hatası:', err);
-        res.status(500).send('Sunucu hatası oluştu.');
+        return res.status(500).send('Sunucu hatası oluştu.');
     }
 });
 
@@ -71,7 +71,7 @@ app.use('/contact', contactRoutes);
 app.use(async (req, res) => {
     const lang = res.locals.lang || req.session?.lang || 'tr';
     let pageData = await getIndexPageData(lang);
-    res.status(404).render('404', pageData);
+    return res.status(404).render('404', pageData);
 });
 
 if (env.APP_ENV === 'prod') {
@@ -81,7 +81,7 @@ if (env.APP_ENV === 'prod') {
         const lang = res.locals.lang || req.session?.lang || 'tr';
         let pageData = await getIndexPageData(lang);
 
-        res.status(500).render('500', pageData);
+        return res.status(500).render('500', pageData);
     });
 }
 

@@ -8,7 +8,7 @@ router.get('/', async (req, res) => {
     try {
         const articles = await pool.query(dbTables.articles.get, [res.locals.lang, 1]);
         const socialMedias = await pool.query(dbTables.socialMedias.get);
-        res.render('blog/index', {
+        return res.render('blog/index', {
             title: locales[res.locals.lang].nav.blog,
             articles,
             socialMedias
@@ -37,7 +37,7 @@ router.get('/:slug', async (req, res) => {
 
         article.contentHtml = marked.parse(article.content);
 
-        res.render('blog/detail', { article });
+        return res.render('blog/detail', { article });
     } catch (err) {
         console.error(err);
         return res.status(500).render('500', {
