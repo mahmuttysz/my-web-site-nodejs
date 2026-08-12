@@ -33,7 +33,7 @@ const dbTables = {
     },
     experiences: {
         getAll: "SELECT * FROM experiences ORDER BY created_at DESC",
-        get: "SELECT * FROM experiences WHERE language = ? AND status = 1 ORDER BY begin_date DESC",
+        get: "SELECT * FROM experiences WHERE language = ? AND status = 1 ORDER BY (end_date IS NULL) DESC, end_date DESC, begin_date DESC",
         add: "INSERT INTO experiences (company_name, title, description, begin_date, end_date, language, created_by, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
         update: "UPDATE experiences SET company_name = ?, title = ?, description = ?, begin_date = ?, end_date = ?, language = ?, updated_by = ? WHERE id = ?",
         delete: "DELETE FROM experiences WHERE id = ?"
