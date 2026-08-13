@@ -21,7 +21,8 @@ DB_USER=website_db_user
 DB_PASS='abc123'
 DB_NAME=website_db
 
-SMTP_HOST=smtp.mahmuttuysuz.net
+SMTP_HOST=127.0.0.1
+SMTP_SERVER_NAME=mail.mahmuttuysuz.net
 SMTP_PORT=587
 SMTP_USER=info@mahmuttuysuz.net
 SMTP_PASS='abcdef123'
