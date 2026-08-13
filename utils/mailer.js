@@ -3,13 +3,27 @@ const { env } = require('../config/env');
 const locales = require('./locales');
 const { escapeHtml } = require('./helper');
 
+const port = parseInt(env.SMTP_PORT, 10) || 587;
+
 const transporter = nodemailer.createTransport({
     host: env.SMTP_HOST,
-    port: parseInt(env.SMTP_PORT) || 587,
-    secure: parseInt(env.SMTP_PORT) === 465,
+    port: port,
+    secure: port === 465,
+    requireTLS: true,
     auth: {
         user: env.SMTP_USER,
         pass: env.SMTP_PASS
+    },
+    tls: {
+        rejectUnauthorized: true
+    }
+});
+
+transporter.verify((error, success) => {
+    if (error) {
+        console.error('❌ [SMTP Error] Sunucu bağlantı/kimlik doğrulama hatası:', error.message);
+    } else {
+        console.log('✅ [SMTP Success] Mail sunucusuna başarıyla bağlandı ve doğrulandı.');
     }
 });
 
@@ -17,7 +31,7 @@ const sendVisitorMail = async (toEmail, fullName, lang = 'tr') => {
     const safeFullName = escapeHtml(fullName);
 
     const mailOptions = {
-        from: `"mahmuttuysuz.net" <${env.SMTP_USER}>`,
+        from: `"${env.SMTP_FROM_NAME}" <${env.SMTP_FROM_EMAIL}>`,
         to: toEmail,
         subject: locales[lang].visitorMail.subject,
         html: `
