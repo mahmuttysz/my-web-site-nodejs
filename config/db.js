@@ -3,7 +3,7 @@ const { env } = require('./env');
 
 const pool = mariadb.createPool({
     host: env.DB_HOST,
-    port: parseInt(env.DB_PORT || 3306),
+    port: parseInt(env.DB_PORT || 3306, 10),
     user: env.DB_USER,
     password: env.DB_PASS,
     database: env.DB_NAME,
@@ -13,7 +13,7 @@ const pool = mariadb.createPool({
     minimumIdle: 0
 });
 
-const dbTables = {
+const dbQueries = {
     adminUsers: {
         getAll: "SELECT * FROM admin_users",
         getById: "SELECT * FROM admin_users WHERE id = ?",
@@ -27,7 +27,7 @@ const dbTables = {
     aboutMe: {
         getAll: "SELECT * FROM about_me",
         get: "SELECT * FROM about_me WHERE language = ? AND status = 1 LIMIT 1",
-        add: "INSERT INTO about_me (title, description, meta_description, created_by, language, status) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        add: "INSERT INTO about_me (title, description, meta_description, created_by, language, status) VALUES (?, ?, ?, ?, ?, ?)",
         update: "UPDATE about_me SET title = ?, description = ?, meta_description = ?, updated_by = ?, language = ?, status = ? WHERE id = ?",
         delete: "DELETE FROM about_me WHERE id = ?"
     },
@@ -41,7 +41,7 @@ const dbTables = {
     projects: {
         getAll: "SELECT * FROM projects ORDER BY created_at DESC",
         get: "SELECT * FROM projects WHERE language = ? AND status = 1 ORDER BY turn ASC",
-        add: "INSERT INTO projects (title, description, link_text, link_url, created_by, tags, turn, language, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        add: "INSERT INTO projects (title, description, link_text, link_url, created_by, tags, turn, language, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
         update: "UPDATE projects SET title = ?, description = ?, link_text = ?, link_url = ?, tags = ?, turn = ?, language = ?, updated_by = ? WHERE id = ?",
         delete: "DELETE FROM projects WHERE id = ?"
     },
@@ -67,7 +67,7 @@ const dbTables = {
         getById: "SELECT * FROM articles WHERE id = ?",
         getBySlug: "SELECT * FROM articles WHERE slug = ? AND language = ? AND status = 1",
         add: "INSERT INTO articles (title, slug, excerpt, content, cover_image, created_by, status, reading_time, published_at, language) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        update: "UPDATE articles SET title = ?, slug = ?, excerpt = ?, content = ?, status = ?, updated_by = ?, reading_time = ?, language = ?",
+        update: "UPDATE articles SET title = ?, slug = ?, excerpt = ?, content = ?, cover_image = ?, status = ?, updated_by = ?, reading_time = ?, language = ? WHERE id = ?",
         updateHits: "UPDATE articles SET hits = hits + 1 WHERE id = ?",
         delete: "DELETE FROM articles WHERE id = ?"
     }
@@ -81,11 +81,16 @@ const adminPanel = {
     `
 };
 
+const query = async (sql, params = []) => {
+    return await pool.query(sql, params);
+};
+
 const gracefulShutdown = async () => {
     try {
+        console.log('📦 MariaDB havuz bağlantıları kapatılıyor...');
         await pool.end();
     } catch (err) {
-        console.error(err);
+        console.error('❌ MariaDB Kapatma Hatası:', err);
     } finally {
         process.exit(0);
     }
@@ -94,4 +99,4 @@ const gracefulShutdown = async () => {
 process.on('SIGINT', gracefulShutdown);
 process.on('SIGTERM', gracefulShutdown);
 
-module.exports = { pool, dbTables, adminPanel };
+module.exports = { pool, query, dbQueries, adminPanel };
