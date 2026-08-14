@@ -1,0 +1,55 @@
+<%- include('partials/header') %>
+    <div class="flex min-h-screen">
+        <%- include('partials/sidebar') %>
+            <% if(aboutMe && aboutMe.length> 0) { aboutMe.forEach(about => { %>
+                <main class="flex-1 p-8 overflow-y-auto">
+                    <header class="flex items-center justify-between mb-8">
+                        <div>
+                            <h1 class="text-2xl font-bold text-white">
+                                Hakkımda[<%= about.language?.toUpperCase()%>]
+                            </h1>
+                        </div>
+                    </header>
+                    <form action="<%= adminEndpoint + '/about-me/'+ about.language%>" method="POST"
+                        class="space-y-6 max-w-4xl">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                                    Başlık[<%= about.language%>]
+                                </label>
+                                <input type="text" name="title" placeholder="Hakkımda"
+                                    class="w-full bg-slate-900 border border-slate-800 rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:border-blue-500"
+                                    value="<%= about.title || '' %>" required />
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                                Meta Açıklama[<%= about.language%>]
+                            </label>
+                            <textarea name="meta_description" rows="5"
+                                placeholder="Listeleme sayfalarında görünecek kısa açıklama..."
+                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:border-blue-500"><%= about.meta_description || '' %>
+                        </textarea>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                                Açıklama[<%= about.language%>]
+                            </label>
+                            <textarea name="description" rows="16" required
+                                placeholder="# Başlık 1&#10;&#10;Paragraf metni buraya gelecek..."
+                                class="w-full bg-slate-900 border border-slate-800 rounded-lg p-4 font-mono text-sm text-slate-200 focus:outline-none focus:border-blue-500 leading-relaxed"><%= about.description || '' %>
+                        </textarea>
+                        </div>
+                        <div class="flex items-center justify-between pt-4 border-t border-slate-800">
+                            <button type="submit"
+                                class="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-medium transition-colors">
+                                Kaydet[<%= about.language?.toUpperCase()%>]
+                            </button>
+                        </div>
+                    </form>
+                </main>
+
+                <% }); }%>
+
+    </div>
+    <%- include('partials/footer') %>

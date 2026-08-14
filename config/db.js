@@ -28,7 +28,7 @@ const dbQueries = {
         getAll: "SELECT * FROM about_me",
         get: "SELECT * FROM about_me WHERE language = ? AND status = 1 LIMIT 1",
         add: "INSERT INTO about_me (title, description, meta_description, created_by, language, status) VALUES (?, ?, ?, ?, ?, ?)",
-        update: "UPDATE about_me SET title = ?, description = ?, meta_description = ?, updated_by = ?, language = ?, status = ? WHERE id = ?",
+        update: "UPDATE about_me SET title = ?, description = ?, meta_description = ?, updated_by = ? WHERE language = ?",
         delete: "DELETE FROM about_me WHERE id = ?"
     },
     experiences: {
