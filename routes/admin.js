@@ -195,6 +195,7 @@ router.post('/articles/create', isAdmin, (req, res, next) => {
         }
 
         return res.status(400).render('admin/articles/editor', {
+            title: 'Yeni Makale',
             error: errorMessage,
             adminEndpoint,
             user: req.session.adminUser,
@@ -239,6 +240,7 @@ router.post('/articles/edit/:id', isAdmin, (req, res, next) => {
     const { title, slug, excerpt, content, status, language, existing_cover_image } = req.body;
 
     const articleStatus = parseInt(status, 10) || 0;
+    const publishedAt = articleStatus === 1 ? new Date() : null;
     const finalSlug = slugify(slug || title || '', { lower: true, strict: true, locale: 'tr' });
     const readingTime = calculateReadingTime(content);
 
@@ -257,6 +259,7 @@ router.post('/articles/edit/:id', isAdmin, (req, res, next) => {
             articleStatus,
             req.session.adminUser?.id,
             readingTime,
+            publishedAt,
             language || 'tr',
             articleId
         ]);
@@ -281,6 +284,7 @@ router.post('/articles/edit/:id', isAdmin, (req, res, next) => {
         }
 
         return res.status(400).render('admin/articles/editor', {
+            title: 'Makale Düzenle',
             error: errorMessage,
             adminEndpoint,
             user: req.session.adminUser,
