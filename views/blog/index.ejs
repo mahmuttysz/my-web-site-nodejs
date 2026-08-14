@@ -1,106 +1,97 @@
-<!DOCTYPE html>
-<html lang="<%= lang ? lang : 'tr' %>" class="dark">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>
-        <%= title %> | Mahmut Tüysüz
-    </title>
-    <link rel="stylesheet" href="/css/style.css">
-</head>
-
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between">
-    <header class="border-b border-slate-800/80 bg-slate-950/80 backdrop-blur sticky top-0 z-50">
-        <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-            <a href="/" class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg flex items-center justify-center">
-                    <img src="/favicon-32x32.png" alt="Logo" class="w-5 h-5" />
+<%- include('../partials/header') %>
+    <header class="border-b border-site-border bg-site-bg/80 backdrop-blur-md sticky top-0 z-50 shrink-0">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
+            <a href="/" class="flex items-center gap-2.5 group">
+                <div
+                    class="w-7 h-7 rounded-lg bg-site-card border border-site-border flex items-center justify-center p-1 group-hover:border-site-accent transition-colors">
+                    <img src="/favicon-32x32.png" alt="Logo" class="w-full h-full object-contain" />
                 </div>
-                <span class="font-bold text-white tracking-tight text-lg">
+                <span
+                    class="font-bold text-site-text tracking-tight text-base sm:text-lg group-hover:text-site-accent transition-colors">
                     Mahmut Tüysüz
                 </span>
             </a>
-            <nav class="flex items-center gap-6 text-sm text-slate-400">
-                <a href="/" class="hover:text-white transition-colors">
+
+            <nav class="flex items-center space-x-6 text-sm">
+                <a href="/" class="text-site-muted hover:text-site-text transition-colors font-medium">
                     <%= t.nav.homePage %>
                 </a>
-                <a href="/blog" class="text-white font-medium">
+                <a href="/blog" class="text-site-accent font-semibold">
                     <%= t.nav.blog %>
                 </a>
             </nav>
         </div>
     </header>
-    <main class="max-w-5xl mx-auto px-6 py-12 flex-1 w-full">
-        <div class="mb-12">
-            <h1 class="text-3xl font-extrabold text-white tracking-tight sm:text-4xl">
+    <main class="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 pt-8 sm:pt-10 pb-12 space-y-8">
+        <div class="border-b border-site-border pb-6">
+            <h1
+                class="text-3xl sm:text-4xl font-extrabold text-site-text tracking-tight flex items-center gap-2.5 before:content-['//'] before:text-site-accent">
                 <%= t.nav.blog %>
             </h1>
-            <p class="text-slate-400 mt-2 text-base">
+            <p class="text-site-muted mt-2 text-sm sm:text-base leading-relaxed">
                 <%= t.nav.blogDescription %>
             </p>
         </div>
         <% if (articles && articles.length> 0) { %>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <% articles.forEach(article=> { %>
                     <article
-                        class="bg-slate-900 border border-slate-800/80 rounded-2xl overflow-hidden hover:border-slate-700 transition-all flex flex-col">
-                        <% if (article.cover_image) { %>
-                            <a href="/blog/<%= article.slug %>" class="block aspect-video overflow-hidden bg-slate-950">
-                                <img src="<%= article.cover_image %>" alt="<%= article.title %>"
-                                    class="w-full h-full object-cover hover:scale-105 transition-transform duration-300">
-                            </a>
-                            <% } %>
-                                <div class="p-6 flex-1 flex flex-col justify-between">
-                                    <div>
-                                        <div class="flex items-center gap-3 text-xs text-slate-400 mb-3">
+                        class="bg-site-card border border-site-border rounded-xl overflow-hidden transition-all duration-200 hover:border-site-accent hover:-translate-y-0.5 flex flex-col justify-between group">
+                        <div>
+                            <% if (article.cover_image) { %>
+                                <a href="/blog/<%= article.slug %>"
+                                    class="block aspect-video overflow-hidden bg-slate-900 border-b border-site-border/50">
+                                    <img src="<%= article.cover_image %>" alt="<%= article.title %>"
+                                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                        loading="lazy">
+                                </a>
+                                <% } %>
+
+                                    <div class="p-5 sm:p-6 space-y-3">
+                                        <div class="flex items-center gap-2 text-xs text-slate-400 font-medium">
                                             <time datetime="<%= article.created_at %>">
-                                                <%= formatLongDate(article.created_at) %>
+                                                <%= formatLongDate(article.created_at, lang) %>
                                             </time>
                                             <span>•</span>
                                             <span>
-                                                <%= article.reading_time %> dk okuma
+                                                <%= article.reading_time || 1 %>
+                                                    <%= t.alert.minutesToRead || ' dk okuma' %>
                                             </span>
                                         </div>
+
                                         <h2
-                                            class="text-xl font-bold text-white hover:text-blue-400 transition-colors line-clamp-2 mb-2">
+                                            class="text-lg sm:text-xl font-bold text-site-text group-hover:text-site-accent transition-colors line-clamp-2 leading-snug">
                                             <a href="/blog/<%= article.slug %>">
                                                 <%= article.title %>
                                             </a>
                                         </h2>
-                                        <% if (article.excerpt) { %>
-                                            <p class="text-slate-400 text-sm line-clamp-3 leading-relaxed">
-                                                <%= article.excerpt %>
+                                        <% if (article.excerpt || article.content) { %>
+                                            <p class="text-site-muted text-sm line-clamp-3 leading-relaxed">
+                                                <%= article.excerpt || article.content.replace(/<[^>]*>?/gm,
+                                                    '').substring(0, 120) + '...' %>
                                             </p>
                                             <% } %>
                                     </div>
-                                    <div
-                                        class="mt-6 pt-4 border-t border-slate-800/60 flex items-center justify-between">
-                                        <a href="/blog/<%= article.slug %>"
-                                            class="text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1">
-                                            <%= t.alert.readMore %> →
-                                        </a>
-                                    </div>
-                                </div>
+                        </div>
+
+                        <div
+                            class="px-5 sm:px-6 pb-5 pt-3 border-t border-site-border/50 flex items-center justify-between mt-auto">
+                            <a href="/blog/<%= article.slug %>"
+                                class="text-xs sm:text-sm font-semibold text-site-accent hover:underline inline-flex items-center gap-1">
+                                <%= t.alert.readMore %> ↗
+                            </a>
+                        </div>
                     </article>
                     <% }); %>
             </div>
             <% } else { %>
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-16 text-center">
-                    <p class="text-slate-400 text-base">
+                <div class="bg-site-card border border-site-border rounded-xl p-12 sm:p-16 text-center">
+                    <p class="text-site-muted text-sm sm:text-base">
                         <%= t.alert.doesntAddedArticles %>
                     </p>
                 </div>
                 <% } %>
+
     </main>
 
-    <!-- Footer -->
-    <footer class="border-t border-slate-800/80 py-8 text-center text-xs text-slate-500">
-        <div class="max-w-5xl mx-auto px-6">
-            © <%= new Date().getFullYear() %> Mahmut Tüysüz. <%= t.footer.rights %>
-        </div>
-    </footer>
-
-</body>
-
-</html>
+    <%- include('../partials/footer') %>

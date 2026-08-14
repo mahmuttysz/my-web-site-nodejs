@@ -43,10 +43,11 @@ router.get('/:slug', async (req, res, next) => {
         });
 
         article.contentHtml = marked.parse(article.content || '');
-
+        let socialMedias = await pool.query(dbQueries.socialMedias.get);
         return res.render('blog/detail', {
             title: article.title,
-            article
+            article,
+            socialMedias: socialMedias || []
         });
 
     } catch (err) {

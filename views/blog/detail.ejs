@@ -1,175 +1,63 @@
-<!DOCTYPE html>
-<html lang="tr" class="dark">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>
-        <%= article.title %> | Mahmut Tüysüz
-    </title>
-    <link rel="stylesheet" href="/css/style.css">
-    <style>
-        .article-body h1 {
-            font-size: 1.875rem;
-            font-weight: 800;
-            margin-top: 2rem;
-            margin-bottom: 1rem;
-            color: #fff;
-        }
-
-        .article-body h2 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-top: 1.75rem;
-            margin-bottom: 0.75rem;
-            color: #f8fafc;
-        }
-
-        .article-body h3 {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-top: 1.5rem;
-            margin-bottom: 0.5rem;
-            color: #f1f5f9;
-        }
-
-        .article-body p {
-            margin-bottom: 1.25rem;
-            line-height: 1.8;
-            color: #cbd5e1;
-        }
-
-        .article-body ul {
-            list-style-type: disc;
-            padding-left: 1.5rem;
-            margin-bottom: 1.25rem;
-            color: #cbd5e1;
-        }
-
-        .article-body ol {
-            list-style-type: decimal;
-            padding-left: 1.5rem;
-            margin-bottom: 1.25rem;
-            color: #cbd5e1;
-        }
-
-        .article-body li {
-            margin-bottom: 0.5rem;
-        }
-
-        .article-body code {
-            background-color: #0f172a;
-            padding: 0.2rem 0.4rem;
-            border-radius: 0.25rem;
-            font-family: monospace;
-            font-size: 0.875em;
-            color: #38bdf8;
-        }
-
-        .article-body pre {
-            background-color: #0f172a;
-            border: 1px solid #1e293b;
-            border-radius: 0.75rem;
-            padding: 1.25rem;
-            overflow-x: auto;
-            margin-bottom: 1.5rem;
-        }
-
-        .article-body pre code {
-            background: none;
-            padding: 0;
-            color: #e2e8f0;
-        }
-
-        .article-body blockquote {
-            border-left: 4px solid #2563eb;
-            padding-left: 1rem;
-            font-style: italic;
-            color: #94a3b8;
-            margin-bottom: 1.25rem;
-        }
-
-        .article-body a {
-            color: #60a5fa;
-            text-decoration: underline;
-            text-underline-offset: 4px;
-        }
-
-        .article-body a:hover {
-            color: #93c5fd;
-        }
-
-        .article-body img {
-            border-radius: 0.75rem;
-            margin: 1.5rem 0;
-            width: 100%;
-            height: auto;
-        }
-    </style>
-</head>
-
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between">
-    <header class="border-b border-slate-800/80 bg-slate-950/80 backdrop-blur sticky top-0 z-50">
-        <div class="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
-            <a href="/" class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg flex items-center justify-center">
-                    <img src="/favicon-32x32.png" alt="Logo" class="w-5 h-5" />
+<%- include('../partials/header') %>
+    <header class="border-b border-site-border bg-site-bg/80 backdrop-blur-md sticky top-0 z-50 shrink-0">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
+            <a href="/" class="flex items-center gap-2.5 group">
+                <div class="w-7 h-7 rounded-lg bg-site-card border border-site-border flex items-center justify-center p-1 group-hover:border-site-accent transition-colors">
+                    <img src="/favicon-32x32.png" alt="Logo" class="w-full h-full object-contain" />
                 </div>
-                <span class="font-bold text-white tracking-tight text-lg">
+                <span class="font-bold text-site-text tracking-tight text-base sm:text-lg group-hover:text-site-accent transition-colors">
                     Mahmut Tüysüz
                 </span>
             </a>
-            <a href="/blog" class="text-xs text-slate-400 hover:text-white transition-colors">
-                ← <%= t.alert.allArticles %>
+
+            <a href="/blog" class="text-site-muted hover:text-site-accent transition-colors font-medium text-sm inline-flex items-center gap-1 group">
+                <span class="transition-transform group-hover:-translate-x-1">←</span>
+                <span><%= t.alert.allArticles || 'Tüm Yazılar' %></span>
             </a>
         </div>
     </header>
-    <main class="max-w-3xl mx-auto px-6 py-12 flex-1 w-full">
-        <div class="mb-8 border-b border-slate-800/80 pb-8">
-            <div class="flex items-center gap-3 text-xs text-slate-400 mb-4">
+
+    <main class="flex-1 w-full max-w-3xl mx-auto px-4 sm:px-6 pt-8 sm:pt-10 pb-16 space-y-8">
+        <header class="space-y-3 border-b border-site-border pb-6">
+            <div class="flex items-center gap-2 text-xs sm:text-sm text-slate-400 font-medium">
                 <time datetime="<%= article.created_at %>">
-                    <%= formatLongDate(article.created_at) %>
+                    <%= formatLongDate(article.created_at, lang) %>
                 </time>
                 <span>•</span>
                 <span>
-                    <%= article.reading_time %> <%= t.alert.minutesToRead %>
+                    <%= article.reading_time || 1 %><%= t.alert.minutesToRead || ' dk okuma' %>
                 </span>
             </div>
 
-            <h1 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-site-text tracking-tight leading-tight sm:leading-snug">
                 <%= article.title %>
             </h1>
+
             <% if (article.excerpt) { %>
-                <p class="text-slate-400 text-lg mt-4 leading-relaxed font-light">
+                <p class="text-site-muted text-base sm:text-lg leading-relaxed pt-1">
                     <%= article.excerpt %>
                 </p>
-                <% } %>
-        </div>
-        <% if (article.cover_image) { %>
-            <div class="mb-10 rounded-2xl overflow-hidden border border-slate-800 bg-slate-900">
-                <img src="<%= article.cover_image %>" alt="<%= article.title %>"
-                    class="w-full max-h-[450px] object-cover">
-            </div>
             <% } %>
-
-                <div class="article-body text-slate-300 text-base leading-relaxed">
-                    <%- article.contentHtml %>
-                </div>
-                <div class="mt-16 pt-8 border-t border-slate-800/80 flex items-center justify-between">
-                    <a href="/blog"
-                        class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors">
-                        ← <%= t.alert.goBack %>
-                    </a>
-                </div>
+        </header>
+        <% if (article.cover_image) { %>
+            <div class="w-full bg-site-card/40 border border-site-border rounded-2xl p-2 sm:p-4 flex items-center justify-center overflow-hidden shadow-xl">
+                <img 
+                    src="<%= article.cover_image %>" 
+                    alt="<%= article.title %>" 
+                    class="max-h-[420px] w-auto h-auto object-contain rounded-xl shadow-md" 
+                />
+            </div>
+        <% } %>
+        <article class="prose prose-invert max-w-none text-slate-300 leading-relaxed text-base sm:text-lg space-y-6 [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:text-site-text [&_h2]:pt-4 [&_h3]:text-xl [&_h3]:font-semibold [&_h3]:text-site-text [&_p]:text-slate-300 [&_a]:text-site-accent [&_a]:underline [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_code]:bg-slate-900 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_pre]:bg-slate-900 [&_pre]:p-4 [&_pre]:rounded-xl [&_blockquote]:border-l-4 [&_blockquote]:border-site-accent [&_blockquote]:pl-4 [&_blockquote]:italic text-justify">
+            <%- article.contentHtml %>
+        </article>
+        <div class="pt-8 border-t border-site-border">
+            <a href="/blog" class="inline-flex items-center gap-2 px-4 py-2 bg-site-card border border-site-border text-site-text text-sm font-semibold rounded-lg transition-all duration-200 hover:border-site-accent hover:text-site-accent group">
+                <span class="transition-transform duration-200 group-hover:-translate-x-1">←</span>
+                <span><%= t.alert.backToBlog || 'Bloga Dön' %></span>
+            </a>
+        </div>
 
     </main>
 
-    <footer class="border-t border-slate-800/80 py-8 text-center text-xs text-slate-500">
-        <div class="max-w-4xl mx-auto px-6">
-            © <%= new Date().getFullYear() %> Mahmut Tüysüz. <%= t.footer.rights %>
-        </div>
-    </footer>
-
-</body>
-
-</html>
+<%- include('../partials/footer') %>
