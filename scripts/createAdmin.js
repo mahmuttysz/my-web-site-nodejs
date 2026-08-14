@@ -1,24 +1,31 @@
 const bcrypt = require('bcrypt');
-const { pool, dbTables } = require('../config/db');
+const { pool, dbQueries } = require('../config/db');
 const { env } = require('../config/env');
 
 async function createAdmin() {
+    const args = process.argv.slice(2);
+
+    const username = args[0] || env.ADMIN_USERNAME || 'mahmut';
+    const rawPassword = args[1] || env.ADMIN_PASSWORD || 'pwd123';
     const name = env.ADMIN_NAME || 'Mahmut';
     const surname = env.ADMIN_SURNAME || 'Tüysüz';
-    const username = env.ADMIN_USERNAME || 'mahmut';
-    const rawPassword = env.ADMIN_PASSWORD || 'pwd123';
+
+    let exitCode = 0;
+
     try {
         console.log('🔄 Admin kullanıcısı oluşturuluyor...');
-        const existingUsers = await pool.query(dbTables.adminUsers.getByUsername, [username]);
 
-        if (existingUsers.length > 0) {
+        const existingUsers = await pool.query(dbQueries.adminUsers.getByUsername, [username]);
+
+        if (existingUsers && existingUsers.length > 0) {
             console.log(`⚠️ '${username}' adında bir kullanıcı zaten veritabanında mevcut! İşlem durduruldu.`);
-            process.exit(0);
+            return;
         }
 
         const saltRounds = 10;
         const passwordHash = await bcrypt.hash(rawPassword, saltRounds);
-        await pool.query(dbTables.adminUsers.add, [name, surname, username, passwordHash]);
+
+        await pool.query(dbQueries.adminUsers.add, [name, surname, username, passwordHash]);
 
         console.log('----------------------------------------------------');
         console.log('✅ Admin kullanıcısı başarıyla oluşturuldu!');
@@ -28,9 +35,13 @@ async function createAdmin() {
         console.log('💡 Not: Giriş yaptıktan sonra varsayılan şifreyi güncellemeyi unutmayın.');
 
     } catch (error) {
-        console.error('❌ Admin kullanıcısı oluşturulurken hata oluştu:', error);
+        console.error('❌ Admin kullanıcısı oluşturulurken hata oluştu:', error.message || error);
+        exitCode = 1;
     } finally {
-        process.exit(0);
+        try {
+            await pool.end();
+        } catch (e) { }
+        process.exit(exitCode);
     }
 }
 

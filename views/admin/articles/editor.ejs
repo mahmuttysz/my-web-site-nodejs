@@ -14,7 +14,7 @@
                         ← İptal ve Geri Dön</a>
                 </header>
                 <form
-                    action="<%= article.id ? adminEndpoint + '/articles/update/' + article.id : adminEndpoint + '/articles/create' %>"
+                    action="<%= article.id ? adminEndpoint + '/articles/edit/' + article.id : adminEndpoint + '/articles/create' %>"
                     method="POST" enctype="multipart/form-data" class="space-y-6 max-w-4xl">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
@@ -49,7 +49,8 @@
                         <% if (article.cover_image) { %>
                             <div class="mb-3 flex items-center gap-4">
                                 <img src="<%= article.cover_image %>"
-                                    class="w-20 h-12 object-cover rounded border border-slate-800">
+                                    class="w-20 h-12 object-cover rounded border border-slate-800" />
+                                <input type="hidden" name="existing_cover_image" value="<%=article.cover_image%>" />
                                 <span class="text-xs text-slate-500">
                                     Mevcut Kapak Görseli
                                 </span>

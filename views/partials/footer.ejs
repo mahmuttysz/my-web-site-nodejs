@@ -1,42 +1,49 @@
-<footer class="site-footer">
-    <div class="footer-container">
-        <div class="footer-col footer-brand">
-            <h3 class="footer-logo">Mahmut Tüysüz</h3>
-            <p class="footer-desc">
-                <%= (t.footer && t.footer.desc) ? t.footer.desc : t.hero.desc %>
+<footer class="bg-slate-900 border-t border-site-border text-site-muted pt-12 sm:pt-16 mt-16 sm:mt-20">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 pb-10 grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-10">
+        <div class="md:col-span-2 space-y-3">
+            <h3 class="text-xl sm:text-2xl font-bold text-site-text">Mahmut Tüysüz</h3>
+            <p class="text-sm leading-relaxed max-w-md text-site-muted">
+                <%= (t && t.footer && t.footer.desc) ? t.footer.desc : ((t && t.hero) ? t.hero.desc : '' ) %>
             </p>
         </div>
-        <div class="footer-col">
-            <h4>
-                <%= t.nav.contact %>
+        <div class="space-y-4">
+            <h4 class="text-base font-semibold text-site-text tracking-wide">
+                <%= (t && t.nav && t.nav.contact) ? t.nav.contact : 'İletişim' %>
             </h4>
-            <div class="social-links">
-                <% if (socialMedias && socialMedias.length> 0) { %>
+            <div class="flex flex-col gap-3">
+                <% if (typeof socialMedias !=='undefined' && socialMedias && socialMedias.length> 0) { %>
                     <% socialMedias.forEach(social=> { %>
                         <a href="<%= social.url %>" target="_blank" rel="noopener noreferrer"
-                            aria-label="<%= social.name %>">
-                            <%- social.icon %>
-                                <span>
-                                    <%= social.title %>
-                                </span>
+                            aria-label="<%= social.title || social.username || 'Social Link' %>"
+                            class="inline-flex items-center gap-2.5 text-sm text-site-muted hover:text-site-accent transition-colors duration-200 group [&_svg]:w-5 [&_svg]:h-5 [&_svg]:fill-current [&_svg]:transition-transform [&_svg]:duration-200 group-hover:[&_svg]:scale-110">
+                            <% if (social.icon) { %>
+                                <%- social.icon %>
+                                    <% } %>
+                                        <span>
+                                            <%= social.title %>
+                                        </span>
                         </a>
-                        <% }); } %>
+                        <% }); %>
+                            <% } %>
             </div>
         </div>
+
     </div>
-    <div class="footer-bottom">
-        <div class="footer-bottom-container">
+    <div class="bg-slate-950 border-t border-site-border py-5 text-xs sm:text-sm">
+        <div
+            class="max-w-4xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row justify-between items-center gap-2 text-center sm:text-left text-site-muted">
             <p>
-                &copy; <%= new Date().getFullYear() %> Mahmut Tüysüz. <%=t.footer.rights%>
+                &copy; <%= new Date().getFullYear() %> Mahmut Tüysüz. <%= (t && t.footer && t.footer.rights) ?
+                        t.footer.rights : 'Tüm hakları saklıdır.' %>
             </p>
-            <p class="tech-stack">
-                <%= t.footer.techStack %>
+            <p class="text-xs text-slate-500">
+                <%= (t && t.footer && t.footer.techStack) ? t.footer.techStack : '' %>
             </p>
         </div>
     </div>
 </footer>
 
-<script src="<%= siteUrl %>/js/main.js"></script>
+<script src="<%= siteUrl %>/js/main.js" defer></script>
 </body>
 
 </html>

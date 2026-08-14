@@ -1,49 +1,57 @@
 const express = require('express');
 const router = express.Router();
 const { marked } = require('marked');
-const { pool, dbTables } = require('../config/db');
-const locales = require('../utils/locales');
+const { pool, dbQueries } = require('../config/db');
+const { getIndexPageData } = require('../utils/helper');
 
-router.get('/', async (req, res) => {
+router.get('/', async (req, res, next) => {
     try {
-        const articles = await pool.query(dbTables.articles.get, [res.locals.lang, 1]);
-        const socialMedias = await pool.query(dbTables.socialMedias.get);
+        const lang = res.locals.lang || 'tr';
+
+        const [articles, socialMedias] = await Promise.all([
+            pool.query(dbQueries.articles.get, [lang]),
+            pool.query(dbQueries.socialMedias.get)
+        ]);
+
         return res.render('blog/index', {
-            title: locales[res.locals.lang].nav.blog,
-            articles,
-            socialMedias
+            title: res.locals.t?.nav?.blog || 'Blog',
+            articles: articles || [],
+            socialMedias: socialMedias || []
         });
     } catch (err) {
-        console.error(err);
-        res.status(500).send('Sayfa yüklenirken hata oluştu.');
+        console.error('❌ Blog liste yükleme hatası:', err);
+        next(err);
     }
 });
 
-router.get('/:slug', async (req, res) => {
+router.get('/:slug', async (req, res, next) => {
     try {
-        const rows = await pool.query(dbTables.articles.getBySlug, [req.params.slug, res.locals.lang, 1]);
+        const lang = res.locals.lang || 'tr';
+        const { slug } = req.params;
 
-        if (rows.length === 0) {
-            return res.status(404).render('404', {
-                aboutMe: {},
-                socialMedias: []
-            });
+        const rows = await pool.query(dbQueries.articles.getBySlug, [slug, lang]);
+
+        if (!rows || rows.length === 0) {
+            const pageData = await getIndexPageData(lang);
+            return res.status(404).render('404', pageData);
         }
 
         const article = rows[0];
 
-        pool.query(dbTables.articles.updateHits, [article.id])
-            .catch(console.error);
-
-        article.contentHtml = marked.parse(article.content);
-
-        return res.render('blog/detail', { article });
-    } catch (err) {
-        console.error(err);
-        return res.status(500).render('500', {
-            aboutMe: {},
-            socialMedias: []
+        pool.query(dbQueries.articles.updateHits, [article.id]).catch((err) => {
+            console.error('Hit güncellenirken hata:', err.message);
         });
+
+        article.contentHtml = marked.parse(article.content || '');
+
+        return res.render('blog/detail', {
+            title: article.title,
+            article
+        });
+
+    } catch (err) {
+        console.error('❌ Blog detay yükleme hatası:', err);
+        next(err);
     }
 });
 

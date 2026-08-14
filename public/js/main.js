@@ -1,86 +1,125 @@
-document.getElementById('contactForm').addEventListener('submit', async function (e) {
-    e.preventDefault();
+document.addEventListener('DOMContentLoaded', () => {
+    const contactForm = document.getElementById('contactForm');
+    const goToContactBtn = document.getElementById('goToContactBtn');
 
-    const btn = document.getElementById('sendBtn');
-    const formMessage = document.getElementById('formMessage');
+    const showFormMessage = (container, message, isSuccess) => {
+        if (!container) return;
 
-    const currentLang = document.documentElement.lang || 'tr';
-    const originalBtnText = btn.innerText;
+        container.className = 'mb-4 p-4 rounded-md text-sm font-medium transition-all duration-300 block';
 
-    try {
-        const token = turnstile.getResponse('#turnstile-container');
-        if (!token) {
-            formMessage.style.color = '#fc0000';
-            formMessage.style.backgroundColor = '#17304a';
-            formMessage.style.borderColor = '#38bdf8';
-            formMessage.innerText = 'Lütfen güvenlik doğrulamasını tamamlayın.';
-
-            return;
+        if (isSuccess) {
+            container.classList.add('bg-emerald-500/10', 'border', 'border-emerald-500/30', 'text-emerald-400');
+        } else {
+            container.classList.add('bg-rose-500/10', 'border', 'border-rose-500/30', 'text-rose-400');
         }
 
-        btn.disabled = true;
-        btn.innerText = currentLang === 'tr' ? 'Gönderiliyor...' : 'Sending...';
-        formMessage.innerText = '';
+        container.innerText = message;
+    };
 
-        const formData = {
-            fullName: this.fullName.value,
-            email: this.email.value,
-            subject: this.subject.value,
-            message: this.message.value,
-            'cf-turnstile-response': token
-        };
+    const hideFormMessage = (container) => {
+        if (!container) return;
+        container.className = 'hidden mb-4 p-4 rounded-md text-sm font-medium';
+        container.innerText = '';
+    };
 
+    if (contactForm) {
+        contactForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
 
-        const response = await fetch('/contact', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(formData)
-        });
+            const btn = document.getElementById('sendBtn');
+            const formMessage = document.getElementById('formMessage');
+            const currentLang = document.documentElement.lang || 'tr';
+            const originalBtnText = btn ? btn.innerText : '';
 
-        const result = await response.json();
-
-        formMessage.style.color = result.success ? '#38bdf8' : '#fc0000';
-        formMessage.style.backgroundColor = '#17304a';
-        formMessage.style.borderColor = '#38bdf8';
-        formMessage.innerText = result.message;
-
-        if (result.success) {
-            this.reset();
-            turnstile.reset('#turnstile-container');
-        }
-    } catch (err) {
-        formMessage.style.color = '#fa7878';
-        formMessage.style.backgroundColor = '#17304a';
-        formMessage.style.borderColor = '#fc0000';
-        formMessage.innerText = currentLang === 'tr'
-            ? 'Bir bağlantı hatası oluştu.'
-            : 'A connection error occurred.';
-        turnstile.reset('#turnstile-container');
-    } finally {
-        formMessage.style.borderRadius = '6px';
-        formMessage.style.padding = '5px';
-        setTimeout(() => {
-            formMessage.innerText = null;
-            formMessage.innerHTML = null;
-            formMessage.removeAttribute('style');
-        }, 5000);
-        btn.disabled = false;
-        btn.innerText = originalBtnText;
-    }
-});
-
-document.getElementById('goToContactBtn')?.addEventListener('click', function (e) {
-    e.preventDefault();
-
-    const contactSection = document.getElementById('contact');
-    const firstInput = document.querySelector('#contact input[type="text"], #contact input[type="email"]');
-
-    if (contactSection) {
-        contactSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        setTimeout(() => {
-            if (firstInput) {
-                firstInput.focus({ preventScroll: true });
+            let token = '';
+            if (window.turnstile) {
+                try {
+                    token = turnstile.getResponse('#turnstile-container');
+                } catch (err) {
+                    console.warn('Turnstile okuma hatası:', err);
+                }
             }
-        }, 600);
+
+            if (!token) {
+                const msg = currentLang === 'tr'
+                    ? 'Lütfen güvenlik doğrulamasını (Captcha) tamamlayın.'
+                    : 'Please complete the security verification.';
+                showFormMessage(formMessage, msg, false);
+                return;
+            }
+
+            try {
+                if (btn) {
+                    btn.disabled = true;
+                    btn.innerText = currentLang === 'tr' ? 'Gönderiliyor...' : 'Sending...';
+                }
+
+                hideFormMessage(formMessage);
+
+                const formData = {
+                    fullName: this.fullName?.value || '',
+                    email: this.email?.value || '',
+                    subject: this.subject?.value || '',
+                    message: this.message?.value || '',
+                    'cf-turnstile-response': token
+                };
+
+                const response = await fetch('/contact', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    showFormMessage(formMessage, result.message || 'Mesajınız başarıyla iletildi.', true);
+                    this.reset();
+                    if (window.turnstile) turnstile.reset('#turnstile-container');
+                } else {
+                    showFormMessage(formMessage, result.message || 'Bir hata oluştu.', false);
+                    if (window.turnstile) turnstile.reset('#turnstile-container');
+                }
+
+            } catch (err) {
+                console.error('İletişim Formu Hatası:', err);
+                const errMsg = currentLang === 'tr'
+                    ? 'Sunucuyla bağlantı kurulurken bir hata oluştu.'
+                    : 'A connection error occurred with the server.';
+                showFormMessage(formMessage, errMsg, false);
+
+                if (window.turnstile) turnstile.reset('#turnstile-container');
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerText = originalBtnText;
+                }
+
+                setTimeout(() => {
+                    hideFormMessage(formMessage);
+                }, 6000);
+            }
+        });
+    }
+
+    if (goToContactBtn) {
+        goToContactBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+
+            const contactSection = document.getElementById('contact');
+            const firstInput = document.querySelector('#contact input[type="text"], #contact input[type="email"]');
+
+            if (contactSection) {
+                contactSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                setTimeout(() => {
+                    if (firstInput) {
+                        firstInput.focus({ preventScroll: true });
+                    }
+                }, 500);
+            }
+        });
     }
 });

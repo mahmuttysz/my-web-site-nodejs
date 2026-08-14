@@ -4,23 +4,24 @@ const locales = require('./locales');
 const { escapeHtml } = require('./helper');
 
 const port = parseInt(env.SMTP_PORT, 10) || 587;
+const isSecurePort = port === 465;
 
 const transporter = nodemailer.createTransport({
     host: env.SMTP_HOST,
     port: port,
-    secure: port === 465,
-    requireTLS: true,
+    secure: isSecurePort,
+    requireTLS: !isSecurePort,
     auth: {
         user: env.SMTP_USER,
         pass: env.SMTP_PASS
     },
     tls: {
         rejectUnauthorized: true,
-        servername:  env.SMTP_SERVER_NAME
+        servername: env.SMTP_SERVER_NAME || env.SMTP_HOST
     }
 });
 
-transporter.verify((error, success) => {
+transporter.verify((error) => {
     if (error) {
         console.error('❌ [SMTP Error] Sunucu bağlantı/kimlik doğrulama hatası:', error.message);
     } else {
@@ -29,15 +30,16 @@ transporter.verify((error, success) => {
 });
 
 const sendVisitorMail = async (toEmail, fullName, lang = 'tr') => {
+    const locale = locales[lang] || locales['tr'];
     const safeFullName = escapeHtml(fullName);
 
     const mailOptions = {
-        from: `"${env.SMTP_FROM_NAME}" <${env.SMTP_FROM_EMAIL}>`,
+        from: `"${env.SMTP_FROM_NAME || 'İletişim'}" <${env.SMTP_FROM_EMAIL || env.SMTP_USER}>`,
         to: toEmail,
-        subject: locales[lang].visitorMail.subject,
+        subject: locale.visitorMail.subject,
         html: `
-            <h3>${locales[lang].visitorMail.hello} ${safeFullName},</h3>
-            <blockquote>${locales[lang].visitorMail.body}</blockquote>
+            <h3>${locale.visitorMail.hello} ${safeFullName},</h3>
+            <blockquote>${locale.visitorMail.body}</blockquote>
         `
     };
 
@@ -45,21 +47,23 @@ const sendVisitorMail = async (toEmail, fullName, lang = 'tr') => {
 };
 
 const sendNotificationMailToAdmin = async (fullName, email, subject, message, lang = 'tr') => {
+    const locale = locales[lang] || locales['tr'];
+
     const safeName = escapeHtml(fullName);
     const safeEmail = escapeHtml(email);
     const safeSubject = escapeHtml(subject || 'Konusuz');
-    const safeMessage = escapeHtml(message).replace(/\n/g, '<br />');
+    const safeMessage = escapeHtml(message || '').replace(/\n/g, '<br />');
 
     const mailOptions = {
-        from: `"mahmuttuysuz.net" <${env.SMTP_USER}>`,
+        from: `"${env.SMTP_FROM_NAME || 'Web Sitesi'}" <${env.SMTP_USER}>`,
         to: env.ADMIN_EMAIL || env.SMTP_USER,
         replyTo: email,
-        subject: `${locales[lang].adminMail.subject}: ${safeSubject}`,
+        subject: `${locale.adminMail.subject}: ${safeSubject}`,
         html: `
-            <h3>${locales[lang].adminMail.newMessage}</h3>
-            <p><strong>${locales[lang].adminMail.sender}:</strong> ${safeName} (${safeEmail})</p>
-            <p><strong>${locales[lang].adminMail.subjectLabel}:</strong> ${safeSubject}</p>
-            <p><strong>${locales[lang].adminMail.messageLabel}:</strong></p>
+            <h3>${locale.adminMail.newMessage}</h3>
+            <p><strong>${locale.adminMail.sender}:</strong> ${safeName} (${safeEmail})</p>
+            <p><strong>${locale.adminMail.subjectLabel}:</strong> ${safeSubject}</p>
+            <p><strong>${locale.adminMail.messageLabel}:</strong></p>
             <blockquote>${safeMessage}</blockquote>
         `
     };

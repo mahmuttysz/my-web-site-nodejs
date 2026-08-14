@@ -1,13 +1,26 @@
+const { pool, dbQueries } = require('../config/db');
+
 const getIndexPageData = async (lang = 'tr') => {
-    const { pool, dbTables } = require('../config/db');
+    try {
+        const [aboutMe, experiences, projects, articles, socialMedias] = await Promise.all([
+            pool.query(dbQueries.aboutMe.get, [lang]),
+            pool.query(dbQueries.experiences.get, [lang]),
+            pool.query(dbQueries.projects.get, [lang]),
+            pool.query(dbQueries.articles.get, [lang]),
+            pool.query(dbQueries.socialMedias.get)
+        ]);
 
-    const aboutMe = await pool.query(dbTables.aboutMe.get, [lang]) || [];
-    const experiences = await pool.query(dbTables.experiences.get, [lang]) || [];
-    const projects = await pool.query(dbTables.projects.get, [lang]) || [];
-    const articles = await pool.query(dbTables.articles.get, [lang]) || [];
-    const socialMedias = await pool.query(dbTables.socialMedias.get) || [];
-
-    return { aboutMe: aboutMe[0] || {}, experiences, projects, articles, socialMedias };
+        return {
+            aboutMe: (aboutMe && aboutMe[0]) || {},
+            experiences: experiences || [],
+            projects: projects || [],
+            articles: articles || [],
+            socialMedias: socialMedias || []
+        };
+    } catch (err) {
+        console.error('❌ getIndexPageData Veri Çekme Hatası:', err);
+        return { aboutMe: {}, experiences: [], projects: [], articles: [], socialMedias: [] };
+    }
 };
 
 const formatDate = (dateString, lang = 'tr') => {
@@ -15,36 +28,34 @@ const formatDate = (dateString, lang = 'tr') => {
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return '';
 
-    let formatted = date.toLocaleDateString(lang === 'tr' ? 'tr-TR' : 'en-US', {
-        month: 'long',
-        year: 'numeric'
-    });
-
+    const locale = lang === 'tr' ? 'tr-TR' : 'en-US';
+    const formatted = date.toLocaleDateString(locale, { month: 'long', year: 'numeric' });
     return formatted.charAt(0).toUpperCase() + formatted.slice(1);
 };
 
 const formatLongDate = (dateString, lang = 'tr') => {
+    if (!dateString) return '';
     const date = new Date(dateString);
-    let formatted = new Date(date).toLocaleDateString(lang === 'tr' ? 'tr-TR' : 'en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    });
+    if (isNaN(date.getTime())) return '';
 
+    const locale = lang === 'tr' ? 'tr-TR' : 'en-US';
+    const formatted = date.toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric' });
     return formatted.charAt(0).toUpperCase() + formatted.slice(1);
 };
 
 const formatLongDateTime = (dateString, lang = 'tr') => {
+    if (!dateString) return '';
     const date = new Date(dateString);
-    let formatted = new Date(date).toLocaleDateString(lang === 'tr' ? 'tr-TR' : 'en-US', {
+    if (isNaN(date.getTime())) return '';
+
+    const locale = lang === 'tr' ? 'tr-TR' : 'en-US';
+    const formatted = date.toLocaleDateString(locale, {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
-        hour: 'numeric',
-        minute: 'numeric',
-        second: 'numeric'
+        hour: '2-digit',
+        minute: '2-digit'
     });
-
     return formatted.charAt(0).toUpperCase() + formatted.slice(1);
 };
 
@@ -58,9 +69,13 @@ const escapeHtml = (text) => {
         .replace(/'/g, "&#039;");
 };
 
-// Tahmini okuma süresi hesaplama (Kelime sayısı / 200)
 const calculateReadingTime = (content) => {
-    const words = content.trim().split(/\s+/).length;
+    if (!content || typeof content !== 'string') return 1;
+
+    const plainText = content.replace(/<[^>]*>?/gm, '').trim();
+    if (!plainText) return 1;
+
+    const words = plainText.split(/\s+/).length;
     return Math.ceil(words / 200) || 1;
 };
 
