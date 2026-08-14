@@ -89,6 +89,40 @@ router.get('/', isAdmin, async (req, res) => {
     }
 });
 
+router.get('/about-me', isAdmin, async (req, res) => {
+    try {
+        const aboutMe = await pool.query(dbQueries.aboutMe.getAll);
+
+        return res.render('admin/aboutme', {
+            title: 'Hakkımda',
+            adminEndpoint,
+            user: req.session.adminUser,
+            aboutMe
+        });
+    } catch (err) {
+        console.error('Mesajlar listelenirken hata:', err);
+        return res.status(500).send('Sunucu hatası');
+    }
+});
+
+router.post('/about-me/:lang', isAdmin, async (req, res) => {
+    try {
+        let lang = req.params.lang;
+        const { title, meta_description, description } = req.body;
+        await pool.query(dbQueries.aboutMe.update, [
+            title,
+            meta_description,
+            description,
+            req.session.adminUser?.id,
+            lang
+        ]);
+        return res.redirect(`${adminEndpoint}/about-me`);
+    } catch (err) {
+        console.error('Hakkımda sayfası hata:', err);
+        return res.status(500).send('Sunucu hatası');
+    }
+});
+
 router.get('/messages', isAdmin, async (req, res) => {
     try {
         const messages = await pool.query(dbQueries.contacts.getAll);
@@ -156,7 +190,7 @@ router.post('/articles/create', isAdmin, (req, res, next) => {
     const { title, slug, excerpt, content, status, language } = req.body;
     const articleStatus = parseInt(status, 10) || 0;
     const cover_image = req.file ? `/uploads/articles/${req.file.filename}` : null;
-    const finalSlug = slugify(slug || title || '', { lower: true, strict: true, locale: 'tr' });
+    const finalSlug = slugify(slug || title || '', { lower: true, strict: true, locale: language });
     const readingTime = calculateReadingTime(content);
     const publishedAt = articleStatus === 1 ? new Date() : null;
 

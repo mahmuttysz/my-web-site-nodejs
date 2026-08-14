@@ -23,8 +23,9 @@
                                 <th class="px-6 py-4">#</th>
                                 <th class="px-6 py-4">Başlık</th>
                                 <th class="px-6 py-4">Durum</th>
-                                <th class="px-6 py-4">Okunma</th>
-                                <th class="px-6 py-4">Tarih</th>
+                                <th class="px-6 py-4">Okunma Sayısı</th>
+                                <th class="px-6 py-4">Oluşturulma Tarihi</th>
+                                <th class="px-6 py-4">Yayınlanma Tarihi</th>
                                 <th class="px-6 py-4">Dil</th>
                                 <th class="px-6 py-4 text-right">Aksiyonlar</th>
                             </tr>
@@ -49,7 +50,11 @@
                                             <%= art.hits %>
                                         </td>
                                         <td class="px-6 py-4 text-slate-400">
-                                            <%= formatLongDate(art.created_at) %>
+                                            <%= formatLongDateTime(art.created_at) %>
+                                        </td>
+                                        <td class="px-6 py-4 text-slate-400">
+                                            <%= art.published_at && art.published_at !==null ?
+                                                formatLongDateTime(art.published_at) : '-' %>
                                         </td>
                                         <td class="px-6 py-4 text-slate-400">
                                             <%= art.language || 'Türkçe' %>
