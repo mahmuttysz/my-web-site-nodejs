@@ -66,6 +66,7 @@ const dbQueries = {
         get: "SELECT * FROM articles WHERE language = ? AND status = 1 ORDER BY created_at DESC",
         getById: "SELECT * FROM articles WHERE id = ?",
         getBySlug: "SELECT * FROM articles WHERE slug = ? AND language = ? AND status = 1",
+        getSitemap: "SELECT slug, created_at, updated_at FROM articles WHERE status = 1 ORDER BY created_at DESC",
         add: "INSERT INTO articles (title, slug, excerpt, content, cover_image, created_by, status, reading_time, published_at, language) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         update: "UPDATE articles SET title = ?, slug = ?, excerpt = ?, content = ?, cover_image = ?, status = ?, updated_by = ?, reading_time = ?, language = ? WHERE id = ?",
         updateHits: "UPDATE articles SET hits = hits + 1 WHERE id = ?",

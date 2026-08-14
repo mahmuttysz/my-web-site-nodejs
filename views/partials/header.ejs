@@ -1,38 +1,71 @@
 <!DOCTYPE html>
-<html lang="<%= lang ? lang : 'tr' %>">
+<html lang="<%= typeof lang !== 'undefined' ? lang : 'tr' %>">
 
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <% const metaDesc=(aboutMe && aboutMe.meta_description) ? aboutMe.meta_description : t.hero.desc; %>
-        <meta name="description" content="<%= metaDesc %>" />
-        <meta name="robots" content="index, follow">
-        <meta property="og:type" content="website">
-        <meta property="og:locale" content="<%= lang === 'en' ? 'en_US' : 'tr_TR' %>" />
-        <meta property="og:title" content="Mahmut Tüysüz | <%= t.hero.badge %>" />
-        <meta property="og:description" content="<%= metaDesc %>" />
-        <meta property="og:image" content="<%= siteUrl %>/images/banner.jpg" />
-        <meta property="og:url" content="<%= siteUrl %>/<%= lang === 'en' ? '?lang=en' : '' %>" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Mahmut Tüysüz | <%= t.hero.badge %>" />
-        <meta name="twitter:description" content="<%= metaDesc %>" />
-        <meta name="twitter:image" content="<%= siteUrl %>/images/banner.jpg" />
-
-        <link rel="canonical" href="<%= siteUrl %>/<%= lang === 'en' ? '?lang=en' : '' %>" />
-        <link rel="alternate" hreflang="tr" href="<%= siteUrl %>/" />
-        <link rel="alternate" hreflang="en" href="<%= siteUrl %>/?lang=en" />
-        <link rel="alternate" hreflang="x-default" href="<%= siteUrl %>/" />
-        <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-        <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" sizes="180x180" href="<%= siteUrl %>/apple-touch-icon.png" />
-        <link rel="icon" type="image/png" sizes="32x32" href="<%= siteUrl %>/favicon-32x32.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="<%= siteUrl %>/favicon-16x16.png" />
-        <link rel="manifest" href="<%= siteUrl %>/site.webmanifest" />
-        <link rel="stylesheet" href="<%= siteUrl %>/css/style.css" />
+    <meta name="theme-color" content="#0b0f19" />
+    <% const currentLang=(typeof lang !=='undefined' && lang) ? lang : 'tr' ; const currentSiteUrl=(typeof siteUrl
+        !=='undefined' && siteUrl) ? siteUrl : '' ; const isArticle=(typeof article !=='undefined' && article); let
+        pageTitle=`Mahmut Tüysüz | ${(t && t.hero) ? t.hero.badge : '' }`; if (isArticle && article.title) {
+        pageTitle=`${article.title} | Mahmut Tüysüz`; } else if (typeof title !=='undefined' && title) {
+        pageTitle=`${title} | Mahmut Tüysüz`; } let metaDesc=(t && t.hero) ? t.hero.desc : '' ; if (isArticle) { if
+        (article.excerpt && article.excerpt.trim() !=='' ) { metaDesc=article.excerpt; } else if (article.content) {
+        metaDesc=article.content.replace(/<[^>]*>?/gm, '').substring(0, 160).trim() + '...';
+        }
+        } else if (typeof aboutMe !== 'undefined' && aboutMe && aboutMe.meta_description) {
+        metaDesc = aboutMe.meta_description;
+        }
+        let ogImage = `${currentSiteUrl}/images/banner.jpg`;
+        if (isArticle && article.cover_image) {
+        ogImage = article.cover_image.startsWith('http')
+        ? article.cover_image
+        : `${currentSiteUrl}${article.cover_image.startsWith('/') ? '' : '/'}${article.cover_image}`;
+        }
+        let pageUrl = `${currentSiteUrl}${currentLang === 'en' ? '/?lang=en' : '/'}`;
+        if (isArticle && article.slug) {
+        pageUrl = `${currentSiteUrl}/blog/${article.slug}`;
+        }
+        const ogType = isArticle ? 'article' : 'website';
+        %>
 
         <title>
-            Mahmut Tüysüz | <%= t.hero.badge %>
+            <%= pageTitle %>
         </title>
+        <meta name="description" content="<%= metaDesc %>" />
+        <meta name="robots" content="index, follow" />
+
+        <meta property="og:type" content="<%= ogType %>" />
+        <meta property="og:locale" content="<%= currentLang === 'en' ? 'en_US' : 'tr_TR' %>" />
+        <meta property="og:title" content="<%= pageTitle %>" />
+        <meta property="og:description" content="<%= metaDesc %>" />
+        <meta property="og:image" content="<%= ogImage %>" />
+        <meta property="og:url" content="<%= pageUrl %>" />
+        <meta property="og:site_name" content="Mahmut Tüysüz" />
+
+        <% if (isArticle && article.created_at) { %>
+            <meta property="article:published_time" content="<%= new Date(article.created_at).toISOString() %>" />
+            <% } %>
+
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content="<%= pageTitle %>" />
+                <meta name="twitter:description" content="<%= metaDesc %>" />
+                <meta name="twitter:image" content="<%= ogImage %>" />
+
+                <link rel="canonical" href="<%= pageUrl %>" />
+                <link rel="alternate" hreflang="tr" href="<%= currentSiteUrl %>/" />
+                <link rel="alternate" hreflang="en" href="<%= currentSiteUrl %>/?lang=en" />
+                <link rel="alternate" hreflang="x-default" href="<%= currentSiteUrl %>/" />
+
+                <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+                <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+                <link rel="apple-touch-icon" sizes="180x180" href="<%= currentSiteUrl %>/apple-touch-icon.png" />
+                <link rel="icon" type="image/png" sizes="32x32" href="<%= currentSiteUrl %>/favicon-32x32.png" />
+                <link rel="icon" type="image/png" sizes="16x16" href="<%= currentSiteUrl %>/favicon-16x16.png" />
+                <link rel="manifest" href="<%= currentSiteUrl %>/site.webmanifest" />
+
+                <link rel="stylesheet" href="<%= currentSiteUrl %>/css/style.css" />
 </head>
 
-<body>
+<body
+    class="bg-site-bg text-site-text font-sans antialiased min-h-screen flex flex-col selection:bg-site-accent/20 selection:text-site-accent">
