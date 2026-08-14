@@ -1,6 +1,8 @@
 @import "tailwindcss";
 
-/* 1. Tailwind v4 Özel Tema Tanımları */
+@source "../views/**/*.ejs";
+@source "../public/**/*.js";
+
 @theme {
   --color-site-bg: #0b0f19;
   --color-site-card: #131c2e;
@@ -10,29 +12,21 @@
   --color-site-muted: #9ca3af;
 }
 
-/* Global Body Stili */
 body {
   background-color: var(--color-site-bg);
   color: var(--color-site-text);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-/* 2. EJS Şablon Taraması */
-@source "../views/**/*.ejs";
-
-/* 3. Özel Katmanlar ve Efektler */
 @layer utilities {
-  /* Hero Parallax Efekti */
   .hero-parallax-bg {
-    background-image:
-      linear-gradient(to bottom, rgba(11, 15, 25, 0.7), var(--color-site-bg)),
-      url("/images/banner.jpg");
+    background-image: linear-gradient(to bottom, rgba(11, 15, 25, 0.7), var(--color-site-bg)), url("/images/banner.jpg");
     background-attachment: fixed;
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
   }
 
-  /* Timeline Sol Çizgi Noktası Efekti */
   .timeline-dot::before {
     content: "";
     position: absolute;
@@ -46,7 +40,6 @@ body {
   }
 }
 
-/* 4. Turnstile Widget Özelleştirmeleri */
 .turnstile-box iframe {
   width: 300px !important;
   height: 65px !important;
