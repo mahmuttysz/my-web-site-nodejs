@@ -3,7 +3,7 @@ const locales = require('../utils/locales');
 
 module.exports = {
     defaultMid: (req, res, next) => {
-        const siteUrl = env.APP_URL || env.SITE_URL || `http://localhost:${env.PORT || 3000}`;
+        const siteUrl = env.SITE_URL || `http://localhost:${env.PORT || 3000}`;
         res.locals.siteUrl = siteUrl;
 
         let lang = req.query.lang || req.cookies?.lang || req.session?.lang || 'tr';
