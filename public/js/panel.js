@@ -17,12 +17,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    document.getElementById('isResumeChk').addEventListener('change', function () {
-        const target = document.getElementById('isResumeArea');
-        if (this.checked) {
-            target.classList.add('hidden');
-        } else {
-            target.classList.remove('hidden');
-        }
-    });
+    let isResumeElm = document.getElementById('isResumeChk')
+    if (isResumeElm) {
+        isResumeElm.addEventListener('change', function () {
+            const target = document.getElementById('isResumeArea');
+            if (target && this.checked) {
+                target.classList.add('hidden');
+            } else {
+                target.classList.remove('hidden');
+            }
+        });
+    }
 });
