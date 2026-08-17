@@ -21,7 +21,7 @@ const dbQueries = {
         add: "INSERT INTO admin_users (name, surname, username, password_hash) VALUES (?, ?, ?, ?)",
         update: "UPDATE admin_users SET name = ?, surname = ?, username = ?, password_hash = ? WHERE id = ?",
         wrongTryUpdate: "UPDATE admin_users SET last_wrong_try = ?, wrong_try = wrong_try + 1, ip = ? WHERE id = ?",
-        successLoginUpdate: "UPDATE admin_users SET last_success_login = ?, ip = ? WHERE id = ?",
+        successLoginUpdate: "UPDATE admin_users SET last_success_login = ?, wrong_try = 0, ip = ? WHERE id = ?",
         delete: "DELETE FROM admin_users WHERE id = ?"
     },
     aboutMe: {
@@ -34,22 +34,25 @@ const dbQueries = {
     experiences: {
         getAll: "SELECT * FROM experiences ORDER BY created_at DESC",
         get: "SELECT * FROM experiences WHERE language = ? AND status = 1 ORDER BY (end_date IS NULL) DESC, end_date DESC, begin_date DESC",
-        add: "INSERT INTO experiences (company_name, title, description, begin_date, end_date, language, created_by, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-        update: "UPDATE experiences SET company_name = ?, title = ?, description = ?, begin_date = ?, end_date = ?, language = ?, updated_by = ? WHERE id = ?",
+        getById: "SELECT * FROM experiences WHERE id = ?",
+        add: "INSERT INTO experiences (company_name, title, description, begin_date, end_date, language, created_by, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        update: "UPDATE experiences SET company_name = ?, title = ?, description = ?, begin_date = ?, end_date = ?, language = ?, updated_by = ?, status = ? WHERE id = ?",
         delete: "DELETE FROM experiences WHERE id = ?"
     },
     projects: {
         getAll: "SELECT * FROM projects ORDER BY created_at DESC",
         get: "SELECT * FROM projects WHERE language = ? AND status = 1 ORDER BY turn ASC",
-        add: "INSERT INTO projects (title, description, link_text, link_url, created_by, tags, turn, language, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        update: "UPDATE projects SET title = ?, description = ?, link_text = ?, link_url = ?, tags = ?, turn = ?, language = ?, updated_by = ? WHERE id = ?",
+        getById: "SELECT * FROM projects WHERE id = ?",
+        add: "INSERT INTO projects (title, link_text, link_url, description, tags, turn, language, created_by, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        update: "UPDATE projects SET title = ?, link_text = ?, link_url = ?, description = ?, tags = ?, turn = ?, language = ?, updated_by = ?, status = ? WHERE id = ?",
         delete: "DELETE FROM projects WHERE id = ?"
     },
     socialMedias: {
         getAll: "SELECT * FROM social_medias ORDER BY turn ASC",
         get: "SELECT * FROM social_medias WHERE status = 1 ORDER BY turn ASC",
-        add: "INSERT INTO social_medias (title, username, url, icon, turn, status) VALUES (?, ?, ?, ?, ?, ?)",
-        update: "UPDATE social_medias SET title = ?, username = ?, url = ?, icon = ?, turn = ?, status = ? WHERE id = ?",
+        getById: "SELECT * FROM social_medias WHERE id = ?",
+        add: "INSERT INTO social_medias (title, username, url, icon, turn, created_by, status) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        update: "UPDATE social_medias SET title = ?, username = ?, url = ?, icon = ?, turn = ?, updated_by = ?, status = ? WHERE id = ?",
         delete: "DELETE FROM social_medias WHERE id = ?"
     },
     contacts: {

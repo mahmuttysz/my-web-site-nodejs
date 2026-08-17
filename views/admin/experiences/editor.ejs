@@ -1,0 +1,109 @@
+<%- include('../partials/header') %>
+    <div class="flex min-h-screen">
+        <%- include('../partials/sidebar') %>
+            <main class="flex-1 p-8 overflow-y-auto">
+                <header class="flex items-center justify-between mb-8">
+                    <div>
+                        <h1 class="text-2xl font-bold text-white">
+                            <%= experience.id ? 'Deneyim Düzenle' : 'Yeni Deneyim Ekle' %>
+                        </h1>
+                    </div>
+                    <a href="<%=adminEndpoint%>/experiences"
+                        class="text-xs text-slate-400 hover:text-white transition-colors">
+                        ← İptal ve Geri Dön</a>
+                </header>
+                <form
+                    action="<%= experience.id ? adminEndpoint + '/experiences/edit/' + experience.id : adminEndpoint + '/experiences/create' %>"
+                    method="POST" class="space-y-6 max-w-4xl">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                                Şirket
+                            </label>
+                            <input type="text" name="company_name" value="<%= experience.company_name || '' %>" required
+                                placeholder="Örn: ABC AŞ."
+                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:border-blue-500" />
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                                Unvan
+                            </label>
+                            <input type="text" name="title" value="<%= experience.title || '' %>" required
+                                placeholder="Örn: Kıdemli Yazılım Geliştirme Uzmanı"
+                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:border-blue-500" />
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                            Açıklama
+                        </label>
+                        <textarea name="description" rows="16" required
+                            placeholder="# Başlık 1&#10;&#10;Paragraf metni buraya gelecek..."
+                            class="w-full bg-slate-900 border border-slate-800 rounded-lg p-4 font-mono text-sm text-slate-200 focus:outline-none focus:border-blue-500 leading-relaxed"><%= experience.description || '' %></textarea>
+                    </div>
+                    <div class="flex items-center justify-between pt-4 border-t border-slate-800">
+                        <div class="flex items-center gap-4">
+                            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                                Başlangıç Tarihi
+                            </label>
+                            <input type="date" name="begin_date" value="<%= experience.begin_date || null %>" required
+                                class="bg-slate-900 border border-slate-800 text-sm text-white rounded-lg px-3 py-2 focus:outline-none" />
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="flex items-center gap-3 p-4">
+                                <input type="checkbox" id="isResumeChk" name="isResume"
+                                    class="h-5 w-5 cursor-pointer appearance-none rounded border border-gray-300 bg-white checked:border-blue-600 checked:bg-blue-600 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 transition-all duration-200 relative before:content-[''] before:absolute before:inset-0 before:bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://w3.org viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22white%22 stroke-width=%224%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><polyline points=%2220 6 9 17 4 12%22/></svg>')] before:scale-0 checked:before:scale-70 before:transition-transform before:duration-200 before:origin-center"
+                                    value="true" <%=experience.end_date===null ? 'checked' :'' %> />
+                                <label for="isResumeChk"
+                                    class="select-none text-sm font-medium text-slate-400 cursor-pointer">
+                                    Devam Ediyor
+                                </label>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4 <%= !experience.end_date && experience.id ? 'hidden' : '' %>"
+                            id="isResumeArea">
+                            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                                Bitiş Tarihi
+                            </label>
+                            <input type="date" name="end_date" value="<%= experience.end_date || null %>"
+                                class="bg-slate-900 border border-slate-800 text-sm text-white rounded-lg px-3 py-2 focus:outline-none" />
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between pt-4 border-t border-slate-800">
+                        <div class="flex items-center gap-4">
+                            <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                                Durumu:
+                            </label>
+                            <select name="status"
+                                class="bg-slate-900 border border-slate-800 text-sm text-white rounded-lg px-3 py-2 focus:outline-none">
+                                <option value="0" <%=experience.status===0 ? 'selected' : '' %>>
+                                    Pasif
+                                </option>
+                                <option value="1" <%=experience.status===1 ? 'selected' : '' %>>
+                                    Aktif
+                                </option>
+                            </select>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                                Dil:
+                            </label>
+                            <select name="language"
+                                class="bg-slate-900 border border-slate-800 text-sm text-white rounded-lg px-3 py-2 focus:outline-none">
+                                <option value="tr" <%=experience.language==='tr' ? 'selected' : '' %>>
+                                    Türkçe
+                                </option>
+                                <option value="en" <%=experience.language==='en' ? 'selected' : '' %>>
+                                    İngilizce
+                                </option>
+                            </select>
+                        </div>
+                        <button type="submit"
+                            class="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-medium transition-colors">
+                            <%= experience.id ? 'Değişiklikleri Kaydet' : 'Deneyim Kaydet' %>
+                        </button>
+                    </div>
+                </form>
+            </main>
+    </div>
+    <%- include('../partials/footer') %>

@@ -1,29 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.btn-delete-article').forEach(button => {
+    document.querySelectorAll('.btn-delete').forEach(button => {
         button.addEventListener('click', async (e) => {
             const adminEndpoint = e.currentTarget.getAttribute('admin-endpoint');
-            const id = e.currentTarget.getAttribute('data-article-id');
-            if (!confirm('Bu makaleyi silmek istediğinizden emin misiniz?')) return;
+            const pageEndpoint = e.currentTarget.getAttribute('page-endpoint');
+            const dataId = e.currentTarget.getAttribute('data-id');
+            if (!confirm('Bu kaydı silmek istediğinizden emin misiniz?')) return;
 
             try {
-                const res = await fetch(`${adminEndpoint}/articles/delete/${id}`, { method: 'POST' });
-                const data = await res.json();
-                if (data.success) location.reload();
-                else alert('Silinirken bir hata oluştu.');
-            } catch (err) {
-                alert('Bağlantı hatası oluştu.');
-            }
-        });
-    });
-
-    document.querySelectorAll('.btn-delete-msg').forEach(button => {
-        button.addEventListener('click', async (e) => {
-            const adminEndpoint = e.currentTarget.getAttribute('admin-endpoint');
-            const id = e.currentTarget.getAttribute('data-msg-id');
-            if (!confirm('Bu mesajı silmek istediğinizden emin misiniz?')) return;
-
-            try {
-                const res = await fetch(`${adminEndpoint}/messages/delete/${id}`, { method: 'POST' });
+                const res = await fetch(`${adminEndpoint}/${pageEndpoint}/delete/${dataId}`, { method: 'POST' });
                 const data = await res.json();
                 if (data.success) location.reload();
                 else alert('Silinirken hata oluştu.');
@@ -31,5 +15,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert('Bağlantı hatası oluştu.');
             }
         });
+    });
+
+    document.getElementById('isResumeChk').addEventListener('change', function () {
+        const target = document.getElementById('isResumeArea');
+        if (this.checked) {
+            target.classList.add('hidden');
+        } else {
+            target.classList.remove('hidden');
+        }
     });
 });
