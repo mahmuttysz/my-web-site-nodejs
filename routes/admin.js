@@ -10,7 +10,7 @@ const { pool, dbQueries, adminPanel } = require('../config/db');
 const upload = require('../config/upload');
 const { formLimiter } = require('../config/rateLimit');
 const { isAdmin } = require('../middleware/auth');
-const { calculateReadingTime } = require('../utils/helper');
+const { calculateReadingTime, safeTrim, formatDate } = require('../utils/helper');
 
 const adminEndpoint = env.ADMIN_PANEL_ENDPOINT || '/admin';
 
@@ -93,14 +93,14 @@ router.get('/about-me', isAdmin, async (req, res) => {
     try {
         const aboutMe = await pool.query(dbQueries.aboutMe.getAll);
 
-        return res.render('admin/aboutme', {
+        return res.render('admin/about-me', {
             title: 'Hakkımda',
             adminEndpoint,
             user: req.session.adminUser,
             aboutMe
         });
     } catch (err) {
-        console.error('Mesajlar listelenirken hata:', err);
+        console.error('Hakkımda sayfası hata:', err);
         return res.status(500).send('Sunucu hatası');
     }
 });
@@ -110,9 +110,9 @@ router.post('/about-me/:lang', isAdmin, async (req, res) => {
         let lang = req.params.lang;
         const { title, meta_description, description } = req.body;
         await pool.query(dbQueries.aboutMe.update, [
-            title,
-            meta_description,
-            description,
+            safeTrim(title),
+            safeTrim(description),
+            safeTrim(meta_description),
             req.session.adminUser?.id,
             lang
         ]);
@@ -120,6 +120,440 @@ router.post('/about-me/:lang', isAdmin, async (req, res) => {
     } catch (err) {
         console.error('Hakkımda sayfası hata:', err);
         return res.status(500).send('Sunucu hatası');
+    }
+});
+
+router.get('/projects', isAdmin, async (req, res) => {
+    try {
+        let projects = await pool.query(dbQueries.projects.getAll);
+
+        projects?.forEach((f, i) => {
+            let tags = JSON.parse(f.tags);
+
+            f.tags = tags;
+        });
+
+        return res.render('admin/projects/index', {
+            title: 'Projelerim',
+            adminEndpoint,
+            user: req.session.adminUser,
+            projects
+        });
+    } catch (err) {
+        console.error('Projeler listelenirken hata:', err);
+        return res.status(500).send('Sunucu hatası');
+    }
+});
+
+router.get('/projects/new', isAdmin, (req, res) => {
+    return res.render('admin/projects/editor', {
+        title: 'Yeni Proje',
+        adminEndpoint,
+        user: req.session.adminUser,
+        project: {}
+    });
+});
+
+router.post('/projects/create', isAdmin, async (req, res) => {
+    const { title, link_text, link_url, description, tags, turn, language, status } = req.body;
+    const projectStatus = parseInt(status, 10) || 0;
+    const turnCnv = parseInt(turn, 10) || 11;
+
+    try {
+        if (!title) {
+            throw new Error('Başlık alanı zorunludur.');
+        }
+        let tagEdit = "[";
+        let tagSplit = tags.trim().split(',');
+        if (tagSplit && tagSplit.length > 1) {
+            tagSplit.forEach((tag, i) => {
+                if (tagSplit.length - 1 !== i)
+                    tagEdit += "\"" + tag.trim() + "\", ";
+                else
+                    tagEdit += "\"" + tag.trim() + "\"";
+            });
+            tagEdit += "]";
+        } else {
+            tagEdit = "[]";
+        }
+
+        await pool.query(dbQueries.projects.add, [
+            safeTrim(title),
+            safeTrim(link_text),
+            safeTrim(link_url),
+            safeTrim(description),
+            tagEdit,
+            turnCnv,
+            language || 'tr',
+            req.session.adminUser?.id,
+            projectStatus
+        ]);
+
+        return res.redirect(`${adminEndpoint}/projects`);
+
+    } catch (err) {
+        console.error('Proje ekleme hatası:', err);
+
+        let errorMessage = 'Proje kaydedilirken bir hata oluştu.';
+        if (err.message) {
+            errorMessage = err.message;
+        }
+
+        return res.status(400).render('admin/projects/editor', {
+            title: 'Yeni Proje',
+            error: errorMessage,
+            adminEndpoint,
+            user: req.session.adminUser,
+            project: req.body
+        });
+    }
+});
+
+router.get('/projects/edit/:id', isAdmin, async (req, res) => {
+    try {
+        const rows = await pool.query(dbQueries.projects.getById, [req.params.id]);
+        if (!rows || rows.length === 0) {
+            return res.redirect(`${adminEndpoint}/projects`);
+        }
+        let project = rows[0];
+        let tagsTxt = "";
+        let tagParse = JSON.parse(project.tags || "[]");
+        tagParse.forEach((tag, i) => {
+            if (tagParse.length - 1 !== i)
+                tagsTxt += tag + ", ";
+            else
+                tagsTxt += tag;
+        });
+        project.tagsTxt = tagsTxt;
+        return res.render('admin/projects/editor', {
+            title: 'Proje Düzenle',
+            adminEndpoint,
+            user: req.session.adminUser,
+            project
+        });
+    } catch (err) {
+        console.error('Proje getirme hatası:', err);
+        return res.redirect(`${adminEndpoint}/projects`);
+    }
+});
+
+router.post('/projects/edit/:id', isAdmin, async (req, res) => {
+    const projectId = req.params.id;
+    const { title, link_text, link_url, description, tags, turn, status, language } = req.body;
+    const projectStatus = parseInt(status, 10) || 0;
+    const turnCnv = parseInt(turn, 10) || 11;
+
+    let tagEdit = "[";
+    let tagSplit = tags.trim().split(',');
+    if (tagSplit && tagSplit.length > 1) {
+        tagSplit.forEach((tag, i) => {
+            if (tagSplit.length - 1 !== i)
+                tagEdit += "\"" + tag.trim() + "\", ";
+            else
+                tagEdit += "\"" + tag.trim() + "\"";
+        });
+        tagEdit += "]";
+    } else {
+        tagEdit = "[]";
+    }
+
+    try {
+        await pool.query(dbQueries.projects.update, [
+            safeTrim(title),
+            safeTrim(link_text),
+            safeTrim(link_url),
+            safeTrim(description),
+            tagEdit,
+            turnCnv,
+            language || 'tr',
+            req.session.adminUser?.id,
+            projectStatus,
+            projectId
+        ]);
+
+        return res.redirect(`${adminEndpoint}/projects`);
+
+    } catch (err) {
+        console.error('Proje güncelleme hatası:', err);
+        let errorMessage = 'Proje güncellenirken bir hata oluştu.';
+
+        return res.status(400).render('admin/projects/editor', {
+            title: 'Proje Düzenle',
+            error: errorMessage,
+            adminEndpoint,
+            user: req.session.adminUser,
+            project: { ...req.body, id: projectId }
+        });
+    }
+});
+
+router.post('/projects/delete/:id', isAdmin, async (req, res) => {
+    try {
+        const projectId = req.params.id;
+
+        await pool.query(dbQueries.projects.delete, [projectId]);
+        return res.json({ success: true });
+    } catch (err) {
+        return res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+router.get('/experiences', isAdmin, async (req, res) => {
+    try {
+        const experiences = await pool.query(dbQueries.experiences.getAll);
+
+        return res.render('admin/experiences/index', {
+            title: 'Projelerim',
+            adminEndpoint,
+            user: req.session.adminUser,
+            experiences
+        });
+    } catch (err) {
+        console.error('Deneyimler listelenirken hata:', err);
+        return res.status(500).send('Sunucu hatası');
+    }
+});
+
+router.get('/experiences/new', isAdmin, (req, res) => {
+    return res.render('admin/experiences/editor', {
+        title: 'Yeni Deneyim',
+        adminEndpoint,
+        user: req.session.adminUser,
+        experience: { begin_date: new Date().toISOString().split('T')[0] }
+    });
+});
+
+router.post('/experiences/create', isAdmin, async (req, res) => {
+    const { company_name, title, description, begin_date, isResume, end_date, language, status } = req.body;
+    const experienceStatus = parseInt(status, 10) || 0;
+    const endDate = isResume === 'true' ? null : end_date;
+
+    try {
+        if (!title) {
+            throw new Error('Başlık alanı zorunludur.');
+        }
+
+        await pool.query(dbQueries.experiences.add, [
+            safeTrim(company_name),
+            safeTrim(title),
+            safeTrim(description),
+            begin_date,
+            endDate,
+            language || 'tr',
+            req.session.adminUser?.id,
+            experienceStatus
+        ]);
+
+        return res.redirect(`${adminEndpoint}/experiences`);
+
+    } catch (err) {
+        console.error('Deneyim ekleme hatası:', err);
+
+        let errorMessage = 'Deneyim kaydedilirken bir hata oluştu.';
+        if (err.message) {
+            errorMessage = err.message;
+        }
+
+        return res.status(400).render('admin/experiences/editor', {
+            title: 'Yeni Deneyim',
+            error: errorMessage,
+            adminEndpoint,
+            user: req.session.adminUser,
+            project: req.body
+        });
+    }
+});
+
+router.get('/experiences/edit/:id', isAdmin, async (req, res) => {
+    try {
+        const rows = await pool.query(dbQueries.experiences.getById, [req.params.id]);
+        if (!rows || rows.length === 0) {
+            return res.redirect(`${adminEndpoint}/experiences`);
+        }
+
+        return res.render('admin/experiences/editor', {
+            title: 'Deneyim Düzenle',
+            adminEndpoint,
+            user: req.session.adminUser,
+            experience: rows[0]
+        });
+    } catch (err) {
+        console.error('Proje getirme hatası:', err);
+        return res.redirect(`${adminEndpoint}/projects`);
+    }
+});
+
+router.post('/experiences/edit/:id', isAdmin, async (req, res) => {
+    const experienceId = req.params.id;
+    const { company_name, title, description, begin_date, isResume, end_date, language, status } = req.body;
+    const experienceStatus = parseInt(status, 10) || 0;
+    const endDate = isResume === 'true' ? null : end_date;
+
+    try {
+        await pool.query(dbQueries.experiences.update, [
+            safeTrim(company_name),
+            safeTrim(title),
+            safeTrim(description),
+            begin_date,
+            endDate,
+            language || 'tr',
+            req.session.adminUser?.id,
+            experienceStatus,
+            experienceId
+        ]);
+
+        return res.redirect(`${adminEndpoint}/experiences`);
+
+    } catch (err) {
+        console.error('Deneyim güncelleme hatası:', err);
+        let errorMessage = 'Deneyim güncellenirken bir hata oluştu.';
+
+        return res.status(400).render('admin/experiences/editor', {
+            title: 'Deneyim Düzenle',
+            error: errorMessage,
+            adminEndpoint,
+            user: req.session.adminUser,
+            experience: { ...req.body, id: experienceId }
+        });
+    }
+});
+
+router.post('/experiences/delete/:id', isAdmin, async (req, res) => {
+    try {
+        const experienceId = req.params.id;
+
+        await pool.query(dbQueries.experiences.delete, [experienceId]);
+        return res.json({ success: true });
+    } catch (err) {
+        return res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+router.get('/social-medias', isAdmin, async (req, res) => {
+    try {
+        const socialMedias = await pool.query(dbQueries.socialMedias.getAll);
+
+        return res.render('admin/social-medias/index', {
+            title: 'Sosyal Medyalar',
+            adminEndpoint,
+            user: req.session.adminUser,
+            socialMedias
+        });
+    } catch (err) {
+        console.error('Sosyal medyalar listelenirken hata:', err);
+        return res.status(500).send('Sunucu hatası');
+    }
+});
+
+router.get('/social-medias/new', isAdmin, (req, res) => {
+    return res.render('admin/social-medias/editor', {
+        title: 'Yeni Sosyal Medya',
+        adminEndpoint,
+        user: req.session.adminUser,
+        socialMedia: {}
+    });
+});
+
+router.post('/social-medias/create', isAdmin, async (req, res) => {
+    const { title, username, url, icon, turn, status } = req.body;
+    const sMediaStatus = parseInt(status, 10) || 0;
+    const turnCnv = parseInt(turn, 10) || 11;
+
+    try {
+        if (!title) {
+            throw new Error('Başlık alanı zorunludur.');
+        }
+
+        await pool.query(dbQueries.socialMedias.add, [
+            safeTrim(title),
+            safeTrim(username),
+            safeTrim(url),
+            safeTrim(icon),
+            turnCnv,
+            req.session.adminUser?.id,
+            sMediaStatus
+        ]);
+
+        return res.redirect(`${adminEndpoint}/social-medias`);
+
+    } catch (err) {
+        console.error('Sosyal medya ekleme hatası:', err);
+
+        let errorMessage = 'Sosyal medya kaydedilirken bir hata oluştu.';
+        if (err.message) {
+            errorMessage = err.message;
+        }
+
+        return res.status(400).render('admin/social-medias/editor', {
+            title: 'Yeni Sosyal Medya',
+            error: errorMessage,
+            adminEndpoint,
+            user: req.session.adminUser,
+            project: req.body
+        });
+    }
+});
+
+router.get('/social-medias/edit/:id', isAdmin, async (req, res) => {
+    try {
+        const rows = await pool.query(dbQueries.socialMedias.getById, [req.params.id]);
+        if (!rows || rows.length === 0) {
+            return res.redirect(`${adminEndpoint}/social-medias`);
+        }
+        return res.render('admin/social-medias/editor', {
+            title: 'Sosyal Medya Düzenle',
+            adminEndpoint,
+            user: req.session.adminUser,
+            socialMedia: rows[0]
+        });
+    } catch (err) {
+        console.error('Proje getirme hatası:', err);
+        return res.redirect(`${adminEndpoint}/social-medias`);
+    }
+});
+
+router.post('/social-medias/edit/:id', isAdmin, async (req, res) => {
+    const sMediaId = req.params.id;
+    const { title, username, url, icon, turn, status } = req.body;
+    const sMediaStatus = parseInt(status, 10) || 0;
+    const turnCnv = parseInt(turn, 10) || 11;
+
+    try {
+        await pool.query(dbQueries.socialMedias.update, [
+            safeTrim(title),
+            safeTrim(username),
+            safeTrim(url),
+            safeTrim(icon),
+            turnCnv,
+            req.session.adminUser?.id,
+            sMediaStatus,
+            sMediaId
+        ]);
+
+        return res.redirect(`${adminEndpoint}/social-medias`);
+
+    } catch (err) {
+        console.error('Sosyal medya güncelleme hatası:', err);
+        let errorMessage = 'Sosyal medya güncellenirken bir hata oluştu.';
+
+        return res.status(400).render('admin/social-medias/editor', {
+            title: 'Sosyal Medya Düzenle',
+            error: errorMessage,
+            adminEndpoint,
+            user: req.session.adminUser,
+            project: { ...req.body, id: sMediaId }
+        });
+    }
+});
+
+router.post('/social-medias/delete/:id', isAdmin, async (req, res) => {
+    try {
+        const sMediaId = req.params.id;
+
+        await pool.query(dbQueries.socialMedias.delete, [sMediaId]);
+        return res.json({ success: true });
+    } catch (err) {
+        return res.status(500).json({ success: false, error: err.message });
     }
 });
 
@@ -200,10 +634,10 @@ router.post('/articles/create', isAdmin, (req, res, next) => {
         }
 
         await pool.query(dbQueries.articles.add, [
-            title,
-            finalSlug,
-            excerpt,
-            content,
+            safeTrim(title),
+            safeTrim(finalSlug),
+            safeTrim(excerpt),
+            safeTrim(content),
             cover_image,
             req.session.adminUser?.id,
             articleStatus,
@@ -285,10 +719,10 @@ router.post('/articles/edit/:id', isAdmin, (req, res, next) => {
 
     try {
         await pool.query(dbQueries.articles.update, [
-            title,
-            finalSlug,
-            excerpt,
-            content,
+            safeTrim(title),
+            safeTrim(finalSlug),
+            safeTrim(excerpt),
+            safeTrim(content),
             cover_image,
             articleStatus,
             req.session.adminUser?.id,

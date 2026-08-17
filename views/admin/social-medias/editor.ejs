@@ -1,0 +1,90 @@
+<%- include('../partials/header') %>
+    <div class="flex min-h-screen">
+        <%- include('../partials/sidebar') %>
+            <main class="flex-1 p-8 overflow-y-auto">
+                <header class="flex items-center justify-between mb-8">
+                    <div>
+                        <h1 class="text-2xl font-bold text-white">
+                            <%= socialMedia.id ? 'Sosyal Medyayı Düzenle' : 'Yeni Sosyal Media Ekle' %>
+                        </h1>
+                    </div>
+                    <a href="<%=adminEndpoint%>/social-medias"
+                        class="text-xs text-slate-400 hover:text-white transition-colors">
+                        ← İptal ve Geri Dön</a>
+                </header>
+                <form
+                    action="<%= socialMedia.id ? adminEndpoint + '/social-medias/edit/' + socialMedia.id : adminEndpoint + '/social-medias/create' %>"
+                    method="POST" class="space-y-6 max-w-4xl">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                                Sosyal Medya Başlığı
+                            </label>
+                            <input type="text" name="title" value="<%= socialMedia.title || '' %>" required
+                                placeholder="Örn: GitHub"
+                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:border-blue-500" />
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                                Kullanıcı Adı
+                            </label>
+                            <input type="text" name="username" value="<%= socialMedia.username || '' %>"
+                                placeholder="mahmut"
+                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-4 py-3 text-slate-300 text-sm focus:outline-none focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                                Url
+                            </label>
+                            <input type="text" name="url" value="<%= socialMedia.url || '' %>"
+                                placeholder="https://github.com/mahmuttysz"
+                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-4 py-3 text-slate-300 text-sm focus:outline-none focus:border-blue-500">
+                        </div>
+                    </div>
+                    <% if(socialMedia.icon && socialMedia.icon !=='' ) {%>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                                İkon Önizleme
+                            </label>
+                            <%- socialMedia.icon %>
+                        </div>
+                        <% }%>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                                    İkon
+                                </label>
+                                <textarea name="icon" rows="16" required
+                                    placeholder="# Başlık 1&#10;&#10;Paragraf metni buraya gelecek..."
+                                    class="w-full bg-slate-900 border border-slate-800 rounded-lg p-4 font-mono text-sm text-slate-200 focus:outline-none focus:border-blue-500 leading-relaxed"><%= socialMedia.icon || '' %></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                                    Sıra
+                                </label>
+                                <input type="number" name="turn" value="<%= socialMedia.turn || 1 %>"
+                                    class="w-full bg-slate-900 border border-slate-800 rounded-lg px-4 py-3 text-slate-300 text-sm focus:outline-none focus:border-blue-500">
+                            </div>
+                            <div class="flex items-center justify-between pt-4 border-t border-slate-800">
+                                <div class="flex items-center gap-4">
+                                    <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                                        Durumu:
+                                    </label>
+                                    <select name="status"
+                                        class="bg-slate-900 border border-slate-800 text-sm text-white rounded-lg px-3 py-2 focus:outline-none">
+                                        <option value="0" <%=socialMedia.status===0 ? 'selected' : '' %>>
+                                            Pasif
+                                        </option>
+                                        <option value="1" <%=socialMedia.status===1 ? 'selected' : '' %>>
+                                            Aktif
+                                        </option>
+                                    </select>
+                                </div>
+                                <button type="submit"
+                                    class="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-medium transition-colors">
+                                    <%= socialMedia.id ? 'Değişiklikleri Kaydet' : 'Sosyal Medyayı Kaydet' %>
+                                </button>
+                            </div>
+                </form>
+            </main>
+    </div>
+    <%- include('../partials/footer') %>

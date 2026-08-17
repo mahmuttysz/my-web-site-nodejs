@@ -79,11 +79,19 @@ const calculateReadingTime = (content) => {
     return Math.ceil(words / 200) || 1;
 };
 
+const safeTrim = (str) => {
+    if (typeof str !== 'string') return str;
+
+    return str.replace(/[ \t]+$/gm, '')
+        .replace(/^[\s\uFEFF\xA0\u200B]+|[\s\uFEFF\xA0\u200B]+$/g, '');
+}
+
 module.exports = {
     getIndexPageData,
     formatDate,
     formatLongDate,
     formatLongDateTime,
     escapeHtml,
-    calculateReadingTime
+    calculateReadingTime,
+    safeTrim
 };
