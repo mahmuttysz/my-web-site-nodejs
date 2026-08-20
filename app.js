@@ -5,7 +5,6 @@ const helmet = require('helmet');
 const session = require('express-session');
 const sessionOpt = require('./config/session');
 const path = require('path');
-const crypto = require('node:crypto');
 const { getIndexPageData, formatDate, formatLongDate, formatLongDateTime } = require('./utils/helper');
 const { defaultMid } = require('./middleware/default');
 
@@ -34,10 +33,6 @@ app.set('views', path.join(__dirname, 'views'));
 
 app.use(session(sessionOpt));
 app.use(defaultMid);
-app.use((req, res, next) => {
-    res.locals.nonce = crypto.randomBytes(16).toString('base64');
-    next();
-});
 
 app.use((req, res, next) => {
     helmet({

@@ -13,9 +13,9 @@ router.get('/', async (req, res) => {
             title: 'Dashboard',
             user: req.session.adminUser,
             stats: {
-                totalArticles: Number(stats?.totalArticles || 0),
-                totalViews: Number(stats?.totalViews || 0),
-                unreadMessages: Number(stats?.unreadMessages || 0)
+                totalArticles: parseInt(stats?.totalArticles || 0, 10),
+                totalViews: parseInt(stats?.totalViews || 0, 10),
+                unreadMessages: parseInt(stats?.unreadMessages || 0, 10)
             },
             recentMessages: recentMessages || []
         });

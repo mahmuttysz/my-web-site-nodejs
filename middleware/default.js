@@ -1,5 +1,6 @@
 const { env } = require('../config/env');
 const locales = require('../utils/locales');
+const crypto = require('node:crypto');
 
 module.exports = {
     defaultMid: (req, res, next) => {
@@ -36,6 +37,7 @@ module.exports = {
 
         res.locals.lang = lang;
         res.locals.t = locales[lang] || locales['tr'];
+        res.locals.nonce = crypto.randomBytes(16).toString('base64');
 
         next();
     }
