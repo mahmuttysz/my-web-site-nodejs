@@ -4,6 +4,7 @@ const { env } = require('../config/env');
 
 router.get('/:langCode', (req, res) => {
     const langCode = req.params.langCode;
+    let status = false;
 
     if (['tr', 'en'].includes(langCode)) {
         res.cookie('lang', langCode, {
@@ -23,17 +24,19 @@ router.get('/:langCode', (req, res) => {
     if (referer) {
         try {
             const refererUrl = new URL(referer);
-            const siteUrl = new URL(env.APP_URL || 'http://localhost:3000');
+            const siteUrl = new URL(env.SITE_URL || 'http://localhost:3000');
 
             if (refererUrl.origin === siteUrl.origin) {
                 redirectTo = referer;
+                status = true;
             }
         } catch (err) {
             redirectTo = '/';
+            status = false;
         }
     }
 
-    return res.redirect(redirectTo);
+    return res.json({ success: status, lang: langCode, redirectTo });
 });
 
 module.exports = router;
