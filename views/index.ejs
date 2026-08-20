@@ -230,7 +230,7 @@
                         class="bg-site-bg border border-site-border text-site-text p-3 rounded-md focus:outline-none focus:border-site-accent text-sm resize-none"
                         required></textarea>
                 </div>
-                <div class="turnstile-box flex justify-start">
+                <div class="turnstile-box flex justify-start overflow-x-auto">
                     <div id="turnstile-container"></div>
                 </div>
                 <button type="submit" id="sendBtn"
@@ -238,13 +238,17 @@
                     <%= t.form.send %>
                 </button>
             </form>
-            <script>
+            <script nonce="<%= typeof nonce !== 'undefined' ? nonce : '' %>">
                 window.onloadTurnstileCallback = function () {
-                    if (window.turnstile) {
+                    if (window.turnstile && document.getElementById('turnstile-container')) {
                         turnstile.render('#turnstile-container', {
                             sitekey: '<%= turnstileSiteKey %>',
                             theme: 'dark',
                             size: 'normal',
+                            'callback': function (token) {
+                                const btn = document.getElementById('sendBtn');
+                                if (btn) btn.disabled = false;
+                            },
                             'expired-callback': function () {
                                 turnstile.reset('#turnstile-container');
                             }

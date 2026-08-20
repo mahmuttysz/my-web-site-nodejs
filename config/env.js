@@ -8,6 +8,7 @@ const env = {
     APP_ENV: process.env.APP_ENV || 'dev',
     PORT: parseInt(process.env.PORT, 10) || 3000,
     APP_URL: process.env.APP_URL || 'http://localhost:3000',
+    SITE_URL: process.env.SITE_URL || 'https://mahmuttuysuz.net',
     SESSION_SECRET: process.env.SESSION_SECRET || 'very_secret_key_must_be_change',
     ADMIN_PANEL_ENDPOINT: process.env.ADMIN_PANEL_ENDPOINT || '/admin',
     TURNSTILE_SITE_KEY: process.env.TURNSTILE_SITE_KEY || '',

@@ -3,7 +3,7 @@ const router = express.Router();
 
 const { pool, dbQueries } = require('../config/db');
 const validateTurnstile = require('../middleware/turnstile');
-const { formLimiter } = require('../config/rateLimit');
+const { formLimiter } = require('../config/rate-limit');
 const { sendVisitorMail, sendNotificationMailToAdmin } = require('../utils/mailer');
 
 const isValidEmail = (email) => {
