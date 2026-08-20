@@ -10,7 +10,7 @@
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon -e js,ejs,json,css app.js",
-    "seed:admin": "node scripts/createAdmin.js",
+    "seed:admin": "node scripts/create-admin.js",
     "build:css": "npx @tailwindcss/cli -i ./src/input.css -o ./public/css/style.css --minify",
     "watch:css": "npx @tailwindcss/cli -i ./src/input.css -o ./public/css/style.css --watch"
   },
@@ -24,16 +24,16 @@
     "dotenv-expand": "^13.0.0",
     "ejs": "^6.0.1",
     "express": "^5.2.1",
-    "express-rate-limit": "^8.6.1",
+    "express-rate-limit": "^8.6.2",
     "express-session": "^1.19.0",
     "helmet": "^8.3.0",
     "mariadb": "^3.5.3",
-    "marked": "^18.0.7",
+    "marked": "^18.0.10",
     "multer": "^2.2.0",
-    "nodemailer": "^9.0.3",
+    "nodemailer": "^9.0.5",
     "path": "^0.12.7",
     "rate-limit-redis": "^6.0.1",
-    "redis": "^6.2.0",
+    "redis": "^6.2.1",
     "slugify": "^1.6.9"
   },
   "devDependencies": {

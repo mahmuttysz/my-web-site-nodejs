@@ -3,15 +3,11 @@ const { RedisStore } = require('rate-limit-redis');
 const redisClient = require('./redis');
 const { env } = require('./env');
 
-/**
- * Esnek Rate Limiter Oluşturucu
- * @param {Object} options 
- * @param {number} options.minutes - Kaç dakika geçerli olacağı
- * @param {number} options.max - İzin verilen maksimum istek sayısı
- * @param {string} options.prefix - Redis üzerindeki anahtar öneki
- */
-
-const createRateLimiter = ({ minutes = 15, max = 100, prefix = 'rl:genel:' } = {}) => {
+const createRateLimiter = ({
+    minutes = 15,
+    max = 100,
+    prefix = 'rl:genel:'
+} = {}) => {
     return rateLimit({
         windowMs: minutes * 60 * 1000,
         max: max,

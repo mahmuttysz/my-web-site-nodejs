@@ -36,7 +36,11 @@ router.get('/:langCode', (req, res) => {
         }
     }
 
-    return res.json({ success: status, lang: langCode, redirectTo });
+    return res.json({
+        success: status,
+        lang: langCode,
+        redirectTo
+    });
 });
 
 module.exports = router;
