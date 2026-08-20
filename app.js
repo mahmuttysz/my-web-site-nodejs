@@ -8,7 +8,7 @@ const path = require('path');
 const { getIndexPageData, formatDate, formatLongDate, formatLongDateTime } = require('./utils/helper');
 const { defaultMid } = require('./middleware/default');
 
-const sitemapRouter =  require('./routes/sitemap');
+const sitemapRouter = require('./routes/sitemap');
 const languageRoutes = require('./routes/language');
 const adminRoutes = require('./routes/admin');
 const blogRoutes = require('./routes/blog');

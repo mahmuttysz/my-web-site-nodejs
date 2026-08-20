@@ -122,4 +122,35 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+    const langButtons = document.querySelectorAll('.lang-btn');
+
+    langButtons.forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const lang = btn.getAttribute('data-lang');
+            if (!lang) return;
+
+            try {
+                const response = await fetch('/lang/' + lang, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                if (response.ok) {
+                    const data = await response.json(); 
+                    
+                    if (data.success && data.redirectTo) {
+                        window.location.href = data.redirectTo;
+                    } else {
+                        window.location.reload();
+                    }
+                } else {
+                    window.location.reload();
+                }
+
+            } catch (err) {
+                console.error('Dil değiştirme hatası:', err);
+            }
+        });
+    });
 });
