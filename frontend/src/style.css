@@ -1,0 +1,51 @@
+@import "tailwindcss";
+
+@theme {
+  --color-site-bg: #0b0f19;
+  --color-site-card: #131c2e;
+  --color-site-border: #1f2937;
+  --color-site-accent: #38bdf8;
+  --color-site-text: #f3f4f6;
+  --color-site-muted: #9ca3af;
+}
+
+body {
+  background-color: var(--color-site-bg);
+  color: var(--color-site-text);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+@layer utilities {
+  .hero-parallax-bg {
+    background-image: linear-gradient(to bottom, rgba(11, 15, 25, 0.7), var(--color-site-bg)), url("/images/banner.jpg");
+    background-attachment: fixed;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+  }
+
+  .timeline-dot::before {
+    content: "";
+    position: absolute;
+    left: calc(-1.75rem - 7px);
+    top: 0.35rem;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: var(--color-site-accent);
+    box-shadow: 0 0 10px var(--color-site-accent);
+  }
+}
+
+.turnstile-box iframe {
+  width: 300px !important;
+  height: 65px !important;
+  border-radius: 0.5rem;
+}
+
+@media (max-width: 340px) {
+  .turnstile-box .cf-turnstile {
+    transform: scale(0.88);
+    transform-origin: center;
+  }
+}
