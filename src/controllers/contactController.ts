@@ -1,96 +1,79 @@
-// src/routes/contact.ts
-import express, { Request, Response } from 'express';
-import { pool, dbQueries } from '../config/db';
-import validateTurnstile from '../middlewares/turnstile';
-import { formLimiter } from '../config/rate-limit';
+import { query, dbQueries } from '../config/db';
+import locales from '../utils/locales';
+import { safeTrim } from '../utils/helper';
 import { sendVisitorMail, sendNotificationMailToAdmin } from '../utils/mailer';
 
-const router = express.Router();
+export interface ContactResponse {
+    success: boolean;
+    message: string;
+}
 
-const isValidEmail = (email: string): boolean => {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-};
+export const saveContact = async (
+    fullName: string,
+    email: string,
+    subject: string,
+    message: string,
+    lang: string,
+    clientIp: string
+): Promise<ContactResponse> => {
+    const activeLang = lang === 'tr' ? 'tr' : 'en';
+    const locale = locales[activeLang] || locales.tr;
 
-router.post('/', formLimiter, validateTurnstile, async (req: Request, res: Response) => {
-    const { fullName, email, subject, message } = req.body;
-    const lang = res.locals.lang || 'tr';
-
-    if (!fullName || !email || !message) {
-        return res.status(400).json({
-            success: false,
-            message: res.locals.t?.form?.emptyCells || 'Lütfen gerekli alanları doldurun.'
-        });
-    }
-
-    if (!isValidEmail(email)) {
-        return res.status(400).json({
-            success: false,
-            message: res.locals.t?.form?.invalidEmail || 'Lütfen geçerli bir e-posta adresi giriniz.'
-        });
-    }
+    const cleanFullName = safeTrim(fullName);
+    const cleanEmail = safeTrim(email);
+    const cleanSubject = safeTrim(subject) || (activeLang === 'tr' ? 'Konusuz' : 'No Subject');
+    const cleanMessage = safeTrim(message);
 
     try {
-        const xForwardedFor = req.headers['x-forwarded-for'];
-        const xForwardedIp = Array.isArray(xForwardedFor)
-            ? xForwardedFor[0]
-            : xForwardedFor?.split(',')[0];
-
-        const clientIp =
-            (req.headers['cf-connecting-ip'] as string) ||
-            xForwardedIp ||
-            req.ip ||
-            '';
-
+        // Mail gönderimlerinin birbirini engellememesi için paralel yürütme
         const sendMailResults = await Promise.allSettled([
-            sendVisitorMail(email, fullName, lang),
-            sendNotificationMailToAdmin(fullName, email, subject, message, lang)
+            sendVisitorMail(cleanEmail, cleanFullName, activeLang),
+            sendNotificationMailToAdmin(cleanFullName, cleanEmail, cleanSubject, cleanMessage, activeLang)
         ]);
 
-        const visitorRes = sendMailResults[0];
-        const adminRes = sendMailResults[1];
+        const [visitorRes, adminRes] = sendMailResults;
 
+        // Type narrowing sayesinde casting kalabalığı olmadan log nesnesi oluşturma
         const mailLog = {
             visitorMail:
                 visitorRes.status === 'fulfilled'
                     ? { status: 'fulfilled', messageId: (visitorRes.value as any)?.messageId }
                     : {
                         status: 'rejected',
-                        reason:
-                            (visitorRes as PromiseRejectedResult).reason?.message ||
-                            String((visitorRes as PromiseRejectedResult).reason)
+                        reason: visitorRes.reason?.message || String(visitorRes.reason)
                     },
             adminMail:
                 adminRes.status === 'fulfilled'
                     ? { status: 'fulfilled', messageId: (adminRes.value as any)?.messageId }
                     : {
                         status: 'rejected',
-                        reason:
-                            (adminRes as PromiseRejectedResult).reason?.message ||
-                            String((adminRes as PromiseRejectedResult).reason)
+                        reason: adminRes.reason?.message || String(adminRes.reason)
                     }
         };
 
-        await pool.query(dbQueries.contacts.add, [
-            fullName,
-            email,
-            subject || 'Konusuz',
-            message,
+        await query(dbQueries.contacts.add, [
+            cleanFullName,
+            cleanEmail,
+            cleanSubject,
+            cleanMessage,
             clientIp,
             JSON.stringify(mailLog),
-            lang
+            activeLang
         ]);
 
-        return res.json({
+        return {
             success: true,
-            message: res.locals.t?.form?.success || 'Mesajınız başarıyla iletildi.'
-        });
+            message: locale.form?.success || 'Mesajınız başarıyla iletildi.'
+        };
     } catch (err) {
         console.error('❌ İletişim İşlem Hatası:', err);
-        return res.status(500).json({
+        return {
             success: false,
-            message: res.locals.t?.form?.error || 'Sunucu hatası oluştu.'
-        });
+            message: locale.form?.error || 'Sunucu hatası oluştu.'
+        };
     }
-});
+};
 
-export default router;
+export default {
+    saveContact
+};

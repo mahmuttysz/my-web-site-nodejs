@@ -1,35 +1,20 @@
-// src/routes/admin/messages.ts
-import express, { Request, Response } from 'express';
-import { pool, dbQueries } from '../../config/db';
+import { query, dbQueries } from '../../config/db';
+import Contacts from '../../types/dbTables/contacts';
 
-const router = express.Router();
+// Mesajları Listeleme ve Okundu İşaretleme
+export const getMessages = async (): Promise<Contacts[]> => {
+    const messages = await query<Contacts[]>(dbQueries.contacts.getAll);
+    await query(dbQueries.contacts.markedAsRead);
 
-router.get('/', async (req: Request, res: Response) => {
-    try {
-        const messages = await pool.query(dbQueries.contacts.getAll);
-        await pool.query(dbQueries.contacts.markedAsRead);
+    return messages || [];
+};
 
-        return res.render('admin/messages', {
-            title: 'Gelen Mesajlar',
-            user: req.session.adminUser,
-            messages
-        });
-    } catch (err) {
-        console.error('Mesajlar listelenirken hata:', err);
-        return res.status(500).send('Sunucu hatası');
-    }
-});
+// Mesaj Silme
+export const deleteMessage = async (contactId: number): Promise<void> => {
+    await query(dbQueries.contacts.delete, [contactId]);
+};
 
-router.post('/delete/:id', async (req: Request, res: Response) => {
-    try {
-        await pool.query(dbQueries.contacts.delete, [req.params.id]);
-        return res.json({ success: true });
-    } catch (err: any) {
-        return res.status(500).json({
-            success: false,
-            error: err?.message || 'Bir hata oluştu.'
-        });
-    }
-});
-
-export default router;
+export default {
+    getMessages,
+    deleteMessage
+};

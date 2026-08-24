@@ -1,10 +1,10 @@
-// src/routes/admin/login.ts
 import express, { Request, Response } from 'express';
 import { formLimiter } from '../../config/rate-limit';
 import loginController from '../../controllers/admin/loginController';
 
 const router = express.Router();
 
+// Login Sayfası
 router.get('/', (req: Request, res: Response) => {
   if (req.session.adminUser) {
     return res.redirect(req.adminEndpoint || '/admin');
@@ -12,6 +12,7 @@ router.get('/', (req: Request, res: Response) => {
   return res.render('admin/login', { error: null });
 });
 
+// Login İşlemi
 router.post('/', formLimiter, async (req: Request, res: Response) => {
   const { username, password } = req.body;
 
@@ -26,27 +27,29 @@ router.post('/', formLimiter, async (req: Request, res: Response) => {
       xForwardedIp ||
       req.ip ||
       '';
+
     const checkLogin = await loginController.login(username, password, clientIp);
 
-    if (checkLogin.success) {
-      req.session.adminUser = {
-        id: checkLogin.user.id,
-        username: checkLogin.user.username
-      };
-    } else {
-      return res.render('admin/login', checkLogin)
+    if (!checkLogin.success || !checkLogin.user) {
+      return res.render('admin/login', { error: checkLogin.error });
     }
+
+    req.session.adminUser = {
+      id: checkLogin.user.id,
+      username: checkLogin.user.username
+    };
 
     const redirectUrl = req.session.returnTo || req.adminEndpoint || '/admin';
     delete req.session.returnTo;
 
     return res.redirect(redirectUrl);
   } catch (err) {
-    console.error('Login Hatası:', err);
-    return res.render('admin/login', { error: 'Veritabanı hatası oluştu.' });
+    console.error('Login İşlem Hatası:', err);
+    return res.render('admin/login', { error: 'Giriş yapılırken bir hata oluştu.' });
   }
 });
 
+// Oturumu Kapatma
 router.get('/destroy', (req: Request, res: Response) => {
   const adminEndpoint = req.adminEndpoint || '/admin';
   req.session.destroy((_err) => {

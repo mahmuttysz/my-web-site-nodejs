@@ -1,55 +1,67 @@
-// src/routes/admin/login.ts
 import bcrypt from 'bcrypt';
-import { pool, dbQueries, queryOne } from '../../config/db';
+import { query, queryOne, dbQueries } from '../../config/db';
 import AdminUsers from '../../types/dbTables/adminUsers';
 import LoginResponse from '../../types/response/loginResponse';
 
-export const login = async (username: string, password: string, clientIp: string) => {
+export const login = async (
+  username: string,
+  password: string,
+  clientIp: string
+): Promise<LoginResponse> => {
   try {
-    const user = await queryOne<AdminUsers>(dbQueries.adminUsers.getByUsername, [username]);
-
-    if (user === null) {
-      return <LoginResponse>{
+    if (!username || !password) {
+      return {
         success: false,
-        error: 'Kullanıcı adı veya şifre hatalı.',
-        user: <AdminUsers>{}
+        error: 'Kullanıcı adı ve şifre gereklidir.',
+        user: {} as AdminUsers
       };
     }
+
+    const user = await queryOne<AdminUsers>(dbQueries.adminUsers.getByUsername, [username]);
+
+    if (!user) {
+      return {
+        success: false,
+        error: 'Kullanıcı adı veya şifre hatalı.',
+        user: {} as AdminUsers
+      };
+    }
+
     const match = await bcrypt.compare(password, user.password_hash);
 
     if (!match) {
-      await pool.query(dbQueries.adminUsers.wrongTryUpdate, [
+      await query(dbQueries.adminUsers.wrongTryUpdate, [
         new Date(),
         clientIp,
         user.id
       ]);
-      return <LoginResponse>{
+
+      return {
         success: false,
         error: 'Kullanıcı adı veya şifre hatalı.',
-        user: <AdminUsers>{}
+        user: {} as AdminUsers
       };
     }
 
-    await pool.query(dbQueries.adminUsers.successLoginUpdate, [
+    await query(dbQueries.adminUsers.successLoginUpdate, [
       new Date(),
       clientIp,
       user.id
     ]);
 
-    return <LoginResponse>{
+    return {
       success: true,
-      error: 'Giriş başarılı.',
+      error: '',
       user
     };
   } catch (err) {
     console.error('Login Hatası:', err);
-    return <LoginResponse>{
+    return {
       success: false,
       error: 'Veritabanı hatası oluştu.',
-      user: <AdminUsers>{}
+      user: {} as AdminUsers
     };
   }
 };
-
 
 export default { login };

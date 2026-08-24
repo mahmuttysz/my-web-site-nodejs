@@ -1,15 +1,13 @@
-// src/routes/admin/experiences.ts
 import express, { Request, Response } from 'express';
-import { pool, dbQueries } from '../../config/db';
-import { safeTrim } from '../../utils/helper';
 import { env } from '../../config/env';
+import experiencesController from '../../controllers/admin/experiencesController';
 
 const router = express.Router();
 
 // Deneyimleri Listeleme
 router.get('/', async (req: Request, res: Response) => {
     try {
-        const experiences = await pool.query(dbQueries.experiences.getAll);
+        const experiences = await experiencesController.getExperiences();
 
         return res.render('admin/experiences/index', {
             title: 'Deneyimlerim',
@@ -34,35 +32,36 @@ router.get('/new', (req: Request, res: Response) => {
 // Yeni Deneyim Kaydetme
 router.post('/create', async (req: Request, res: Response) => {
     const { company_name, title, description, begin_date, isResume, end_date, language, status } = req.body;
-    const experienceStatus = parseInt(status, 10) || 0;
-    const endDate = isResume === 'true' ? null : end_date;
+    const experienceStatus = (parseInt(status, 10) || 0) === 1;
 
-    const adminEndpoint = (req as any).adminEndpoint || env.ADMIN_PANEL_ENDPOINT || '/admin';
+    // HTML Form checkbox durumları ('on', 'true', true) kontrolü
+    const isCurrentlyWorking = isResume === 'true' || isResume === 'on' || isResume === true;
+    const endDate = isCurrentlyWorking ? null : (end_date || null);
+
+    const adminEndpoint = req.adminEndpoint || env.ADMIN_PANEL_ENDPOINT || '/admin';
+    const userId = Number(req.session.adminUser?.id || 0);
 
     try {
-        if (!title) {
-            throw new Error('Başlık alanı zorunludur.');
+        if (!title || !company_name || !begin_date) {
+            throw new Error('Firma adı, başlık ve başlangıç tarihi alanları zorunludur.');
         }
 
-        await pool.query(dbQueries.experiences.add, [
-            safeTrim(company_name),
-            safeTrim(title),
-            safeTrim(description),
+        await experiencesController.addExperience(
+            company_name,
+            title,
+            description,
             begin_date,
             endDate,
-            language || 'tr',
-            req.session.adminUser?.id,
-            experienceStatus
-        ]);
+            language,
+            experienceStatus,
+            userId
+        );
 
         return res.redirect(`${adminEndpoint}/experiences`);
     } catch (err: any) {
         console.error('Deneyim ekleme hatası:', err);
 
-        let errorMessage = 'Deneyim kaydedilirken bir hata oluştu.';
-        if (err.message) {
-            errorMessage = err.message;
-        }
+        const errorMessage = err?.message || 'Deneyim kaydedilirken bir hata oluştu.';
 
         return res.status(400).render('admin/experiences/editor', {
             title: 'Yeni Deneyim',
@@ -75,18 +74,20 @@ router.post('/create', async (req: Request, res: Response) => {
 
 // Deneyim Düzenleme Ekranı
 router.get('/edit/:id', async (req: Request, res: Response) => {
-    const adminEndpoint = (req as any).adminEndpoint || env.ADMIN_PANEL_ENDPOINT || '/admin';
+    const adminEndpoint = req.adminEndpoint || env.ADMIN_PANEL_ENDPOINT || '/admin';
 
     try {
-        const rows = await pool.query(dbQueries.experiences.getById, [req.params.id]);
-        if (!rows || rows.length === 0) {
+        const experienceId = Number(req.params?.id || '0');
+        const experience = await experiencesController.getExperience(experienceId);
+
+        if (!experience) {
             return res.redirect(`${adminEndpoint}/experiences`);
         }
 
         return res.render('admin/experiences/editor', {
             title: 'Deneyim Düzenle',
             user: req.session.adminUser,
-            experience: rows[0]
+            experience
         });
     } catch (err) {
         console.error('Deneyim getirme hatası:', err);
@@ -96,30 +97,37 @@ router.get('/edit/:id', async (req: Request, res: Response) => {
 
 // Deneyim Güncelleme
 router.post('/edit/:id', async (req: Request, res: Response) => {
-    const experienceId = req.params.id;
+    const experienceId = Number(req.params?.id || '0');
     const { company_name, title, description, begin_date, isResume, end_date, language, status } = req.body;
-    const experienceStatus = parseInt(status, 10) || 0;
-    const endDate = isResume === 'true' ? null : end_date;
+    const experienceStatus = (parseInt(status, 10) || 0) === 1;
 
-    const adminEndpoint = (req as any).adminEndpoint || env.ADMIN_PANEL_ENDPOINT || '/admin';
+    const isCurrentlyWorking = isResume === 'true' || isResume === 'on' || isResume === true;
+    const endDate = isCurrentlyWorking ? null : (end_date || null);
+
+    const adminEndpoint = req.adminEndpoint || env.ADMIN_PANEL_ENDPOINT || '/admin';
+    const userId = Number(req.session.adminUser?.id || 0);
 
     try {
-        await pool.query(dbQueries.experiences.update, [
-            safeTrim(company_name),
-            safeTrim(title),
-            safeTrim(description),
+        if (!title || !company_name || !begin_date) {
+            throw new Error('Firma adı, başlık ve başlangıç tarihi alanları zorunludur.');
+        }
+
+        await experiencesController.editExperience(
+            experienceId,
+            company_name,
+            title,
+            description,
             begin_date,
             endDate,
-            language || 'tr',
-            req.session.adminUser?.id,
+            language,
             experienceStatus,
-            experienceId
-        ]);
+            userId
+        );
 
         return res.redirect(`${adminEndpoint}/experiences`);
-    } catch (err) {
+    } catch (err: any) {
         console.error('Deneyim güncelleme hatası:', err);
-        const errorMessage = 'Deneyim güncellenirken bir hata oluştu.';
+        const errorMessage = err?.message || 'Deneyim güncellenirken bir hata oluştu.';
 
         return res.status(400).render('admin/experiences/editor', {
             title: 'Deneyim Düzenle',
@@ -133,12 +141,15 @@ router.post('/edit/:id', async (req: Request, res: Response) => {
 // Deneyim Silme
 router.post('/delete/:id', async (req: Request, res: Response) => {
     try {
-        const experienceId = req.params.id;
+        const experienceId = Number(req.params?.id || '0');
+        await experiencesController.deleteExperience(experienceId);
 
-        await pool.query(dbQueries.experiences.delete, [experienceId]);
         return res.json({ success: true });
     } catch (err: any) {
-        return res.status(500).json({ success: false, error: err.message });
+        return res.status(500).json({
+            success: false,
+            error: err?.message || 'Deneyim silinirken bir hata oluştu.'
+        });
     }
 });
 

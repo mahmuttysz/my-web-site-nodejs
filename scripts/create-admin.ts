@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
-import { pool, dbQueries } from '../src/config/db';
+import { query, queryOne, dbQueries } from '../src/config/db';
 import { env } from '../src/config/env';
+import AdminUsers from '../src/types/dbTables/adminUsers';
 
 async function createAdmin() {
     const args = process.argv.slice(2);
@@ -15,9 +16,9 @@ async function createAdmin() {
     try {
         console.log('🔄 Admin kullanıcısı oluşturuluyor...');
 
-        const existingUsers = await pool.query(dbQueries.adminUsers.getByUsername, [username]);
+        const existingUsers = await queryOne<AdminUsers>(dbQueries.adminUsers.getByUsername, [username]);
 
-        if (existingUsers && existingUsers.length > 0) {
+        if (existingUsers !== null) {
             console.log(`⚠️ '${username}' adında bir kullanıcı zaten veritabanında mevcut! İşlem durduruldu.`);
             return;
         }
@@ -25,7 +26,7 @@ async function createAdmin() {
         const saltRounds = 10;
         const passwordHash = await bcrypt.hash(rawPassword, saltRounds);
 
-        await pool.query(dbQueries.adminUsers.add, [name, surname, username, passwordHash]);
+        await query(dbQueries.adminUsers.add, [name, surname, username, passwordHash]);
 
         console.log('----------------------------------------------------');
         console.log('✅ Admin kullanıcısı başarıyla oluşturuldu!');
@@ -38,9 +39,6 @@ async function createAdmin() {
         console.error('❌ Admin kullanıcısı oluşturulurken hata oluştu:', error);
         exitCode = 1;
     } finally {
-        try {
-            await pool.end();
-        } catch (e) { }
         process.exit(exitCode);
     }
 }

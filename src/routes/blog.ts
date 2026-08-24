@@ -1,4 +1,3 @@
-// src/routes/blog.ts
 import express, { Request, Response, NextFunction } from 'express';
 import blogController from '../controllers/blogController';
 
@@ -8,13 +7,12 @@ const router = express.Router();
 router.get('/', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const lang = res.locals.lang || 'tr';
-
         const { articles, socialMedias } = await blogController.getArticles(lang);
 
         return res.render('blog/index', {
             title: res.locals.t?.nav?.blog || 'Blog',
-            articles: articles || [],
-            socialMedias: socialMedias
+            articles,
+            socialMedias
         });
     } catch (err) {
         console.error('❌ Blog liste yükleme hatası:', err);
@@ -28,12 +26,17 @@ router.get('/:slug', async (req: Request, res: Response, next: NextFunction) => 
         const lang = res.locals.lang || 'tr';
         const { slug } = req.params;
 
-        const getData = await blogController.getBySlug(slug, lang);
+        const blogData = await blogController.getBySlug(slug.toString(), lang);
+
+        // Makale bulunamadıysa isteği 404 middleware'ine devret
+        if (!blogData) {
+            return next();
+        }
 
         return res.render('blog/detail', {
-            title: getData.article?.title,
-            article: getData.article,
-            socialMedias: getData.socialMedias
+            title: blogData.title,
+            article: blogData.article,
+            socialMedias: blogData.socialMedias
         });
     } catch (err) {
         console.error('❌ Blog detay yükleme hatası:', err);

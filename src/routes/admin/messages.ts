@@ -1,13 +1,12 @@
-// src/routes/admin/messages.ts
 import express, { Request, Response } from 'express';
-import { pool, dbQueries } from '../../config/db';
+import messagesController from '../../controllers/admin/messagesController';
 
 const router = express.Router();
 
+// Gelen Mesajlar Ekranı
 router.get('/', async (req: Request, res: Response) => {
     try {
-        const messages = await pool.query(dbQueries.contacts.getAll);
-        await pool.query(dbQueries.contacts.markedAsRead);
+        const messages = await messagesController.getMessages();
 
         return res.render('admin/messages', {
             title: 'Gelen Mesajlar',
@@ -20,11 +19,15 @@ router.get('/', async (req: Request, res: Response) => {
     }
 });
 
+// Mesaj Silme İşlemi
 router.post('/delete/:id', async (req: Request, res: Response) => {
     try {
-        await pool.query(dbQueries.contacts.delete, [req.params.id]);
+        const contactId = Number(req.params.id || '0');
+        await messagesController.deleteMessage(contactId);
+
         return res.json({ success: true });
     } catch (err: any) {
+        console.error('Mesaj silme hatası:', err);
         return res.status(500).json({
             success: false,
             error: err?.message || 'Bir hata oluştu.'

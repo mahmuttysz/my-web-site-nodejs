@@ -1,40 +1,4 @@
 // src/utils/helper.ts
-import { pool, dbQueries, queryOne } from '../config/db';
-import AboutMe from '../types/dbTables/aboutMe';
-import Articles from '../types/dbTables/articles';
-import Experiences from '../types/dbTables/experiences';
-import Projects from '../types/dbTables/projects';
-import SocialMedias from '../types/dbTables/socialMedias';
-import IndexPageResponse from '../types/response/indexPageResponse';
-
-export const getIndexPageData = async (lang: string = 'tr'): Promise<IndexPageResponse> => {
-    try {
-        const [aboutMe, experiences, projects, articles, socialMedias] = await Promise.all([
-            queryOne<AboutMe>(dbQueries.aboutMe.get, [lang]),
-            pool.query<Experiences[]>(dbQueries.experiences.get, [lang]),
-            pool.query<Projects[]>(dbQueries.projects.get, [lang]),
-            pool.query<Articles[]>(dbQueries.articles.get, [lang]),
-            pool.query<SocialMedias[]>(dbQueries.socialMedias.get)
-        ]);
-
-        return {
-            aboutMe: aboutMe || <AboutMe>{},
-            experiences: experiences || [],
-            projects: projects || [],
-            articles: articles || [],
-            socialMedias: socialMedias || []
-        };
-    } catch (err) {
-        console.error('❌ getIndexPageData Veri Çekme Hatası:', err);
-        return {
-            aboutMe: <AboutMe>{},
-            experiences: [],
-            projects: [],
-            articles: [],
-            socialMedias: []
-        };
-    }
-};
 
 export const formatDate = (dateString?: string | Date | null, lang: string = 'tr'): string => {
     if (!dateString) return lang === 'tr' ? 'Devam Ediyor' : 'Ongoing';
@@ -100,12 +64,26 @@ export const safeTrim = <T>(str: T): T => {
         .replace(/^[\s\uFEFF\xA0\u200B]+|[\s\uFEFF\xA0\u200B]+$/g, '') as unknown as T;
 };
 
+export const isValidEmail = (email: string): boolean => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+};
+
+export const escapeXml = (str: string): string => {
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&apos;');
+};
+
 export default {
-    getIndexPageData,
     formatDate,
     formatLongDate,
     formatLongDateTime,
     escapeHtml,
     calculateReadingTime,
-    safeTrim
+    safeTrim,
+    isValidEmail,
+    escapeXml
 };

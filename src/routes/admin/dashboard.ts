@@ -6,13 +6,13 @@ const router = express.Router();
 
 router.get('/', async (req: Request, res: Response) => {
     try {
-        const data = await dashboardController.getData();
+        const { stats, recentMessages } = await dashboardController.getData();
 
         return res.render('admin/dashboard', {
             title: 'Dashboard',
             user: req.session.adminUser,
-            stats: data.stats,
-            recentMessages: data.recentMessages || []
+            stats,
+            recentMessages
         });
     } catch (err) {
         console.error('Dashboard yükleme hatası:', err);

@@ -1,28 +1,22 @@
-// src/routes/admin/dashboard.ts
-import { pool, dbQueries, adminPanel } from '../../config/db';
-import DashboardStatsResponse from '../../types/response/dashboardStatsResponse';
+// src/controllers/admin/dashboardController.ts
+import { query, queryOne, dbQueries, adminPanel } from '../../config/db';
+import Contacts from '../../types/dbTables/contacts';
+import { DashboardStatsResponse, DashboardData } from '../../types/response/dashboardStatsResponse';
 
-export const getData = async () => {
-    try {
-        const [statsResult, recentMessages] = await Promise.all([
-            pool.query(adminPanel.dashboard),
-            pool.query(dbQueries.contacts.getLastFive)
-        ]);
+export const getData = async (): Promise<DashboardData> => {
+  const [stats, recentMessages] = await Promise.all([
+    queryOne<DashboardStatsResponse>(adminPanel.dashboard),
+    query<Contacts[]>(dbQueries.contacts.getLastFive)
+  ]);
 
-        const stats = (statsResult as DashboardStatsResponse[])?.[0];
-
-        return {
-            stats: {
-                totalArticles: parseInt(String(stats?.totalArticles || 0), 10),
-                totalViews: parseInt(String(stats?.totalViews || 0), 10),
-                unreadMessages: parseInt(String(stats?.unreadMessages || 0), 10)
-            },
-            recentMessages: recentMessages || []
-        };
-    } catch (err) {
-        console.error('Dashboard yükleme hatası:', err);
-        return {};
-    }
+  return {
+    stats: {
+      totalArticles: Number(stats?.totalArticles || 0),
+      totalViews: Number(stats?.totalViews || 0),
+      unreadMessages: Number(stats?.unreadMessages || 0)
+    },
+    recentMessages: recentMessages || []
+  };
 };
 
 export default { getData };

@@ -1,67 +1,60 @@
-// src/routes/sitemap.ts
-import express, { Request, Response } from 'express';
-import { pool, dbQueries } from '../config/db';
+import { Request, Response } from 'express';
+import { query, dbQueries } from '../config/db';
 import { env } from '../config/env';
+import { escapeXml } from '../utils/helper';
+import { SiteMapArticle, StaticPage } from '../types/response/siteMapResponse';
 
-const router = express.Router();
+export const generateSiteMap = async (req: Request, res: Response) => {
+  try {
+    const baseUrl = env.SITE_URL || 'https://mahmuttuysuz.net';
+    const articles = await query<SiteMapArticle[]>(dbQueries.articles.getSitemap);
 
-interface SitemapArticle {
-    slug: string;
-    created_at?: string | Date;
-    updated_at?: string | Date;
-}
+    const staticPages: StaticPage[] = [
+      { url: '/', changefreq: 'daily', priority: '1.0' },
+      { url: '/blog', changefreq: 'daily', priority: '0.9' },
+      { url: '/?lang=en', changefreq: 'weekly', priority: '0.8' }
+    ];
 
-interface StaticPage {
-    url: string;
-    changefreq: 'always' | 'hourly' | 'daily' | 'weekly' | 'monthly' | 'yearly' | 'never';
-    priority: string;
-}
+    const nowIso = new Date().toISOString();
 
-router.get('/sitemap.xml', async (req: Request, res: Response) => {
-    try {
-        const baseUrl = env.SITE_URL || 'https://mahmuttuysuz.net';
-        const articles = await pool.query<SitemapArticle[]>(dbQueries.articles.getSitemap);
+    const staticXml = staticPages
+      .map(
+        (page) => `  <url>
+            <loc>${escapeXml(`${baseUrl}${page.url}`)}</loc>
+            <lastmod>${nowIso}</lastmod>
+            <changefreq>${page.changefreq}</changefreq>
+            <priority>${page.priority}</priority>
+        </url>`
+      )
+      .join('\n');
 
-        const staticPages: StaticPage[] = [
-            { url: '/', changefreq: 'daily', priority: '1.0' },
-            { url: '/blog', changefreq: 'daily', priority: '0.9' },
-            { url: '/?lang=en', changefreq: 'weekly', priority: '0.8' }
-        ];
+    const articlesXml = (articles || [])
+      .map((article) => {
+        const lastModDate = article.updated_at || article.created_at || new Date();
+        const dateStr = new Date(lastModDate).toISOString();
 
-        let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
-        xml += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
+        return `  <url>
+            <loc>${escapeXml(`${baseUrl}/blog/${article.slug}`)}</loc>
+            <lastmod>${dateStr}</lastmod>
+            <changefreq>weekly</changefreq>
+            <priority>0.8</priority>
+        </url>`;
+      })
+      .join('\n');
 
-        staticPages.forEach((page) => {
-            xml += `  <url>\n`;
-            xml += `    <loc>${baseUrl}${page.url}</loc>\n`;
-            xml += `    <lastmod>${new Date().toISOString()}</lastmod>\n`;
-            xml += `    <changefreq>${page.changefreq}</changefreq>\n`;
-            xml += `    <priority>${page.priority}</priority>\n`;
-            xml += `  </url>\n`;
-        });
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+        <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+        ${staticXml}
+        ${articlesXml}
+        </urlset>`.trim();
 
-        if (articles && articles.length > 0) {
-            articles.forEach((article) => {
-                const lastModDate = article.updated_at || article.created_at || new Date();
+    res.header('Content-Type', 'application/xml');
+    res.header('Cache-Control', 'public, max-age=3600');
+    return res.send(xml);
+  } catch (err) {
+    console.error('❌ Sitemap Oluşturma Hatası:', err);
+    return res.status(500).send('Sitemap üretilirken bir hata oluştu.');
+  }
+};
 
-                xml += `  <url>\n`;
-                xml += `    <loc>${baseUrl}/blog/${article.slug}</loc>\n`;
-                xml += `    <lastmod>${new Date(lastModDate).toISOString()}</lastmod>\n`;
-                xml += `    <changefreq>weekly</changefreq>\n`;
-                xml += `    <priority>0.8</priority>\n`;
-                xml += `  </url>\n`;
-            });
-        }
-
-        xml += `</urlset>`;
-
-        res.header('Content-Type', 'application/xml');
-        res.header('Cache-Control', 'public, max-age=3600');
-        return res.send(xml);
-    } catch (err) {
-        console.error('❌ Sitemap Oluşturma Hatası:', err);
-        return res.status(500).send('Sitemap üretilirken bir hata oluştu.');
-    }
-});
-
-export default router;
+export default { generateSiteMap };

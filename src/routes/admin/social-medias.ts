@@ -1,15 +1,13 @@
-// src/routes/admin/social-medias.ts
 import express, { Request, Response } from 'express';
-import { pool, dbQueries } from '../../config/db';
-import { safeTrim } from '../../utils/helper';
 import { env } from '../../config/env';
+import socialMediasController from '../../controllers/admin/socialMediasController';
 
 const router = express.Router();
 
 // Sosyal Medya Hesaplarını Listeleme
 router.get('/', async (req: Request, res: Response) => {
   try {
-    const socialMedias = await pool.query(dbQueries.socialMedias.getAll);
+    const socialMedias = await socialMediasController.getSocialMedias();
 
     return res.render('admin/social-medias/index', {
       title: 'Sosyal Medyalar',
@@ -34,9 +32,9 @@ router.get('/new', (req: Request, res: Response) => {
 // Yeni Sosyal Medya Kaydetme
 router.post('/create', async (req: Request, res: Response) => {
   const { title, username, url, icon, turn, status } = req.body;
-  const sMediaStatus = parseInt(status, 10) || 0;
+  const sMediaStatus = (parseInt(status, 10) || 0) === 1;
   const turnCnv = parseInt(turn, 10) || 11;
-
+  const userId = Number(req.session.adminUser?.id || 0);
   const adminEndpoint = req.adminEndpoint || env.ADMIN_PANEL_ENDPOINT || '/admin';
 
   try {
@@ -44,24 +42,21 @@ router.post('/create', async (req: Request, res: Response) => {
       throw new Error('Başlık alanı zorunludur.');
     }
 
-    await pool.query(dbQueries.socialMedias.add, [
-      safeTrim(title),
-      safeTrim(username),
-      safeTrim(url),
-      safeTrim(icon),
+    await socialMediasController.addSocialMedia(
+      title,
+      username,
+      url,
+      icon,
       turnCnv,
-      req.session.adminUser?.id,
-      sMediaStatus
-    ]);
+      sMediaStatus,
+      userId
+    );
 
     return res.redirect(`${adminEndpoint}/social-medias`);
   } catch (err: any) {
     console.error('Sosyal medya ekleme hatası:', err);
 
-    let errorMessage = 'Sosyal medya kaydedilirken bir hata oluştu.';
-    if (err?.message) {
-      errorMessage = err.message;
-    }
+    const errorMessage = err?.message || 'Sosyal medya kaydedilirken bir hata oluştu.';
 
     return res.status(400).render('admin/social-medias/editor', {
       title: 'Yeni Sosyal Medya',
@@ -75,17 +70,19 @@ router.post('/create', async (req: Request, res: Response) => {
 // Sosyal Medya Düzenleme Ekranı
 router.get('/edit/:id', async (req: Request, res: Response) => {
   const adminEndpoint = req.adminEndpoint || env.ADMIN_PANEL_ENDPOINT || '/admin';
+  const sMediaId = Number(req.params.id || 0);
 
   try {
-    const rows = await pool.query<any[]>(dbQueries.socialMedias.getById, [req.params.id]);
-    if (!rows || rows.length === 0) {
+    const socialMedia = await socialMediasController.getSocialMedia(sMediaId);
+
+    if (!socialMedia) {
       return res.redirect(`${adminEndpoint}/social-medias`);
     }
 
     return res.render('admin/social-medias/editor', {
       title: 'Sosyal Medya Düzenle',
       user: req.session.adminUser,
-      socialMedia: rows[0]
+      socialMedia
     });
   } catch (err) {
     console.error('Sosyal medya getirme hatası:', err);
@@ -95,29 +92,33 @@ router.get('/edit/:id', async (req: Request, res: Response) => {
 
 // Sosyal Medya Güncelleme
 router.post('/edit/:id', async (req: Request, res: Response) => {
-  const sMediaId = req.params.id;
+  const sMediaId = Number(req.params.id || 0);
   const { title, username, url, icon, turn, status } = req.body;
-  const sMediaStatus = parseInt(status, 10) || 0;
+  const sMediaStatus = (parseInt(status, 10) || 0) === 1;
   const turnCnv = parseInt(turn, 10) || 11;
-
+  const userId = Number(req.session.adminUser?.id || 0);
   const adminEndpoint = req.adminEndpoint || env.ADMIN_PANEL_ENDPOINT || '/admin';
 
   try {
-    await pool.query(dbQueries.socialMedias.update, [
-      safeTrim(title),
-      safeTrim(username),
-      safeTrim(url),
-      safeTrim(icon),
+    if (!title) {
+      throw new Error('Başlık alanı zorunludur.');
+    }
+
+    await socialMediasController.editSocialMedia(
+      sMediaId,
+      title,
+      username,
+      url,
+      icon,
       turnCnv,
-      req.session.adminUser?.id,
       sMediaStatus,
-      sMediaId
-    ]);
+      userId
+    );
 
     return res.redirect(`${adminEndpoint}/social-medias`);
-  } catch (err) {
+  } catch (err: any) {
     console.error('Sosyal medya güncelleme hatası:', err);
-    const errorMessage = 'Sosyal medya güncellenirken bir hata oluştu.';
+    const errorMessage = err?.message || 'Sosyal medya güncellenirken bir hata oluştu.';
 
     return res.status(400).render('admin/social-medias/editor', {
       title: 'Sosyal Medya Düzenle',
@@ -131,9 +132,9 @@ router.post('/edit/:id', async (req: Request, res: Response) => {
 // Sosyal Medya Silme
 router.post('/delete/:id', async (req: Request, res: Response) => {
   try {
-    const sMediaId = req.params.id;
+    const sMediaId = Number(req.params.id || 0);
+    await socialMediasController.deleteSocialMedia(sMediaId);
 
-    await pool.query(dbQueries.socialMedias.delete, [sMediaId]);
     return res.json({ success: true });
   } catch (err: any) {
     return res.status(500).json({

@@ -1,13 +1,9 @@
-// src/routes/admin/articles.ts
 import express, { Request, Response, NextFunction } from 'express';
 import slugify from 'slugify';
 import fs from 'fs/promises';
 import path from 'path';
-
-import { pool, dbQueries } from '../../config/db';
 import upload from '../../config/upload';
 import { env } from '../../config/env';
-import { safeTrim, calculateReadingTime } from '../../utils/helper';
 import articlesController from '../../controllers/admin/articlesController';
 
 const router = express.Router();
@@ -55,26 +51,38 @@ router.post(
   },
   async (req: Request, res: Response) => {
     const { title, slug, excerpt, content, status, language } = req.body;
-    const articleStatus = (parseInt(status, 10) || 0) === 1 ? true : false;
+    const articleStatus = (parseInt(status, 10) || 0) === 1;
     const cover_image = req.file ? `/uploads/articles/${req.file.filename}` : null;
     const finalSlug = slugify(slug || title || '', { lower: true, strict: true, locale: language || 'tr' });
+    const userId = Number(req.session.adminUser?.id || 0);
+
+    const adminEndpoint = req.adminEndpoint || env.ADMIN_PANEL_ENDPOINT || '/admin';
 
     try {
       if (!title || !content) {
         throw new Error('Başlık ve içerik alanları zorunludur.');
       }
 
-      await articlesController.saveArticle(title, finalSlug, excerpt, content, cover_image, articleStatus, language, parseInt(req.session.adminUser?.id || '0'));
+      await articlesController.addArticle(
+        title,
+        finalSlug,
+        excerpt,
+        content,
+        cover_image,
+        articleStatus,
+        language,
+        userId
+      );
 
-      const adminEndpoint = (req as any).adminEndpoint || env.ADMIN_PANEL_ENDPOINT || '/admin';
       return res.redirect(`${adminEndpoint}/articles`);
     } catch (err: any) {
       console.error('Makale ekleme hatası:', err);
 
+      // Veritabanı hatasında yüklenen resmi temizleme
       if (req.file) {
         try {
           await fs.unlink(req.file.path);
-        } catch (e) {
+        } catch {
           /* dosya silinirken oluşan hatayı yut */
         }
       }
@@ -98,10 +106,12 @@ router.post(
 
 // Makale Düzenleme Sayfası
 router.get('/edit/:id', async (req: Request, res: Response) => {
-  const adminEndpoint = (req as any).adminEndpoint || env.ADMIN_PANEL_ENDPOINT || '/admin';
+  const adminEndpoint = req.adminEndpoint || env.ADMIN_PANEL_ENDPOINT || '/admin';
   try {
-    const article = await articlesController.getArticle(Number(req.params.id || '0'));
-    if (article === null) {
+    const articleId = Number(req.params.id || '0');
+    const article = await articlesController.getArticle(articleId);
+
+    if (!article) {
       return res.redirect(`${adminEndpoint}/articles`);
     }
 
@@ -135,24 +145,37 @@ router.post(
   async (req: Request, res: Response) => {
     const articleId = Number(req.params.id || '0');
     const { title, slug, excerpt, content, status, language, existing_cover_image } = req.body;
-    const articleStatus = (parseInt(status, 10) || 0) === 1 ? true : false;
+    const articleStatus = (parseInt(status, 10) || 0) === 1;
+    const finalSlug = slugify(slug || title || '', { lower: true, strict: true, locale: language || 'tr' });
+    const userId = Number(req.session.adminUser?.id || 0);
 
     let cover_image = existing_cover_image || null;
     if (req.file) {
       cover_image = `/uploads/articles/${req.file.filename}`;
     }
 
-    const adminEndpoint = (req as any).adminEndpoint || env.ADMIN_PANEL_ENDPOINT || '/admin';
+    const adminEndpoint = req.adminEndpoint || env.ADMIN_PANEL_ENDPOINT || '/admin';
 
     try {
-      await articlesController.editArticle(articleId, title, slug, excerpt, content, cover_image, articleStatus, language, parseInt(req.session.adminUser?.id, 10));
+      await articlesController.editArticle(
+        articleId,
+        title,
+        finalSlug,
+        excerpt,
+        content,
+        cover_image,
+        articleStatus,
+        language,
+        userId
+      );
 
+      // Yeni görsel yüklendiyse eski görseli diskten silme
       if (req.file && existing_cover_image) {
         const oldImagePath = path.join(process.cwd(), 'public', existing_cover_image);
         try {
           await fs.unlink(oldImagePath);
-        } catch (e) {
-          /* eski resim silinemezse akışı bozma */
+        } catch {
+          /* eski resim bulunamazsa akışı bozma */
         }
       }
 
@@ -160,10 +183,11 @@ router.post(
     } catch (err: any) {
       console.error('Makale güncelleme hatası:', err);
 
+      // Güncelleme başarısız olduysa yeni yüklenen geçici dosyayı temizleme
       if (req.file) {
         try {
           await fs.unlink(req.file.path);
-        } catch (e) {
+        } catch {
           /* yüklenen yeni resim silinemezse akışı bozma */
         }
       }
@@ -188,20 +212,20 @@ router.post('/delete/:id', async (req: Request, res: Response) => {
   try {
     const articleId = Number(req.params.id || '0');
 
-    const row = await articlesController.getArticle(articleId);
-    if (row && row.cover_image) {
-      const imagePath = path.join(process.cwd(), 'public', row.cover_image);
+    const article = await articlesController.getArticle(articleId);
+    if (article && article.cover_image) {
+      const imagePath = path.join(process.cwd(), 'public', article.cover_image);
       try {
         await fs.unlink(imagePath);
-      } catch (e) {
+      } catch {
         /* görsel bulunamazsa silme işlemini durdurma */
       }
     }
-    let isDelete = await articlesController.deleteArticle(articleId);
 
-    return res.json({ success: isDelete });
+    await articlesController.deleteArticle(articleId);
+    return res.json({ success: true });
   } catch (err: any) {
-    return res.status(500).json({ success: false, error: err.message });
+    return res.status(500).json({ success: false, error: err?.message || 'Bir hata oluştu.' });
   }
 });
 
