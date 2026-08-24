@@ -22,4 +22,4 @@ jobs:
             git pull origin master
             npm ci
             npm run build
-            pm2 reload app --update-env
+            pm2 reload my-site --update-env
