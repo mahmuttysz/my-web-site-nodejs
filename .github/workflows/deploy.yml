@@ -22,4 +22,4 @@ jobs:
             git pull origin master
             npm ci
             npm run build
-            pm2 reload /var/www/nodejs/mahmuttuysuz.net/dist/app.js --update-env
+            pm2 reload app --update-env
