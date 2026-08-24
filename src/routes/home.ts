@@ -13,7 +13,7 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
         const homePageData = await getHomePage(lang);
         homePageData.turnstileSiteKey = env.TURNSTILE_SITE_KEY;
 
-        return res.render('index', homePageData);
+        return res.render('home/index', homePageData);
     } catch (err) {
         console.error('❌ Anasayfa yükleme hatası:', err);
         return next(err);
