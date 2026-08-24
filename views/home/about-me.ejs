@@ -1,0 +1,16 @@
+<h2
+    class="text-xl sm:text-2xl font-bold tracking-tight mb-6 pb-2 border-b border-site-border flex items-center gap-2 text-site-text before:content-['//'] before:text-site-accent">
+    <%= aboutMe && aboutMe.title ? aboutMe.title : t.nav.aboutMe %>
+</h2>
+<p class="text-site-muted text-base leading-relaxed whitespace-pre-line">
+    <%= aboutMe && aboutMe.description ? aboutMe.description : t.hero.desc %>
+</p>
+<div class="flex justify-end mt-6">
+    <a href="#contact" id="goToContactBtn"
+        class="inline-flex items-center gap-2 px-5 py-2.5 bg-white/5 border border-white/15 text-slate-200 rounded-md text-sm font-medium transition-all duration-200 hover:bg-white/10 hover:border-site-accent hover:text-site-accent hover:-translate-y-0.5 group">
+        <span>
+            <%= t.button.contact %>
+        </span>
+        <span class="text-xs transition-transform duration-200 group-hover:translate-y-0.5">&darr;</span>
+    </a>
+</div>

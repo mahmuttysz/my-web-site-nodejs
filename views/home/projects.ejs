@@ -1,0 +1,50 @@
+<h2
+    class="text-xl sm:text-2xl font-bold tracking-tight mb-6 pb-2 border-b border-site-border flex items-center gap-2 text-site-text before:content-['//'] before:text-site-accent">
+    <%= t.nav.projects %>
+</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <% if (projects && projects.length> 0) { %>
+        <% projects.forEach(project=> { %>
+            <div
+                class="bg-site-card border border-site-border p-6 rounded-xl flex flex-col justify-between transition-all duration-200 hover:border-site-accent hover:-translate-y-0.5">
+                <div class="mb-6">
+                    <div class="flex items-center justify-between gap-2 mb-3">
+                        <h3 class="text-lg font-bold text-site-text">
+                            <%= project.title %>
+                        </h3>
+                        <% if (project.link_url) { %>
+                            <a href="<%= project.link_url %>" target="_blank" rel="noopener noreferrer"
+                                class="text-site-accent text-sm font-medium hover:underline shrink-0">
+                                <%= project.link_text || t.alert.learnMore %> ↗
+                            </a>
+                            <% } %>
+                    </div>
+                    <p class="text-site-muted text-sm leading-relaxed">
+                        <%= project.description %>
+                    </p>
+                </div>
+                <% let tagList=[]; if (Array.isArray(project.tags)) { tagList=project.tags; } else if (typeof
+                    project.tags==='string' && project.tags.trim() !=='' ) { try { tagList=JSON.parse(project.tags); }
+                    catch(e) { tagList=project.tags.split(',').map(t=>
+                    t.trim());
+                    }
+                    }
+                    %>
+                    <% if (tagList && tagList.length> 0) { %>
+                        <div class="flex flex-wrap gap-2">
+                            <% tagList.forEach(tag=> { %>
+                                <span
+                                    class="bg-site-accent/10 text-site-accent text-xs px-2.5 py-1 rounded font-medium">
+                                    <%= tag %>
+                                </span>
+                                <% }); %>
+                        </div>
+                        <% } %>
+            </div>
+            <% }); %>
+                <% } else { %>
+                    <p class="text-site-muted text-sm col-span-full">
+                        <%= t.alert.doesntAddedProjects %>
+                    </p>
+                    <% } %>
+</div>
