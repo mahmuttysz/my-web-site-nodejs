@@ -1,0 +1,31 @@
+<%- include('../partials/header') %>
+
+    <main class="flex-1 w-full flex items-center justify-center px-4 py-16 sm:py-24">
+        <div
+            class="max-w-md w-full text-center space-y-6 bg-site-card/40 border border-site-border p-8 sm:p-10 rounded-2xl backdrop-blur-sm shadow-xl">
+
+            <h1 class="text-7xl sm:text-8xl font-black text-rose-500 tracking-tighter leading-none select-none">
+                500
+            </h1>
+            <div class="space-y-2">
+                <h2 class="text-xl sm:text-2xl font-bold text-site-text tracking-tight">
+                    <%= t.alert.serverError %>
+                </h2>
+                <p class="text-site-muted text-sm sm:text-base leading-relaxed">
+                    <%= t.alert.serverErrorDesc %>
+                </p>
+            </div>
+            <div class="pt-2">
+                <a href="/"
+                    class="inline-flex items-center gap-2 px-5 py-2.5 bg-site-card border border-site-border text-site-text text-sm font-semibold rounded-lg transition-all duration-200 hover:border-site-accent hover:text-site-accent hover:-translate-y-0.5 group">
+                    <span class="transition-transform duration-200 group-hover:-translate-x-1">←</span>
+                    <span>
+                        <%= t.alert.backToHome %>
+                    </span>
+                </a>
+            </div>
+
+        </div>
+    </main>
+
+    <%- include('../partials/footer') %>
