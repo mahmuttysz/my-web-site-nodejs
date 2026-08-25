@@ -23,10 +23,9 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
 // Blog Detayı
 router.get('/:slug', async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const lang = res.locals.lang || 'tr';
         const { slug } = req.params;
 
-        const blogData = await blogController.getBySlug(slug.toString(), lang);
+        const blogData = await blogController.getBySlug(slug.toString());
 
         // Makale bulunamadıysa isteği 404 middleware'ine devret
         if (!blogData) {
