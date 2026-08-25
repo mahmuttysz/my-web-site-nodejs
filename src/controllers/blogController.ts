@@ -18,8 +18,8 @@ export const getArticles = async (language: string): Promise<BlogIndexResponse> 
 };
 
 // Blog Detayı
-export const getBySlug = async (slug: string, language: string): Promise<BlogSlugResponse | null> => {
-    const article = await queryOne<Articles>(dbQueries.articles.getBySlug, [slug, language]);
+export const getBySlug = async (slug: string): Promise<BlogSlugResponse | null> => {
+    const article = await queryOne<Articles>(dbQueries.articles.getBySlug, [slug]);
 
     if (!article) {
         return null;
