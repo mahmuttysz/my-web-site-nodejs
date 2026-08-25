@@ -1,27 +1,68 @@
 /*
- Navicat Premium Dump SQL
-
- Source Server         : MariaDBServer
- Source Server Type    : MariaDB
- Source Server Version : 110808 (11.8.8-MariaDB)
- Source Host           : 127.0.0.1:3306
- Source Schema         : website
-
- Target Server Type    : MariaDB
- Target Server Version : 110808 (11.8.8-MariaDB)
- File Encoding         : 65001
-
- Date: 25/08/2026 00:33:07
+  Target Server Type    : MariaDB / MySQL
+  File Encoding         : 65001
 */
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
+DELIMITER //
+
+DROP PROCEDURE IF EXISTS `sp_safe_backup_all` //
+
+CREATE PROCEDURE `sp_safe_backup_all`()
+BEGIN
+  DECLARE done INT DEFAULT FALSE;
+  DECLARE tbl_name VARCHAR(64);
+  DECLARE timestamp_str VARCHAR(20);
+  
+  DECLARE table_cursor CURSOR FOR 
+    SELECT table_name 
+    FROM information_schema.tables 
+    WHERE table_schema = DATABASE() 
+      AND table_type = 'BASE TABLE'
+      AND table_name NOT LIKE '%\_bak\_%';
+
+  DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+  SET timestamp_str = DATE_FORMAT(NOW(), '%Y%m%d_%H%i%s');
+
+  OPEN table_cursor;
+
+  read_loop: LOOP
+    FETCH table_cursor INTO tbl_name;
+    IF done THEN
+      LEAVE read_loop;
+    END IF;
+
+    SET @bak_table = CONCAT('`', tbl_name, '_bak_', timestamp_str, '`');
+    SET @orig_table = CONCAT('`', tbl_name, '`');
+
+    SET @sql_create = CONCAT('CREATE TABLE ', @bak_table, ' LIKE ', @orig_table);
+    PREPARE stmt1 FROM @sql_create;
+    EXECUTE stmt1;
+    DEALLOCATE PREPARE stmt1;
+
+    SET @sql_insert = CONCAT('INSERT INTO ', @bak_table, ' SELECT * FROM ', @orig_table);
+    PREPARE stmt2 FROM @sql_insert;
+    EXECUTE stmt2;
+    DEALLOCATE PREPARE stmt2;
+
+  END LOOP;
+
+  CLOSE table_cursor;
+END //
+
+DELIMITER ;
+
+
+CALL sp_safe_backup_all();
+
 -- ----------------------------
 -- Table structure for about_me
 -- ----------------------------
 DROP TABLE IF EXISTS `about_me`;
-CREATE TABLE `about_me`  (
+CREATE TABLE `about_me` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
@@ -40,7 +81,7 @@ CREATE TABLE `about_me`  (
 -- Table structure for admin_users
 -- ----------------------------
 DROP TABLE IF EXISTS `admin_users`;
-CREATE TABLE `admin_users`  (
+CREATE TABLE `admin_users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(155) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `surname` varchar(155) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
@@ -62,7 +103,7 @@ CREATE TABLE `admin_users`  (
 -- Table structure for articles
 -- ----------------------------
 DROP TABLE IF EXISTS `articles`;
-CREATE TABLE `articles`  (
+CREATE TABLE `articles` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `excerpt` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
@@ -87,7 +128,7 @@ CREATE TABLE `articles`  (
 -- Table structure for contacts
 -- ----------------------------
 DROP TABLE IF EXISTS `contacts`;
-CREATE TABLE `contacts`  (
+CREATE TABLE `contacts` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `subject` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `full_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
@@ -106,7 +147,7 @@ CREATE TABLE `contacts`  (
 -- Table structure for experiences
 -- ----------------------------
 DROP TABLE IF EXISTS `experiences`;
-CREATE TABLE `experiences`  (
+CREATE TABLE `experiences` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `company_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
@@ -127,7 +168,7 @@ CREATE TABLE `experiences`  (
 -- Table structure for projects
 -- ----------------------------
 DROP TABLE IF EXISTS `projects`;
-CREATE TABLE `projects`  (
+CREATE TABLE `projects` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
@@ -148,7 +189,7 @@ CREATE TABLE `projects`  (
 -- Table structure for social_medias
 -- ----------------------------
 DROP TABLE IF EXISTS `social_medias`;
-CREATE TABLE `social_medias`  (
+CREATE TABLE `social_medias` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `username` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,

@@ -8,6 +8,7 @@
     "start": "node dist/app.js",
     "dev": "tsx watch src/app.ts",
     "seed:admin": "tsx scripts/create-admin.ts",
+    "db:import": "mysql -u root -p website < DumpSQL.sql",
     "build:css": "npx @tailwindcss/cli -i ./src/styles/input.css -o ./public/css/style.css --minify",
     "watch:css": "npx @tailwindcss/cli -i ./src/styles/input.css -o ./public/css/style.css --watch"
   },
