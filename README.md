@@ -30,17 +30,29 @@ Automated error handling (errorHandler, notFoundHandler) with custom 404/500 err
 Automated Deployment (CI/CD): GitHub Actions and SSH tünel integration for zero-downtime deployment backed by pm2 reload on Rocky Linux 9.
 
 📁 Project Architecture
+
 Plaintext
+
 src/
+
 ├── config/          # Database, Redis, Session, and Upload configurations
+
 ├── controllers/     # Site and Admin panel business logic layer (Controllers)
+
 ├── middlewares/     # Authentication, rate-limiting, and Turnstile protections
+
 ├── routes/          # Web and Admin routes
+
 ├── styles/          # Tailwind CSS entry files (input.css)
+
 ├── types/           # Type definitions (dbTables, response types)
+
 ├── utils/           # Helper functions, email service, and language files
+
 └── app.ts           # Application entry point
+
 views/               # EJS templates (Admin, Blog, Errors, Partials)
+
 ⚙️ Setup & Installation
 1. Prerequisites
 Node.js (v18+)
@@ -57,11 +69,15 @@ Copy the .env.sample file to .env and configure the required database and Redis 
 
 Bash
 cp .env.sample .env
+
 4. Development Mode
 Bash
+
 npm run dev
-5. Production Build & Execution
+
+6. Production Build & Execution
 Bash
+
 # Compile TypeScript and Tailwind CSS
 npm run build
 
@@ -85,8 +101,11 @@ Once the backup completes, it drops and recreates the fresh table schemas.
 
 Terminal (CLI) Installation
 Bash
+
 mysql -u [username] -p [database_name] < DumpSQL.sql
+
 GUI Installation (Navicat / DBeaver / phpMyAdmin)
+
 Connect to your target database.
 
 Use Execute SQL Script... (or Execute Script) and select the DumpSQL.sql file.
@@ -94,8 +113,11 @@ Use Execute SQL Script... (or Execute Script) and select the DumpSQL.sql file.
 Optionally, add this line to your package.json under scripts to import the schema with a single command:
 
 JSON
+
 "scripts": {
   "db:import": "mysql -u root -p website < DumpSQL.sql"
 }
+
 Bash
+
 npm run db:import
