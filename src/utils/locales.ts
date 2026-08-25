@@ -53,7 +53,7 @@ export const locales = {
     },
     footer: {
       desc: "Kıdemli Yazılım Geliştirme & DevOps Uzmanı. Ölçeklenebilir sistemler ve modern web teknolojileri geliştiriyorum.",
-      techStack: "Built with Node.js, Express & MariaDB.",
+      techStack: "Node.js, TypeScript, Express & MariaDB ile geliştirildi.",
       rights: "Tüm hakları saklıdır."
     },
     alert: {
@@ -132,7 +132,7 @@ export const locales = {
     },
     footer: {
       desc: "Senior Software Developer and DevOps Specialist. I develop scalable systems and modern web technologies.",
-      techStack: "Built with Node.js, Express & MariaDB.",
+      techStack: "Built with Node.js, TypeScript, Express & MariaDB.",
       rights: "All rights reserved."
     },
     alert: {
