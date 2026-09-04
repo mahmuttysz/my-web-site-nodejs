@@ -92,32 +92,14 @@ npm run build compiles TypeScript and CSS assets for production.
 
 The server executes pm2 reload for zero-downtime updates.
 
-🗄️ Database Setup & Automated Backup
-The DumpSQL.sql script located in the root directory features an integrated automated backup procedure (sp_safe_backup_all) to prevent data loss during database updates. When executed:
+🗄️ Database
+Schema changes are numbered SQL files under `migrations/`. They are applied in order and recorded in `schema_migrations`. Existing tables are not dropped.
 
-It creates timestamped backup copies (table_name_bak_YYYYMMDD_HHMMSS) of all existing live tables.
+```bash
+npm run db:migrate
+npm run seed:admin
+```
 
-Once the backup completes, it drops and recreates the fresh table schemas.
+Add a new change as `migrations/002_short_name.sql` (`ALTER TABLE ...`). Re-running migrate skips files that are already recorded.
 
-Terminal (CLI) Installation
-Bash
-
-mysql -u [username] -p [database_name] < DumpSQL.sql
-
-GUI Installation (Navicat / DBeaver / phpMyAdmin)
-
-Connect to your target database.
-
-Use Execute SQL Script... (or Execute Script) and select the DumpSQL.sql file.
-
-Optionally, add this line to your package.json under scripts to import the schema with a single command:
-
-JSON
-
-"scripts": {
-  "db:import": "mysql -u root -p website < DumpSQL.sql"
-}
-
-Bash
-
-npm run db:import
+Do not run `DumpSQL.sql` on a live database; it drops tables. Backups belong in `mysqldump`, not in schema deploy.

@@ -1,75 +1,9 @@
-/*
-  DEPRECATED — do not run against a live database.
-
-  This script DROPs existing tables after copying them to *_bak_* copies.
-  Schema changes now live in /migrations and are applied with:
-
-    npm run db:migrate
-
-  Target Server Type    : MariaDB / MySQL
-  File Encoding         : 65001
-*/
+-- Baseline schema (current production tables).
+-- CREATE IF NOT EXISTS: empty DBs get tables, existing DBs are left untouched.
 
 SET NAMES utf8mb4;
-SET FOREIGN_KEY_CHECKS = 0;
 
-DELIMITER //
-
-DROP PROCEDURE IF EXISTS `sp_safe_backup_all` //
-
-CREATE PROCEDURE `sp_safe_backup_all`()
-BEGIN
-  DECLARE done INT DEFAULT FALSE;
-  DECLARE tbl_name VARCHAR(64);
-  DECLARE timestamp_str VARCHAR(20);
-  
-  DECLARE table_cursor CURSOR FOR 
-    SELECT table_name 
-    FROM information_schema.tables 
-    WHERE table_schema = DATABASE() 
-      AND table_type = 'BASE TABLE'
-      AND table_name NOT LIKE '%\_bak\_%';
-
-  DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
-
-  SET timestamp_str = DATE_FORMAT(NOW(), '%Y%m%d_%H%i%s');
-
-  OPEN table_cursor;
-
-  read_loop: LOOP
-    FETCH table_cursor INTO tbl_name;
-    IF done THEN
-      LEAVE read_loop;
-    END IF;
-
-    SET @bak_table = CONCAT('`', tbl_name, '_bak_', timestamp_str, '`');
-    SET @orig_table = CONCAT('`', tbl_name, '`');
-
-    SET @sql_create = CONCAT('CREATE TABLE ', @bak_table, ' LIKE ', @orig_table);
-    PREPARE stmt1 FROM @sql_create;
-    EXECUTE stmt1;
-    DEALLOCATE PREPARE stmt1;
-
-    SET @sql_insert = CONCAT('INSERT INTO ', @bak_table, ' SELECT * FROM ', @orig_table);
-    PREPARE stmt2 FROM @sql_insert;
-    EXECUTE stmt2;
-    DEALLOCATE PREPARE stmt2;
-
-  END LOOP;
-
-  CLOSE table_cursor;
-END //
-
-DELIMITER ;
-
-
-CALL sp_safe_backup_all();
-
--- ----------------------------
--- Table structure for about_me
--- ----------------------------
-DROP TABLE IF EXISTS `about_me`;
-CREATE TABLE `about_me` (
+CREATE TABLE IF NOT EXISTS `about_me` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
@@ -82,13 +16,9 @@ CREATE TABLE `about_me` (
   `updated_at` datetime NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_lang`(`language` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
 
--- ----------------------------
--- Table structure for admin_users
--- ----------------------------
-DROP TABLE IF EXISTS `admin_users`;
-CREATE TABLE `admin_users` (
+CREATE TABLE IF NOT EXISTS `admin_users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(155) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `surname` varchar(155) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
@@ -104,13 +34,9 @@ CREATE TABLE `admin_users` (
   `updated_at` datetime NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   `deleted_at` datetime NULL DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
 
--- ----------------------------
--- Table structure for articles
--- ----------------------------
-DROP TABLE IF EXISTS `articles`;
-CREATE TABLE `articles` (
+CREATE TABLE IF NOT EXISTS `articles` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `excerpt` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
@@ -129,13 +55,9 @@ CREATE TABLE `articles` (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_slug`(`slug` ASC) USING BTREE,
   INDEX `idx_list_articles`(`language` DESC, `status` DESC, `published_at` DESC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
 
--- ----------------------------
--- Table structure for contacts
--- ----------------------------
-DROP TABLE IF EXISTS `contacts`;
-CREATE TABLE `contacts` (
+CREATE TABLE IF NOT EXISTS `contacts` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `subject` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `full_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
@@ -148,13 +70,9 @@ CREATE TABLE `contacts` (
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_is_read_created`(`is_read` DESC, `created_at` DESC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
 
--- ----------------------------
--- Table structure for experiences
--- ----------------------------
-DROP TABLE IF EXISTS `experiences`;
-CREATE TABLE `experiences` (
+CREATE TABLE IF NOT EXISTS `experiences` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `company_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
@@ -169,13 +87,9 @@ CREATE TABLE `experiences` (
   `updated_at` datetime NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_lang_status_dates`(`begin_date` DESC, `language` DESC, `status` DESC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 13 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
 
--- ----------------------------
--- Table structure for projects
--- ----------------------------
-DROP TABLE IF EXISTS `projects`;
-CREATE TABLE `projects` (
+CREATE TABLE IF NOT EXISTS `projects` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
@@ -190,13 +104,9 @@ CREATE TABLE `projects` (
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 15 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
 
--- ----------------------------
--- Table structure for social_medias
--- ----------------------------
-DROP TABLE IF EXISTS `social_medias`;
-CREATE TABLE `social_medias` (
+CREATE TABLE IF NOT EXISTS `social_medias` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `username` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
@@ -210,6 +120,4 @@ CREATE TABLE `social_medias` (
   `updated_at` datetime NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_status_turn`(`turn` ASC, `status` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 7 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
-
-SET FOREIGN_KEY_CHECKS = 1;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
