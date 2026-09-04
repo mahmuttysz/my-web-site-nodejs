@@ -22,6 +22,7 @@ export const dbQueries = {
         add: "INSERT INTO admin_users (name, surname, username, password_hash) VALUES (?, ?, ?, ?)",
         update: "UPDATE admin_users SET name = ?, surname = ?, username = ?, password_hash = ? WHERE id = ?",
         wrongTryUpdate: "UPDATE admin_users SET last_wrong_try = ?, wrong_try = wrong_try + 1, ip = ? WHERE id = ?",
+        resetWrongTry: "UPDATE admin_users SET wrong_try = 0, last_wrong_try = NULL WHERE id = ?",
         successLoginUpdate: "UPDATE admin_users SET last_success_login = ?, wrong_try = 0, ip = ? WHERE id = ?",
         delete: "DELETE FROM admin_users WHERE id = ?"
     },
