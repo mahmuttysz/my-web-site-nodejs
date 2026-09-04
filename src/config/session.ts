@@ -9,7 +9,7 @@ export const sessionOpt: SessionOptions = {
         client: redisClient,
         prefix: 'sess:admin:'
     }),
-    secret: env.SESSION_SECRET || 'very_secret_key_must_be_change',
+    secret: env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     name: 'sid_admin',

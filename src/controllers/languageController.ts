@@ -1,6 +1,7 @@
 // src/controllers/languageController.ts
 import { Request, Response } from 'express';
 import { env } from '../config/env';
+import { langCookieOptions } from '../middlewares/default';
 
 export const switchLanguage = (req: Request, res: Response) => {
   const { langCode: rawLangCode } = req.params;
@@ -11,17 +12,7 @@ export const switchLanguage = (req: Request, res: Response) => {
   let status = false;
 
   if (langCode && ['tr', 'en'].includes(langCode)) {
-    res.cookie('lang', langCode, {
-      maxAge: 30 * 24 * 60 * 60 * 1000,
-      path: '/',
-      httpOnly: true,
-      secure: env.APP_ENV === 'prod',
-      sameSite: 'lax'
-    });
-
-    if (req.session) {
-      req.session.lang = langCode;
-    }
+    res.cookie('lang', langCode, langCookieOptions);
   }
 
   const referer = req.get('referer');

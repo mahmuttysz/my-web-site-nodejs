@@ -4,12 +4,15 @@ import crypto from 'node:crypto';
 import { env } from '../config/env';
 import locales from '../utils/locales';
 
-// SessionData arayüzüne lang alanını ekliyoruz
-declare module 'express-session' {
-    interface SessionData {
-        lang?: string;
-    }
-}
+const LANG_COOKIE_MAX_AGE = 30 * 24 * 60 * 60 * 1000;
+
+export const langCookieOptions = {
+    maxAge: LANG_COOKIE_MAX_AGE,
+    path: '/',
+    httpOnly: true,
+    secure: env.APP_ENV === 'prod',
+    sameSite: 'lax' as const
+};
 
 export const defaultMid = (req: Request, res: Response, next: NextFunction): void => {
     const siteUrl = env.SITE_URL || `http://localhost:${env.PORT || 3000}`;
@@ -17,22 +20,14 @@ export const defaultMid = (req: Request, res: Response, next: NextFunction): voi
 
     // req.query.lang tipi string, array veya undefined gelebileceği için kontrol eklenmiştir
     const queryLang = typeof req.query.lang === 'string' ? req.query.lang : undefined;
-    let lang: string = queryLang || req.cookies?.lang || req.session?.lang || 'tr';
+    let lang: string = queryLang || req.cookies?.lang || 'tr';
 
     if (!['tr', 'en'].includes(lang)) {
         lang = 'tr';
     }
 
     if (queryLang) {
-        res.cookie('lang', lang, {
-            maxAge: 30 * 24 * 60 * 60 * 1000,
-            path: '/',
-            sameSite: 'lax'
-        });
-    }
-
-    if (req.session) {
-        req.session.lang = lang;
+        res.cookie('lang', lang, langCookieOptions);
     }
 
     res.setHeader('Content-Language', lang);

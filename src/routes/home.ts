@@ -6,9 +6,7 @@ const router = express.Router();
 
 router.get('/', async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const lang = (req.session) ?
-            req.session.lang?.toString()
-            : 'tr';
+        const lang = (res.locals.lang as string) || 'tr';
 
         const homePageData = await getHomePage(lang);
         homePageData.turnstileSiteKey = env.TURNSTILE_SITE_KEY;

@@ -34,15 +34,29 @@ router.post('/', formLimiter, async (req: Request, res: Response) => {
       return res.render('admin/login', { error: checkLogin.error });
     }
 
-    req.session.adminUser = {
+    const adminUser = {
       id: checkLogin.user.id,
       username: checkLogin.user.username
     };
-
     const redirectUrl = req.session.returnTo || req.adminEndpoint || '/admin';
-    delete req.session.returnTo;
 
-    return res.redirect(redirectUrl);
+    return req.session.regenerate((regenErr) => {
+      if (regenErr) {
+        console.error('Oturum yenileme hatası:', regenErr);
+        return res.render('admin/login', { error: 'Giriş yapılırken bir hata oluştu.' });
+      }
+
+      req.session.adminUser = adminUser;
+
+      req.session.save((saveErr) => {
+        if (saveErr) {
+          console.error('Oturum kaydetme hatası:', saveErr);
+          return res.render('admin/login', { error: 'Giriş yapılırken bir hata oluştu.' });
+        }
+
+        return res.redirect(redirectUrl);
+      });
+    });
   } catch (err) {
     console.error('Login İşlem Hatası:', err);
     return res.render('admin/login', { error: 'Giriş yapılırken bir hata oluştu.' });
