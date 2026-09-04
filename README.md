@@ -1,105 +1,129 @@
-Personal Portfolio & Blog Engine
-A personal website and admin panel project developed using Node.js, Express, and TypeScript, adhering to type-safety principles and a layered MVC architecture. Server-Side Rendering via EJS and Tailwind CSS v4 were chosen on the client side for fast SEO performance and low resource utilization.
+# Personal portfolio & blog engine
 
-🛠️ Tech Stack & Ecosystem
-Backend: Node.js, Express.js, TypeScript
+Node.js, Express 5, TypeScript, EJS, and MariaDB. Server-side rendering plus Tailwind CSS v4 for SEO and a small footprint. Admin panel manages about, experiences, projects, articles, contact messages, and social links.
 
-Frontend / View Engine: EJS (Server-Side Rendering), Tailwind CSS v4
+## Stack
 
-Database & Caching: MySQL / MariaDB, Redis (Session & Caching)
+- **Runtime:** Node.js 22+ (production has been run on Node 24)
+- **HTTP:** Express 5, EJS, Tailwind CSS v4
+- **Data:** MariaDB / MySQL (`mariadb` pool, parameterized SQL)
+- **Redis:** admin sessions (`express-session`) and rate-limit counters — not a page cache
+- **Process / CI:** PM2 reload, GitHub Actions SSH deploy to Rocky Linux 9
 
-Process Manager: PM2 (Zero-Downtime Reload)
+## What it does
 
-CI/CD & Server: GitHub Actions, Rocky Linux 9 (RHEL)
+- Public site: home, blog, contact form, `sitemap.xml`, `tr` / `en`
+- Admin CMS behind `ADMIN_PANEL_ENDPOINT` (default `/admin`)
+- Contact form: Cloudflare Turnstile, Redis-backed limiter, HTML-escaped mail
+- Blog Markdown rendered with `marked`, then `sanitize-html`
+- Login: bcrypt, session regenerate, 5 failed attempts → 15 minute lock (`wrong_try`)
+- Helmet CSP (nonce), `httpOnly` session cookie, `noindex` on the admin path
 
-🚀 Key Features
-Full Type-Safety: Separated TypeScript interfaces for database tables (dbTables) and API/View responses (response).
+## Layout
 
-Advanced Admin Panel: Modular management panel for experiences, projects, articles, contact messages, and social media links.
-
-Security & Performance:
-
-Cloudflare Turnstile integration
-
-Express Rate-Limiting and Helmet security layers
-
-Dynamic Sitemap (/sitemap.xml) generation
-
-Automated error handling (errorHandler, notFoundHandler) with custom 404/500 error pages
-
-Automated Deployment (CI/CD): GitHub Actions and SSH tünel integration for zero-downtime deployment backed by pm2 reload on Rocky Linux 9.
-
-📁 Project Architecture
-
-Plaintext
-
+```text
 src/
+  app.ts              Entry point
+  config/             DB pool, Redis, session, upload, env, rate limits
+  controllers/        Site and admin logic
+  middlewares/        Auth, default locals, Turnstile, 404/500
+  routes/             Public and admin routes
+  styles/             Tailwind input.css
+  types/              dbTables and view/response types
+  utils/              Helpers, mailer, locales, Markdown sanitize
+scripts/
+  migrate.ts          Applies numbered SQL files
+  create-admin.ts     Seeds the first admin user
+migrations/
+  001_init.sql        Baseline schema (CREATE IF NOT EXISTS)
+views/                EJS (site, admin, errors, partials)
+public/               Compiled CSS, JS, uploads
+```
 
-├── config/          # Database, Redis, Session, and Upload configurations
+## Setup
 
-├── controllers/     # Site and Admin panel business logic layer (Controllers)
+### Prerequisites
 
-├── middlewares/     # Authentication, rate-limiting, and Turnstile protections
+- Node.js 22+
+- Redis
+- MariaDB or MySQL
 
-├── routes/          # Web and Admin routes
+### Install
 
-├── styles/          # Tailwind CSS entry files (input.css)
-
-├── types/           # Type definitions (dbTables, response types)
-
-├── utils/           # Helper functions, email service, and language files
-
-└── app.ts           # Application entry point
-
-views/               # EJS templates (Admin, Blog, Errors, Partials)
-
-⚙️ Setup & Installation
-1. Prerequisites
-Node.js (v18+)
-
-Redis Server
-
-MySQL / MariaDB Database
-
-2. Installing Dependencies
-Bash
+```bash
 npm install
-3. Environment Variables
-Copy the .env.sample file to .env and configure the required database and Redis credentials:
-
-Bash
 cp .env.sample .env
+```
 
-4. Development Mode
-Bash
+Fill `.env`. At minimum: `DB_*`, `REDIS_URL`, `SESSION_SECRET`, SMTP, Turnstile keys.
 
-npm run dev
+**`SESSION_SECRET`**
 
-6. Production Build & Execution
-Bash
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
 
-# Compile TypeScript and Tailwind CSS
-npm run build
+- Must be set. Empty or known placeholders (`very_secret_code`, `very_secret_key_must_be_change`) refuse to start.
+- If `APP_ENV=prod`, the secret must be at least 32 characters.
+- For local work, `APP_ENV=dev` is enough with any non-placeholder secret; the sample file still ships `APP_ENV=prod` — change it or use a long secret.
 
-# Start application via PM2
-pm2 start dist/app.js --name "my-site"
-🔄 CI/CD Workflow
-Every push to the main branch triggers the GitHub Actions workflow automatically:
+Do not commit `.env`.
 
-npm ci installs dependencies strictly adhering to the lockfile.
-
-npm run build compiles TypeScript and CSS assets for production.
-
-The server executes pm2 reload for zero-downtime updates.
-
-🗄️ Database
-Schema changes are numbered SQL files under `migrations/`. They are applied in order and recorded in `schema_migrations`. Existing tables are not dropped.
+### Schema and admin user
 
 ```bash
 npm run db:migrate
 npm run seed:admin
 ```
 
-Add a new change as `migrations/002_short_name.sql` (`ALTER TABLE ...`). Re-running migrate skips files that are already recorded.
+`db:migrate` runs `migrations/*.sql` in name order and records them in `schema_migrations`. Already-applied files are skipped. Existing tables are not dropped (`CREATE IF NOT EXISTS` in `001_init.sql`).
 
-Do not run `DumpSQL.sql` on a live database; it drops tables. Backups belong in `mysqldump`, not in schema deploy.
+New schema change: add `migrations/002_short_name.sql` (usually `ALTER TABLE ...`). Deploy runs migrate automatically.
+
+Do **not** run `DumpSQL.sql` against a live database. It drops tables. Backups are `mysqldump` (or equivalent), not that script.
+
+Seed uses `ADMIN_USERNAME` / `ADMIN_PASSWORD` from `.env` (or CLI args). Skip if that user already exists.
+
+### Development
+
+```bash
+npm run dev
+```
+
+TypeScript via `tsx watch`. CSS: `npm run watch:css` in a second terminal if you are editing Tailwind.
+
+### Production (manual)
+
+```bash
+npm run build          # tsc + minified Tailwind
+pm2 start dist/app.js --name "my-site"
+# later:
+pm2 reload my-site --update-env
+```
+
+## Deploy (GitHub Actions)
+
+Push to **`master`** (not `main`). The workflow SSHs into the VPS and runs:
+
+```text
+git pull origin master
+npm ci
+npm run build
+npm run db:migrate
+pm2 reload my-site --update-env
+```
+
+`npm ci` installs from `package-lock.json`, including new packages. You do not run `npm install` by hand on the server.
+
+If migrate or the app exits on `SESSION_SECRET`, the production `.env` on the VPS is too short or still a placeholder. Fix that file, then migrate and reload again.
+
+## Scripts
+
+| Script | Purpose |
+|--------|---------|
+| `npm run dev` | Watch `src/app.ts` |
+| `npm run build` | Compile TS and CSS |
+| `npm start` | `node dist/app.js` |
+| `npm run db:migrate` | Apply pending SQL migrations |
+| `npm run seed:admin` | Create the first admin |
+| `npm run build:css` / `watch:css` | Tailwind |
