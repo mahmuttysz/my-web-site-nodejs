@@ -2,6 +2,7 @@
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import fsPromises from 'fs/promises';
 import { Request } from 'express';
 import { env } from './env';
 
@@ -46,5 +47,35 @@ const upload = multer({
     }
   }
 });
+
+export const articleUploadDir = uploadDir;
+
+export const resolveArticleCoverPath = (coverImage?: string | null): string | null => {
+  if (!coverImage) return null;
+
+  const normalized = coverImage.replace(/\\/g, '/');
+  if (!normalized.startsWith('/uploads/articles/')) return null;
+
+  const filename = path.posix.basename(normalized);
+  if (!filename || filename === '.' || filename === '..') return null;
+  if (normalized !== `/uploads/articles/${filename}`) return null;
+
+  const resolved = path.resolve(articleUploadDir, filename);
+  const relative = path.relative(articleUploadDir, resolved);
+  if (!relative || relative.startsWith('..') || path.isAbsolute(relative)) return null;
+
+  return resolved;
+};
+
+export const unlinkArticleCover = async (coverImage?: string | null): Promise<void> => {
+  const filePath = resolveArticleCoverPath(coverImage);
+  if (!filePath) return;
+
+  try {
+    await fsPromises.unlink(filePath);
+  } catch {
+    /* dosya yoksa akışı bozma */
+  }
+};
 
 export default upload;

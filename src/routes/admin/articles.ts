@@ -1,8 +1,6 @@
 import express, { Request, Response, NextFunction } from 'express';
 import slugify from 'slugify';
-import fs from 'fs/promises';
-import path from 'path';
-import upload from '../../config/upload';
+import upload, { unlinkArticleCover } from '../../config/upload';
 import { env } from '../../config/env';
 import articlesController from '../../controllers/admin/articlesController';
 
@@ -80,11 +78,7 @@ router.post(
 
       // Veritabanı hatasında yüklenen resmi temizleme
       if (req.file) {
-        try {
-          await fs.unlink(req.file.path);
-        } catch {
-          /* dosya silinirken oluşan hatayı yut */
-        }
+        await unlinkArticleCover(`/uploads/articles/${req.file.filename}`);
       }
 
       let errorMessage = 'Makale kaydedilirken bir hata oluştu.';
@@ -144,19 +138,23 @@ router.post(
   },
   async (req: Request, res: Response) => {
     const articleId = Number(req.params.id || '0');
-    const { title, slug, excerpt, content, status, language, existing_cover_image } = req.body;
+    const { title, slug, excerpt, content, status, language } = req.body;
     const articleStatus = (parseInt(status, 10) || 0) === 1;
     const finalSlug = slugify(slug || title || '', { lower: true, strict: true, locale: language || 'tr' });
     const userId = Number(req.session.adminUser?.id || 0);
-
-    let cover_image = existing_cover_image || null;
-    if (req.file) {
-      cover_image = `/uploads/articles/${req.file.filename}`;
-    }
-
     const adminEndpoint = req.adminEndpoint || env.ADMIN_PANEL_ENDPOINT || '/admin';
+    const uploadedCover = req.file ? `/uploads/articles/${req.file.filename}` : null;
 
     try {
+      const current = await articlesController.getArticle(articleId);
+
+      if (!current) {
+        if (uploadedCover) await unlinkArticleCover(uploadedCover);
+        return res.redirect(`${adminEndpoint}/articles`);
+      }
+
+      const cover_image = uploadedCover || current.cover_image || null;
+
       await articlesController.editArticle(
         articleId,
         title,
@@ -169,27 +167,16 @@ router.post(
         userId
       );
 
-      // Yeni görsel yüklendiyse eski görseli diskten silme
-      if (req.file && existing_cover_image) {
-        const oldImagePath = path.join(process.cwd(), 'public', existing_cover_image);
-        try {
-          await fs.unlink(oldImagePath);
-        } catch {
-          /* eski resim bulunamazsa akışı bozma */
-        }
+      if (uploadedCover && current.cover_image && current.cover_image !== uploadedCover) {
+        await unlinkArticleCover(current.cover_image);
       }
 
       return res.redirect(`${adminEndpoint}/articles`);
     } catch (err: any) {
       console.error('Makale güncelleme hatası:', err);
 
-      // Güncelleme başarısız olduysa yeni yüklenen geçici dosyayı temizleme
-      if (req.file) {
-        try {
-          await fs.unlink(req.file.path);
-        } catch {
-          /* yüklenen yeni resim silinemezse akışı bozma */
-        }
+      if (uploadedCover) {
+        await unlinkArticleCover(uploadedCover);
       }
 
       let errorMessage = 'Makale güncellenirken bir hata oluştu.';
@@ -197,11 +184,13 @@ router.post(
         errorMessage = 'Bu slug veya başlık başka bir makale tarafından kullanılıyor!';
       }
 
+      const current = await articlesController.getArticle(articleId).catch(() => null);
+
       return res.status(400).render('admin/articles/editor', {
         title: 'Makale Düzenle',
         error: errorMessage,
         user: req.session.adminUser,
-        article: { ...req.body, id: articleId, cover_image: existing_cover_image }
+        article: { ...req.body, id: articleId, cover_image: current?.cover_image || null }
       });
     }
   }
@@ -213,13 +202,8 @@ router.post('/delete/:id', async (req: Request, res: Response) => {
     const articleId = Number(req.params.id || '0');
 
     const article = await articlesController.getArticle(articleId);
-    if (article && article.cover_image) {
-      const imagePath = path.join(process.cwd(), 'public', article.cover_image);
-      try {
-        await fs.unlink(imagePath);
-      } catch {
-        /* görsel bulunamazsa silme işlemini durdurma */
-      }
+    if (article?.cover_image) {
+      await unlinkArticleCover(article.cover_image);
     }
 
     await articlesController.deleteArticle(articleId);

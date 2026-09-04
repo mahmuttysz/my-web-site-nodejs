@@ -1,5 +1,5 @@
-import { marked } from 'marked';
 import { dbQueries, query, queryOne } from '../config/db';
+import { renderMarkdown } from '../utils/markdown';
 import Articles from '../types/dbTables/articles';
 import SocialMedias from '../types/dbTables/socialMedias';
 import { BlogIndexResponse, BlogSlugResponse } from '../types/response/blogResponse';
@@ -31,7 +31,7 @@ export const getBySlug = async (slug: string): Promise<BlogSlugResponse | null> 
     });
 
     // Markdown içeriğini HTML'e dönüştürme
-    article.contentHtml = await marked.parse(article.content || '');
+    article.contentHtml = await renderMarkdown(article.content);
 
     const socialMedias = await query<SocialMedias[]>(dbQueries.socialMedias.get);
 
