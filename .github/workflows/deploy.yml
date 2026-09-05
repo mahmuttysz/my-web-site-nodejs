@@ -38,6 +38,7 @@ jobs:
           port: ${{ secrets.VPS_SSH_PORT }}
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
+          script_stop: true
           script: |
             set -eu
             cd /var/www/nodejs/mahmuttuysuz.net
@@ -46,12 +47,28 @@ jobs:
             npm run build
             npm run db:migrate
             pm2 reload my-site --update-env
+
+            PORT=3000
+            if [ -f .env ]; then
+              parsed=$(grep -E '^PORT=' .env | tail -n1 | cut -d= -f2- | tr -d ' "\r' || true)
+              if [ -n "${parsed}" ]; then
+                PORT="${parsed}"
+              fi
+            fi
+
             ok=0
-            for _ in 1 2 3 4 5 6 7 8 9 10; do
-              if curl -fsS "http://127.0.0.1:3000/health"; then
+            for _ in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15; do
+              if body=$(curl -fsS "http://127.0.0.1:${PORT}/health" 2>/dev/null); then
+                echo "${body}"
                 ok=1
                 break
               fi
               sleep 1
             done
-            [ "$ok" -eq 1 ]
+
+            if [ "${ok}" -ne 1 ]; then
+              echo "Health check failed on 127.0.0.1:${PORT}"
+              pm2 status my-site || true
+              pm2 logs my-site --lines 40 --nostream || true
+              exit 1
+            fi
