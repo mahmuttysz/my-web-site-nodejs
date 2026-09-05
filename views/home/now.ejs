@@ -1,0 +1,22 @@
+<% if (hasNowWorking(aboutMe && aboutMe.now_text)) { %>
+<section id="now">
+    <h2
+        class="text-xl sm:text-2xl font-bold tracking-tight mb-6 pb-2 border-b border-site-border flex items-center gap-2 text-site-text before:content-['//'] before:text-site-accent">
+        <%= t.now.title %>
+    </h2>
+    <div class="bg-site-card border border-site-border rounded-xl p-5 sm:p-6">
+        <div class="flex items-center gap-2 mb-3">
+            <span class="relative flex h-2.5 w-2.5" aria-hidden="true">
+                <span class="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60"></span>
+                <span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400"></span>
+            </span>
+            <p class="text-xs font-semibold uppercase tracking-wider text-site-muted">
+                <%= t.now.label %>
+            </p>
+        </div>
+        <p class="text-site-text text-base leading-relaxed whitespace-pre-line">
+            <%= aboutMe.now_text %>
+        </p>
+    </div>
+</section>
+<% } %>

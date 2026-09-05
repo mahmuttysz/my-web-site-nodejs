@@ -2,6 +2,7 @@ interface AboutMe {
     id: number,
     title: string,
     description: string,
+    now_text?: string | null,
     meta_description: string,
     created_by: number,
     updated_by?: number | null,

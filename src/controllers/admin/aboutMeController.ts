@@ -10,12 +10,15 @@ export const save = async (
   lang: string,
   title: string,
   description: string,
+  nowText: string,
   metaDescription: string,
   userId: number
 ): Promise<void> => {
+  const now = safeTrim(nowText);
   await query(dbQueries.aboutMe.update, [
     safeTrim(title),
     safeTrim(description),
+    now || null,
     safeTrim(metaDescription),
     userId,
     lang

@@ -30,7 +30,7 @@ export const dbQueries = {
         getAll: "SELECT * FROM about_me",
         get: "SELECT * FROM about_me WHERE language = ? AND status = 1",
         add: "INSERT INTO about_me (title, description, meta_description, created_by, language, status) VALUES (?, ?, ?, ?, ?, ?)",
-        update: "UPDATE about_me SET title = ?, description = ?, meta_description = ?, updated_by = ? WHERE language = ?",
+        update: "UPDATE about_me SET title = ?, description = ?, now_text = ?, meta_description = ?, updated_by = ? WHERE language = ?",
         delete: "DELETE FROM about_me WHERE id = ?"
     },
     experiences: {
@@ -72,6 +72,7 @@ export const dbQueries = {
         get: "SELECT * FROM articles WHERE language = ? AND status = 1 ORDER BY COALESCE(published_at, created_at) DESC",
         getById: "SELECT * FROM articles WHERE id = ? LIMIT 1",
         getBySlug: "SELECT * FROM articles WHERE slug = ? AND language = ? AND status = 1 LIMIT 1",
+        getByLangSlug: "SELECT * FROM articles WHERE slug = ? AND language = ? LIMIT 1",
         getPublishedOtherLang: "SELECT slug, language FROM articles WHERE slug = ? AND language <> ? AND status = 1 LIMIT 1",
         getSitemap: "SELECT slug, language, created_at, updated_at, published_at FROM articles WHERE status = 1 ORDER BY COALESCE(published_at, created_at) DESC",
         getRss: "SELECT title, slug, excerpt, content, language, published_at, created_at, updated_at FROM articles WHERE language = ? AND status = 1 ORDER BY COALESCE(published_at, created_at) DESC LIMIT 50",

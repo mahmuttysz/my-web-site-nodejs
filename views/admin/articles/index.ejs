@@ -64,6 +64,20 @@
                                                 class="text-blue-400 hover:text-blue-300 font-medium text-xs">
                                                 Düzenle
                                             </a>
+                                            <% if (art.siblingId) { %>
+                                                <a href="<%=adminEndpoint%>/articles/edit/<%= art.siblingId %>"
+                                                    class="text-sky-400 hover:text-sky-300 font-medium text-xs">
+                                                    <%= String(art.siblingLang || '').toUpperCase() %>
+                                                </a>
+                                            <% } else if (art.slug) { %>
+                                                <form action="<%=adminEndpoint%>/articles/translate/<%= art.id %>" method="POST" class="inline">
+                                                    <%- include('../partials/csrf') %>
+                                                    <button type="submit"
+                                                        class="text-sky-400 hover:text-sky-300 font-medium text-xs">
+                                                        <%= art.language === 'en' ? 'TR' : 'EN' %> taslak
+                                                    </button>
+                                                </form>
+                                            <% } %>
                                             <% if (art.preview_token && Number(art.status) !== 1) { %>
                                                 <a href="<%= (art.language === 'en' ? '/en' : '') + '/blog/_preview/' + art.preview_token %>"
                                                     target="_blank" rel="noopener noreferrer"

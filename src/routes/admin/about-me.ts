@@ -22,7 +22,7 @@ router.get('/', async (req: Request, res: Response) => {
 router.post('/:lang', async (req: Request, res: Response) => {
   try {
     const { lang } = req.params;
-    const { title, meta_description, description } = req.body;
+    const { title, meta_description, description, now_text } = req.body;
     const userId = req.session.adminUser?.id;
 
     if (!userId) {
@@ -33,6 +33,7 @@ router.post('/:lang', async (req: Request, res: Response) => {
       lang.toString(),
       title,
       description,
+      now_text || '',
       meta_description,
       Number(userId)
     );

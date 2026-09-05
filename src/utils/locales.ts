@@ -12,6 +12,10 @@ export const locales = {
       projects: "Projeler",
       contact: "İletişim"
     },
+    now: {
+      title: "Şu an",
+      label: "Üzerinde çalıştığım şey"
+    },
     hero: {
       badge: "Kıdemli Yazılım Geliştirme & DevOps Uzmanı",
       title: "Ölçeklenebilir Yazılımlar & Güvenilir Altyapılar",
@@ -90,6 +94,10 @@ export const locales = {
       experiences: "Experiences",
       projects: "Projects",
       contact: "Contact"
+    },
+    now: {
+      title: "Now",
+      label: "What I'm working on"
     },
     hero: {
       badge: "Senior Software Developer & DevOps Specialist",

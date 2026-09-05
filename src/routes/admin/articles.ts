@@ -4,17 +4,47 @@ import upload, { unlinkArticleCover } from '../../config/upload';
 import { env } from '../../config/env';
 import articlesController from '../../controllers/admin/articlesController';
 import { verifyCsrf } from '../../middlewares/csrf';
+import { findSiblingInList, otherArticleLang } from '../../utils/articleTranslation';
 
 const router = express.Router();
+
+const renderEditor = (
+  res: Response,
+  req: Request,
+  opts: {
+    title: string;
+    article: Record<string, unknown>;
+    sibling?: { id: number; language: string; status: boolean | number } | null;
+    error?: string;
+    status?: number;
+  }
+) => {
+  return res.status(opts.status || 200).render('admin/articles/editor', {
+    title: opts.title,
+    error: opts.error,
+    user: req.session.adminUser,
+    article: opts.article,
+    sibling: opts.sibling ?? null,
+    otherArticleLang: otherArticleLang(String(opts.article.language || 'tr'))
+  });
+};
 
 // Makaleleri Listeleme
 router.get('/', async (req: Request, res: Response) => {
   try {
     const articles = await articlesController.getArticles();
+    const rows = articles.map((article) => {
+      const sibling = findSiblingInList(articles, article);
+      return {
+        ...article,
+        siblingId: sibling?.id ?? null,
+        siblingLang: sibling?.language ?? null
+      };
+    });
     return res.render('admin/articles/index', {
       title: 'Makaleler',
       user: req.session.adminUser,
-      articles
+      articles: rows
     });
   } catch (err) {
     console.error('Makaleler çekilirken hata:', err);
@@ -24,9 +54,8 @@ router.get('/', async (req: Request, res: Response) => {
 
 // Yeni Makale Sayfası
 router.get('/new', (req: Request, res: Response) => {
-  return res.render('admin/articles/editor', {
+  return renderEditor(res, req, {
     title: 'Yeni Makale',
-    user: req.session.adminUser,
     article: {}
   });
 });
@@ -42,7 +71,9 @@ router.post(
           title: 'Yeni Makale',
           error: err.message,
           user: req.session.adminUser,
-          article: req.body
+          article: req.body,
+          sibling: null,
+          otherArticleLang: otherArticleLang(String(req.body?.language || 'tr'))
         });
       }
       next();
@@ -94,7 +125,9 @@ router.post(
         title: 'Yeni Makale',
         error: errorMessage,
         user: req.session.adminUser,
-        article: req.body
+        article: req.body,
+        sibling: null,
+        otherArticleLang: otherArticleLang(String(req.body?.language || 'tr'))
       });
     }
   }
@@ -114,7 +147,9 @@ router.get('/edit/:id', async (req: Request, res: Response) => {
     return res.render('admin/articles/editor', {
       title: 'Makale Düzenle',
       user: req.session.adminUser,
-      article
+      article,
+      sibling: article.slug ? await articlesController.findSibling(article.slug, article.language) : null,
+      otherArticleLang: otherArticleLang(article.language)
     });
   } catch (err) {
     console.error('Makale getirme hatası:', err);
@@ -132,7 +167,9 @@ router.post(
           title: 'Makale Düzenle',
           error: err.message,
           user: req.session.adminUser,
-          article: { ...req.body, id: req.params.id }
+          article: { ...req.body, id: req.params.id },
+          sibling: null,
+          otherArticleLang: otherArticleLang(String(req.body?.language || 'tr'))
         });
       }
       next();
@@ -194,11 +231,27 @@ router.post(
         title: 'Makale Düzenle',
         error: errorMessage,
         user: req.session.adminUser,
-        article: { ...req.body, id: articleId, cover_image: current?.cover_image || null }
+        article: { ...req.body, id: articleId, cover_image: current?.cover_image || null },
+        sibling: current?.slug ? await articlesController.findSibling(current.slug, current.language).catch(() => null) : null,
+        otherArticleLang: otherArticleLang(String(req.body?.language || current?.language || 'tr'))
       });
     }
   }
 );
+
+router.post('/translate/:id', verifyCsrf, async (req: Request, res: Response) => {
+  const adminEndpoint = req.adminEndpoint || env.ADMIN_PANEL_ENDPOINT || '/admin';
+  const articleId = Number(req.params.id || '0');
+  const userId = Number(req.session.adminUser?.id || 0);
+
+  try {
+    const siblingId = await articlesController.copyToOtherLanguage(articleId, userId);
+    return res.redirect(`${adminEndpoint}/articles/edit/${siblingId}`);
+  } catch (err: any) {
+    console.error('Makale çeviri kopyası hatası:', err);
+    return res.redirect(`${adminEndpoint}/articles`);
+  }
+});
 
 // Makale Silme
 router.post('/delete/:id', verifyCsrf, async (req: Request, res: Response) => {

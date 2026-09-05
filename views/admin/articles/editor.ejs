@@ -13,6 +13,20 @@
                         <a href="<%=adminEndpoint%>/articles"
                             class="text-xs text-slate-400 hover:text-white transition-colors">
                             ← İptal ve Geri Dön</a>
+                        <% if (article.id && typeof sibling !== 'undefined' && sibling) { %>
+                            <a href="<%= adminEndpoint %>/articles/edit/<%= sibling.id %>"
+                                class="text-xs text-sky-400 hover:text-sky-300 transition-colors">
+                                <%= String(sibling.language || '').toUpperCase() %> kaydını düzenle
+                            </a>
+                        <% } else if (article.id && article.slug) { %>
+                            <form action="<%= adminEndpoint %>/articles/translate/<%= article.id %>" method="POST" class="inline">
+                                <%- include('../partials/csrf') %>
+                                <button type="submit"
+                                    class="text-xs text-sky-400 hover:text-sky-300 transition-colors">
+                                    <%= (typeof otherArticleLang !== 'undefined' ? otherArticleLang : 'en').toUpperCase() %> taslağı oluştur
+                                </button>
+                            </form>
+                        <% } %>
                         <% const published = Number(article.status) === 1; %>
                         <% if (article.preview_token && !published) { %>
                             <a href="<%= (article.language === 'en' ? '/en' : '') + '/blog/_preview/' + article.preview_token %>"
@@ -99,19 +113,22 @@
                                 </option>
                             </select>
                         </div>
-                        <div class="flex items-center gap-4">
-                            <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                                Dil:
-                            </label>
-                            <select name="language"
-                                class="bg-slate-900 border border-slate-800 text-sm text-white rounded-lg px-3 py-2 focus:outline-none">
-                                <option value="tr" <%=article.language==='tr' ? 'selected' : '' %>>
-                                    Türkçe
-                                </option>
-                                <option value="en" <%=article.language==='en' ? 'selected' : '' %>>
-                                    İngilizce
-                                </option>
-                            </select>
+                        <div class="flex flex-col gap-1">
+                            <div class="flex items-center gap-4">
+                                <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                                    Dil:
+                                </label>
+                                <select name="language"
+                                    class="bg-slate-900 border border-slate-800 text-sm text-white rounded-lg px-3 py-2 focus:outline-none">
+                                    <option value="tr" <%=article.language==='tr' ? 'selected' : '' %>>
+                                        Türkçe
+                                    </option>
+                                    <option value="en" <%=article.language==='en' ? 'selected' : '' %>>
+                                        İngilizce
+                                    </option>
+                                </select>
+                            </div>
+                            <p class="text-[11px] text-slate-500">Çeviri kaydı aynı slug ile eşleşir.</p>
                         </div>
                         <button type="submit"
                             class="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-medium transition-colors">

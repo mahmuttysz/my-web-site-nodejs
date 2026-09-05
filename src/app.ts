@@ -9,6 +9,7 @@ import { sessionOpt } from './config/session';
 import { closePool } from './config/db';
 import { closeRedis } from './config/redis';
 import { formatDate, formatLongDate, formatLongDateTime } from './utils/helper';
+import { hasNowWorking } from './utils/articleTranslation';
 import { defaultMid } from './middlewares/default';
 import { attachLocale, redirectLangQuery, skipIfEnPrefix } from './middlewares/locale';
 import { notFoundHandler } from './middlewares/notFoundHandler';
@@ -31,6 +32,7 @@ app.set('views', path.join(__dirname, '../views'));
 app.locals.formatDate = formatDate;
 app.locals.formatLongDate = formatLongDate;
 app.locals.formatLongDateTime = formatLongDateTime;
+app.locals.hasNowWorking = hasNowWorking;
 
 // 3. Parser ve Statik Dosya Servisi (Session öncesi performans optimizasyonu)
 app.use(express.urlencoded({ extended: true }));
