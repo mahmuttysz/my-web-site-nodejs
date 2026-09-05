@@ -8,11 +8,12 @@
     "test": "tsx --test ./test/i18n.test.ts ./test/helper.test.ts ./test/markdown.test.ts ./test/loginLock.test.ts ./test/health.test.ts ./test/sitemap.test.ts ./test/csrf-preview.test.ts ./test/articleTranslation.test.ts ./test/articleHits.test.ts",
     "build": "tsc && npm run build:css",
     "start": "node dist/app.js",
-    "dev": "tsx watch src/app.ts",
+    "dev": "concurrently -k -n ts,css -c cyan,magenta npm:dev:server npm:watch:css",
+    "dev:server": "tsx watch src/app.ts",
     "seed:admin": "tsx scripts/create-admin.ts",
     "db:migrate": "tsx scripts/migrate.ts",
     "build:css": "npx @tailwindcss/cli -i ./src/styles/input.css -o ./public/css/style.css --minify",
-    "watch:css": "npx @tailwindcss/cli -i ./src/styles/input.css -o ./public/css/style.css --watch"
+    "watch:css": "npx @tailwindcss/cli -i ./src/styles/input.css -o ./public/css/style.css --watch --silent"
   },
   "keywords": [],
   "devDependencies": {
@@ -25,6 +26,7 @@
     "@types/node": "^22.20.1",
     "@types/nodemailer": "^8.0.1",
     "@types/sanitize-html": "^2.16.1",
+    "concurrently": "^10.0.5",
     "tailwindcss": "^4.3.3",
     "tsx": "^4.23.12",
     "typescript": "^5.9.3"

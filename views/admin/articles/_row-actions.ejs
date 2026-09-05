@@ -1,0 +1,32 @@
+<div class="flex flex-wrap items-center gap-x-3 gap-y-1.5 <%= typeof align !== 'undefined' && align === 'end' ? 'justify-end' : '' %>">
+    <a href="<%=adminEndpoint%>/articles/edit/<%= art.id %>"
+        class="text-blue-400 hover:text-blue-300 font-medium text-xs">
+        Düzenle
+    </a>
+    <% if (art.siblingId) { %>
+        <a href="<%=adminEndpoint%>/articles/edit/<%= art.siblingId %>"
+            class="text-sky-400 hover:text-sky-300 font-medium text-xs">
+            <%= String(art.siblingLang || '').toUpperCase() %>
+        </a>
+    <% } else if (art.slug) { %>
+        <form action="<%=adminEndpoint%>/articles/translate/<%= art.id %>" method="POST" class="inline m-0">
+            <%- include('../partials/csrf') %>
+            <button type="submit"
+                class="text-sky-400 hover:text-sky-300 font-medium text-xs">
+                <%= art.language === 'en' ? 'TR' : 'EN' %> taslak
+            </button>
+        </form>
+    <% } %>
+    <% if (art.preview_token && Number(art.status) !== 1) { %>
+        <a href="<%= (art.language === 'en' ? '/en' : '') + '/blog/_preview/' + art.preview_token %>"
+            target="_blank" rel="noopener noreferrer"
+            class="text-emerald-400 hover:text-emerald-300 font-medium text-xs">
+            Önizle
+        </a>
+    <% } %>
+    <button type="button" admin-endpoint="<%=adminEndpoint%>" page-endpoint="articles"
+        data-id="<%= art.id %>"
+        class="btn-delete text-red-400 hover:text-red-300 font-medium text-xs">
+        Sil
+    </button>
+</div>

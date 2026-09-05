@@ -93,7 +93,7 @@ Seed uses `ADMIN_USERNAME` / `ADMIN_PASSWORD` from `.env` (or CLI args). Skip if
 npm run dev
 ```
 
-TypeScript via `tsx watch`. CSS: `npm run watch:css` in a second terminal if you are editing Tailwind.
+TypeScript and Tailwind both watch. Built CSS is gitignored (`public/css/style.css`); `npm run dev` or `npm run build` recreates it.
 
 ### Production (manual)
 
@@ -125,11 +125,11 @@ If migrate or the app exits on `SESSION_SECRET`, the production `.env` on the VP
 
 | Script | Purpose |
 |--------|---------|
-| `npm run dev` | Watch `src/app.ts` |
+| `npm run dev` | Watch TypeScript and Tailwind |
 | `npm run build` | Compile TS and CSS |
 | `npm start` | `node dist/app.js` |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm test` | Unit tests (`node:test` via tsx) |
 | `npm run db:migrate` | Apply pending SQL migrations |
 | `npm run seed:admin` | Create the first admin |
-| `npm run build:css` / `watch:css` | Tailwind |
+| `npm run build:css` / `watch:css` | Tailwind only |

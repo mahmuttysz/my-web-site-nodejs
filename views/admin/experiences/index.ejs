@@ -1,87 +1,96 @@
 <%- include('../partials/header') %>
-    <div class="flex min-h-screen">
+    <div class="flex min-h-screen flex-col lg:flex-row">
         <%- include('../partials/sidebar') %>
-            <main class="flex-1 p-8 overflow-y-auto">
-                <header class="flex items-center justify-between mb-8">
-                    <div>
-                        <h1 class="text-2xl font-bold text-white">
+            <main class="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 overflow-y-auto">
+                <header class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6 lg:mb-8">
+                    <div class="min-w-0">
+                        <h1 class="text-xl sm:text-2xl font-bold text-white">
                             Deneyim Yönetimi
                         </h1>
                     </div>
                     <a href="<%=adminEndpoint%>/experiences/new"
-                        class="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-medium transition-colors">
+                        class="inline-flex justify-center shrink-0 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-medium transition-colors">
                         + Deneyim Ekle
                     </a>
                 </header>
-                <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
-                    <table class="w-full text-left text-sm text-slate-300">
-                        <thead class="bg-slate-950 border-b border-slate-800 text-xs uppercase text-slate-400">
-                            <tr>
-                                <th class="px-6 py-4">#</th>
-                                <th class="px-6 py-4">Şirket</th>
-                                <th class="px-6 py-4">Ünvan</th>
-                                <!-- <th class="px-6 py-4">Detay</th> -->
-                                <th class="px-6 py-4">Başlangıç Tarihi</th>
-                                <th class="px-6 py-4">Bitiş Tarihi</th>
-                                <th class="px-6 py-4">Kayıt Tarihi</th>
-                                <th class="px-6 py-4">Dil</th>
-                                <th class="px-6 py-4">Durum</th>
-                                <th class="px-6 py-4 text-right">Aksiyonlar</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-800">
-                            <% if (experiences && experiences.length> 0) { %>
+                <% if (experiences && experiences.length> 0) { %>
+                    <div class="lg:hidden space-y-3">
+                        <% experiences.forEach((exp)=> { %>
+                            <article class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3">
+                                <div class="flex items-start justify-between gap-3">
+                                    <div class="min-w-0">
+                                        <h2 class="font-medium text-white leading-snug"><%= exp.company_name %></h2>
+                                        <p class="text-sm text-slate-400 mt-0.5"><%= exp.title %></p>
+                                    </div>
+                                    <span class="shrink-0 px-2.5 py-1 rounded-full text-xs font-semibold <%= exp.status === 1 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-slate-800 text-slate-400' %>">
+                                        <%= exp.status===1 ? 'Aktif' : 'Pasif' %>
+                                    </span>
+                                </div>
+                                <dl class="grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs text-slate-400">
+                                    <div>
+                                        <dt class="text-slate-500">Dil</dt>
+                                        <dd class="uppercase"><%= exp.language || 'tr' %></dd>
+                                    </div>
+                                    <div>
+                                        <dt class="text-slate-500">Başlangıç</dt>
+                                        <dd><%= formatLongDate(exp.begin_date) %></dd>
+                                    </div>
+                                    <div>
+                                        <dt class="text-slate-500">Bitiş</dt>
+                                        <dd><%= exp.end_date !==null ? formatLongDate(exp.end_date) : 'Devam Ediyor' %></dd>
+                                    </div>
+                                    <div>
+                                        <dt class="text-slate-500">Kayıt</dt>
+                                        <dd><%= formatLongDateTime(exp.created_at) %></dd>
+                                    </div>
+                                </dl>
+                                <%- include('../partials/crud-actions', { editHref: adminEndpoint + '/experiences/edit/' + exp.id, adminEndpoint: adminEndpoint, pageEndpoint: 'experiences', itemId: exp.id }) %>
+                            </article>
+                        <% }); %>
+                    </div>
+                    <div class="hidden lg:block bg-slate-900 border border-slate-800 rounded-xl overflow-x-auto">
+                        <table class="w-full min-w-[72rem] text-left text-sm text-slate-300">
+                            <thead class="bg-slate-950 border-b border-slate-800 text-xs uppercase text-slate-400">
+                                <tr>
+                                    <th class="px-6 py-4">#</th>
+                                    <th class="px-6 py-4">Şirket</th>
+                                    <th class="px-6 py-4">Ünvan</th>
+                                    <th class="px-6 py-4">Başlangıç</th>
+                                    <th class="px-6 py-4">Bitiş</th>
+                                    <th class="px-6 py-4">Kayıt</th>
+                                    <th class="px-6 py-4">Dil</th>
+                                    <th class="px-6 py-4">Durum</th>
+                                    <th class="px-6 py-4 text-right">Aksiyonlar</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800">
                                 <% experiences.forEach((exp, i)=> { %>
                                     <tr class="hover:bg-slate-800/30">
-                                        <td class="px-6 py-4 text-slate-400">
-                                            <%= i+1 %>
-                                        </td>
-                                        <td class="px-6 py-4 font-medium text-white max-w-md truncate">
-                                            <%= exp.company_name %>
-                                        </td>
-                                        <td class="px-6 py-4 font-medium text-white max-w-md truncate">
-                                            <%= exp.title %>
-                                        </td>
-                                        <td class="px-6 py-4 text-slate-400">
-                                            <%= formatLongDate(exp.begin_date) %>
-                                        </td>
-                                        <td class="px-6 py-4 text-slate-400">
-                                            <%= exp.end_date !==null ? formatLongDate(exp.end_date):'Devam Ediyor' %>
-                                        </td>
-                                        <td class="px-6 py-4 text-slate-400">
-                                            <%= formatLongDateTime(exp.created_at) %>
-                                        </td>
-                                        <td class="px-6 py-4 text-slate-400">
-                                            <%= exp.language || 'Türkçe' %>
-                                        </td>
+                                        <td class="px-6 py-4 text-slate-400"><%= i+1 %></td>
+                                        <td class="px-6 py-4 font-medium text-white max-w-xs truncate"><%= exp.company_name %></td>
+                                        <td class="px-6 py-4 font-medium text-white max-w-xs truncate"><%= exp.title %></td>
+                                        <td class="px-6 py-4 text-slate-400 whitespace-nowrap"><%= formatLongDate(exp.begin_date) %></td>
+                                        <td class="px-6 py-4 text-slate-400 whitespace-nowrap"><%= exp.end_date !==null ? formatLongDate(exp.end_date):'Devam Ediyor' %></td>
+                                        <td class="px-6 py-4 text-slate-400 whitespace-nowrap"><%= formatLongDateTime(exp.created_at) %></td>
+                                        <td class="px-6 py-4 text-slate-400 uppercase"><%= exp.language || 'tr' %></td>
                                         <td class="px-6 py-4">
-                                            <span class="px-2.5 py-1 rounded-full text-xs font-semibold 
-                                                <%= exp.status === 1 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
-                                                : 'bg-slate-800 text-slate-400' %>">
+                                            <span class="px-2.5 py-1 rounded-full text-xs font-semibold <%= exp.status === 1 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-slate-800 text-slate-400' %>">
                                                 <%= exp.status===1 ? 'Aktif' : 'Pasif' %>
                                             </span>
                                         </td>
-                                        <td class="px-6 py-4 text-right space-x-2">
-                                            <a href="<%=adminEndpoint%>/experiences/edit/<%= exp.id %>"
-                                                class="text-blue-400 hover:text-blue-300 font-medium text-xs">
-                                                Düzenle
-                                            </a>
-                                            <button admin-endpoint="<%=adminEndpoint%>" page-endpoint="experiences"
-                                                data-id="<%= exp.id %>"
-                                                class="btn-delete text-red-400 hover:text-red-300 font-medium text-xs">
-                                                Sil
-                                            </button>
+                                        <td class="px-6 py-4">
+                                            <%- include('../partials/crud-actions', { editHref: adminEndpoint + '/experiences/edit/' + exp.id, adminEndpoint: adminEndpoint, pageEndpoint: 'experiences', itemId: exp.id, align: 'end' }) %>
                                         </td>
                                     </tr>
-                                    <% }); } else { %>
-                                        <tr>
-                                            <td colspan="5" class="px-6 py-8 text-center text-slate-500">
-                                                Henüz deneyim eklenmemiş.</td>
-                                        </tr>
-                                        <% } %>
-                        </tbody>
-                    </table>
-                </div>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                <% } else { %>
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl px-6 py-8 text-center text-slate-500">
+                        Henüz deneyim eklenmemiş.
+                    </div>
+                <% } %>
             </main>
     </div>
     <%- include('../partials/footer') %>

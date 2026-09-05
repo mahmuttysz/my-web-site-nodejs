@@ -1,87 +1,103 @@
 <%- include('../partials/header') %>
-    <div class="flex min-h-screen">
+    <div class="flex min-h-screen flex-col lg:flex-row">
         <%- include('../partials/sidebar') %>
-            <main class="flex-1 p-8 overflow-y-auto">
-                <header class="flex items-center justify-between mb-8">
-                    <div>
-                        <h1 class="text-2xl font-bold text-white">
+            <main class="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 overflow-y-auto">
+                <header class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6 lg:mb-8">
+                    <div class="min-w-0">
+                        <h1 class="text-xl sm:text-2xl font-bold text-white">
                             Sosyal Medya Yönetimi
                         </h1>
                     </div>
                     <a href="<%=adminEndpoint%>/social-medias/new"
-                        class="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-medium transition-colors">
+                        class="inline-flex justify-center shrink-0 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-medium transition-colors">
                         + Sosyal Medya Ekle
                     </a>
                 </header>
-                <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
-                    <table class="w-full text-left text-sm text-slate-300">
-                        <thead class="bg-slate-950 border-b border-slate-800 text-xs uppercase text-slate-400">
-                            <tr>
-                                <th class="px-6 py-4">#</th>
-                                <th class="px-6 py-4">Başlık</th>
-                                <th class="px-6 py-4">Kullanıcı Adı</th>
-                                <th class="px-6 py-4">Link</th>
-                                <th class="px-6 py-4">İkon</th>
-                                <th class="px-6 py-4">Oluşturulma Tarihi</th>
-                                <th class="px-6 py-4">Durum</th>
-                                <th class="px-6 py-4 text-right">Aksiyonlar</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-800">
-                            <% if (socialMedias && socialMedias.length> 0) { %>
+                <% if (socialMedias && socialMedias.length> 0) { %>
+                    <div class="lg:hidden space-y-3">
+                        <% socialMedias.forEach((sMedia)=> { %>
+                            <article class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3">
+                                <div class="flex items-start justify-between gap-3">
+                                    <div class="flex items-start gap-3 min-w-0">
+                                        <div class="shrink-0 w-8 h-8 text-slate-300 [&>svg]:w-8 [&>svg]:h-8">
+                                            <%- sMedia.icon %>
+                                        </div>
+                                        <div class="min-w-0">
+                                            <h2 class="font-medium text-white leading-snug"><%= sMedia.title %></h2>
+                                            <p class="text-sm text-slate-400 mt-0.5"><%= sMedia.username %></p>
+                                        </div>
+                                    </div>
+                                    <span class="shrink-0 px-2.5 py-1 rounded-full text-xs font-semibold <%= sMedia.status === 1 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-slate-800 text-slate-400' %>">
+                                        <%= sMedia.status===1 ? 'Aktif' : 'Pasif' %>
+                                    </span>
+                                </div>
+                                <dl class="grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs text-slate-400">
+                                    <div class="col-span-2">
+                                        <dt class="text-slate-500">Link</dt>
+                                        <dd>
+                                            <% if (sMedia.url) { %>
+                                                <a href="<%= sMedia.url %>" target="_blank" rel="noopener noreferrer" class="text-sky-400 break-all">
+                                                    <%= sMedia.url %> ↗
+                                                </a>
+                                            <% } else { %>-<% } %>
+                                        </dd>
+                                    </div>
+                                    <div class="col-span-2">
+                                        <dt class="text-slate-500">Oluşturulma</dt>
+                                        <dd><%= formatLongDateTime(sMedia.created_at) %></dd>
+                                    </div>
+                                </dl>
+                                <%- include('../partials/crud-actions', { editHref: adminEndpoint + '/social-medias/edit/' + sMedia.id, adminEndpoint: adminEndpoint, pageEndpoint: 'social-medias', itemId: sMedia.id }) %>
+                            </article>
+                        <% }); %>
+                    </div>
+                    <div class="hidden lg:block bg-slate-900 border border-slate-800 rounded-xl overflow-x-auto">
+                        <table class="w-full min-w-[64rem] text-left text-sm text-slate-300">
+                            <thead class="bg-slate-950 border-b border-slate-800 text-xs uppercase text-slate-400">
+                                <tr>
+                                    <th class="px-6 py-4">#</th>
+                                    <th class="px-6 py-4">Başlık</th>
+                                    <th class="px-6 py-4">Kullanıcı Adı</th>
+                                    <th class="px-6 py-4">Link</th>
+                                    <th class="px-6 py-4">İkon</th>
+                                    <th class="px-6 py-4">Oluşturulma Tarihi</th>
+                                    <th class="px-6 py-4">Durum</th>
+                                    <th class="px-6 py-4 text-right">Aksiyonlar</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800">
                                 <% socialMedias.forEach((sMedia, i)=> { %>
                                     <tr class="hover:bg-slate-800/30">
+                                        <td class="px-6 py-4 text-slate-400"><%= i+1 %></td>
+                                        <td class="px-6 py-4 font-medium text-white max-w-xs truncate"><%= sMedia.title %></td>
+                                        <td class="px-6 py-4 font-medium text-white max-w-xs truncate"><%= sMedia.username %></td>
                                         <td class="px-6 py-4 text-slate-400">
-                                            <%= i+1 %>
+                                            <% if (sMedia.url) { %>
+                                                <a href="<%= sMedia.url %>" target="_blank" rel="noopener noreferrer">
+                                                    <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">↗</span>
+                                                </a>
+                                            <% } else { %>-<% } %>
                                         </td>
-                                        <td class="px-6 py-4 font-medium text-white max-w-md truncate">
-                                            <%= sMedia.title %>
-                                        </td>
-                                        <td class="px-6 py-4 font-medium text-white max-w-md truncate">
-                                            <%= sMedia.username %>
-                                        </td>
-                                        <td class="px-6 py-4 text-slate-400">
-                                            <a href="<%= sMedia.url %>" target="_blank">
-                                                <span
-                                                    class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                                                    ↗
-                                                </span>
-                                            </a>
-                                        </td>
-                                        <td class="px-6 py-4 text-slate-400">
-                                            <%- sMedia.icon %>
-                                        </td>
-                                        <td class="px-6 py-4 text-slate-400">
-                                            <%= formatLongDateTime(sMedia.created_at) %>
-                                        </td>
+                                        <td class="px-6 py-4 text-slate-400 [&>svg]:w-5 [&>svg]:h-5"><%- sMedia.icon %></td>
+                                        <td class="px-6 py-4 text-slate-400 whitespace-nowrap"><%= formatLongDateTime(sMedia.created_at) %></td>
                                         <td class="px-6 py-4">
-                                            <span class="px-2.5 py-1 rounded-full text-xs font-semibold 
-                                                <%= sMedia.status === 1 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
-                                                : 'bg-slate-800 text-slate-400' %>">
+                                            <span class="px-2.5 py-1 rounded-full text-xs font-semibold <%= sMedia.status === 1 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-slate-800 text-slate-400' %>">
                                                 <%= sMedia.status===1 ? 'Aktif' : 'Pasif' %>
                                             </span>
                                         </td>
-                                        <td class="px-6 py-4 text-right space-x-2">
-                                            <a href="<%=adminEndpoint%>/social-medias/edit/<%= sMedia.id %>"
-                                                class="text-blue-400 hover:text-blue-300 font-medium text-xs">
-                                                Düzenle
-                                            </a>
-                                            <button admin-endpoint="<%=adminEndpoint%>" page-endpoint="social-medias"
-                                                data-id="<%= sMedia.id %>"
-                                                class="btn-delete text-red-400 hover:text-red-300 font-medium text-xs">
-                                                Sil
-                                            </button>
+                                        <td class="px-6 py-4">
+                                            <%- include('../partials/crud-actions', { editHref: adminEndpoint + '/social-medias/edit/' + sMedia.id, adminEndpoint: adminEndpoint, pageEndpoint: 'social-medias', itemId: sMedia.id, align: 'end' }) %>
                                         </td>
                                     </tr>
-                                    <% }); } else { %>
-                                        <tr>
-                                            <td colspan="5" class="px-6 py-8 text-center text-slate-500">
-                                                Henüz sosyal medya eklenmemiş.</td>
-                                        </tr>
-                                        <% } %>
-                        </tbody>
-                    </table>
-                </div>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                <% } else { %>
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl px-6 py-8 text-center text-slate-500">
+                        Henüz sosyal medya eklenmemiş.
+                    </div>
+                <% } %>
             </main>
     </div>
     <%- include('../partials/footer') %>

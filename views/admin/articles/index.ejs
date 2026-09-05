@@ -1,10 +1,10 @@
 <%- include('../partials/header') %>
-    <div class="flex min-h-screen">
+    <div class="flex min-h-screen flex-col lg:flex-row">
         <%- include('../partials/sidebar') %>
-            <main class="flex-1 p-8 overflow-y-auto">
-                <header class="flex items-center justify-between mb-8">
-                    <div>
-                        <h1 class="text-2xl font-bold text-white">
+            <main class="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 overflow-y-auto">
+                <header class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6 lg:mb-8">
+                    <div class="min-w-0">
+                        <h1 class="text-xl sm:text-2xl font-bold text-white">
                             Makale Yönetimi
                         </h1>
                         <p class="text-slate-400 text-sm mt-1">
@@ -12,32 +12,75 @@
                         </p>
                     </div>
                     <a href="<%=adminEndpoint%>/articles/new"
-                        class="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-medium transition-colors">
+                        class="inline-flex justify-center shrink-0 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-medium transition-colors">
                         + Yeni Makale Ekle
                     </a>
                 </header>
-                <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
-                    <table class="w-full text-left text-sm text-slate-300">
-                        <thead class="bg-slate-950 border-b border-slate-800 text-xs uppercase text-slate-400">
-                            <tr>
-                                <th class="px-6 py-4">#</th>
-                                <th class="px-6 py-4">Başlık</th>
-                                <th class="px-6 py-4">Durum</th>
-                                <th class="px-6 py-4">Okunma Sayısı</th>
-                                <th class="px-6 py-4">Oluşturulma Tarihi</th>
-                                <th class="px-6 py-4">Yayınlanma Tarihi</th>
-                                <th class="px-6 py-4">Dil</th>
-                                <th class="px-6 py-4 text-right">Aksiyonlar</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-800">
-                            <% if (articles && articles.length> 0) { %>
+                <% if (articles && articles.length> 0) { %>
+                    <div class="lg:hidden space-y-3">
+                        <% articles.forEach((art)=> { %>
+                            <article class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3">
+                                <div class="flex items-start justify-between gap-3">
+                                    <h2 class="font-medium text-white leading-snug">
+                                        <%= art.title %>
+                                    </h2>
+                                    <span
+                                        class="shrink-0 px-2.5 py-1 rounded-full text-xs font-semibold <%= art.status === 1 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-slate-800 text-slate-400' %>">
+                                        <%= art.status===1 ? 'Yayınlandı' : 'Taslak' %>
+                                    </span>
+                                </div>
+                                <dl class="grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs text-slate-400">
+                                    <div>
+                                        <dt class="text-slate-500">Dil</dt>
+                                        <dd>
+                                            <%= art.language || 'tr' %>
+                                        </dd>
+                                    </div>
+                                    <div>
+                                        <dt class="text-slate-500">Okunma</dt>
+                                        <dd>
+                                            <%= art.hits %>
+                                        </dd>
+                                    </div>
+                                    <div>
+                                        <dt class="text-slate-500">Oluşturulma</dt>
+                                        <dd>
+                                            <%= formatLongDateTime(art.created_at) %>
+                                        </dd>
+                                    </div>
+                                    <div>
+                                        <dt class="text-slate-500">Yayın</dt>
+                                        <dd>
+                                            <%= art.published_at && art.published_at !==null ?
+                                                formatLongDateTime(art.published_at) : '-' %>
+                                        </dd>
+                                    </div>
+                                </dl>
+                                <%- include('_row-actions', { art: art, adminEndpoint: adminEndpoint }) %>
+                            </article>
+                            <% }); %>
+                    </div>
+                    <div class="hidden lg:block bg-slate-900 border border-slate-800 rounded-xl overflow-x-auto">
+                        <table class="w-full min-w-[64rem] text-left text-sm text-slate-300">
+                            <thead class="bg-slate-950 border-b border-slate-800 text-xs uppercase text-slate-400">
+                                <tr>
+                                    <th class="px-6 py-4">#</th>
+                                    <th class="px-6 py-4">Başlık</th>
+                                    <th class="px-6 py-4">Durum</th>
+                                    <th class="px-6 py-4">Okunma</th>
+                                    <th class="px-6 py-4">Oluşturulma</th>
+                                    <th class="px-6 py-4">Yayınlanma</th>
+                                    <th class="px-6 py-4">Dil</th>
+                                    <th class="px-6 py-4 text-right">Aksiyonlar</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800">
                                 <% articles.forEach((art, i)=> { %>
                                     <tr class="hover:bg-slate-800/30">
                                         <td class="px-6 py-4 text-slate-400">
                                             <%= i+1 %>
                                         </td>
-                                        <td class="px-6 py-4 font-medium text-white max-w-md truncate">
+                                        <td class="px-6 py-4 font-medium text-white max-w-xs truncate">
                                             <%= art.title %>
                                         </td>
                                         <td class="px-6 py-4">
@@ -49,58 +92,30 @@
                                         <td class="px-6 py-4 text-slate-400">
                                             <%= art.hits %>
                                         </td>
-                                        <td class="px-6 py-4 text-slate-400">
+                                        <td class="px-6 py-4 text-slate-400 whitespace-nowrap">
                                             <%= formatLongDateTime(art.created_at) %>
                                         </td>
-                                        <td class="px-6 py-4 text-slate-400">
+                                        <td class="px-6 py-4 text-slate-400 whitespace-nowrap">
                                             <%= art.published_at && art.published_at !==null ?
                                                 formatLongDateTime(art.published_at) : '-' %>
                                         </td>
-                                        <td class="px-6 py-4 text-slate-400">
-                                            <%= art.language || 'Türkçe' %>
+                                        <td class="px-6 py-4 text-slate-400 uppercase">
+                                            <%= art.language || 'tr' %>
                                         </td>
-                                        <td class="px-6 py-4 text-right space-x-2">
-                                            <a href="<%=adminEndpoint%>/articles/edit/<%= art.id %>"
-                                                class="text-blue-400 hover:text-blue-300 font-medium text-xs">
-                                                Düzenle
-                                            </a>
-                                            <% if (art.siblingId) { %>
-                                                <a href="<%=adminEndpoint%>/articles/edit/<%= art.siblingId %>"
-                                                    class="text-sky-400 hover:text-sky-300 font-medium text-xs">
-                                                    <%= String(art.siblingLang || '').toUpperCase() %>
-                                                </a>
-                                            <% } else if (art.slug) { %>
-                                                <form action="<%=adminEndpoint%>/articles/translate/<%= art.id %>" method="POST" class="inline">
-                                                    <%- include('../partials/csrf') %>
-                                                    <button type="submit"
-                                                        class="text-sky-400 hover:text-sky-300 font-medium text-xs">
-                                                        <%= art.language === 'en' ? 'TR' : 'EN' %> taslak
-                                                    </button>
-                                                </form>
-                                            <% } %>
-                                            <% if (art.preview_token && Number(art.status) !== 1) { %>
-                                                <a href="<%= (art.language === 'en' ? '/en' : '') + '/blog/_preview/' + art.preview_token %>"
-                                                    target="_blank" rel="noopener noreferrer"
-                                                    class="text-emerald-400 hover:text-emerald-300 font-medium text-xs">
-                                                    Önizle
-                                                </a>
-                                            <% } %>
-                                            <button admin-endpoint="<%=adminEndpoint%>" page-endpoint="articles"
-                                                data-id="<%= art.id %>"
-                                                class="btn-delete text-red-400 hover:text-red-300 font-medium text-xs">
-                                                Sil
-                                            </button>
+                                        <td class="px-6 py-4">
+                                            <%- include('_row-actions', { art: art, adminEndpoint: adminEndpoint, align:
+                                                'end' }) %>
                                         </td>
                                     </tr>
-                                    <% }); } else { %>
-                                        <tr>
-                                            <td colspan="5" class="px-6 py-8 text-center text-slate-500">
-                                                Henüz makale eklenmemiş.</td>
-                                        </tr>
-                                        <% } %>
-                        </tbody>
-                    </table>
-                </div>
+                                    <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                    <% } else { %>
+                        <div class="bg-slate-900 border border-slate-800 rounded-xl px-6 py-8 text-center text-slate-500">
+                            Henüz makale eklenmemiş.
+                        </div>
+                        <% } %>
             </main>
     </div>
     <%- include('../partials/footer') %>

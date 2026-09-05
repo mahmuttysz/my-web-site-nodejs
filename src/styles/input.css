@@ -2,6 +2,7 @@
 
 @source "../views/**/*.ejs";
 @source "../public/**/*.js";
+@source not "../public/css";
 
 @theme {
   --color-site-bg: #0b0f19;
