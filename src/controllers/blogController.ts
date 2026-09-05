@@ -1,8 +1,10 @@
 import { dbQueries, query, queryOne } from '../config/db';
 import { renderMarkdown } from '../utils/markdown';
+import { recordArticleHit } from '../utils/articleHitStore';
 import Articles from '../types/dbTables/articles';
 import SocialMedias from '../types/dbTables/socialMedias';
 import { BlogIndexResponse, BlogSlugResponse } from '../types/response/blogResponse';
+import { Request } from 'express';
 
 export const getArticles = async (language: string): Promise<BlogIndexResponse> => {
     const [articles, socialMedias] = await Promise.all([
@@ -26,16 +28,20 @@ export const findPublishedOtherLanguage = async (
     ]);
 };
 
-export const getBySlug = async (slug: string, language: string): Promise<BlogSlugResponse | null> => {
+export const getBySlug = async (
+    slug: string,
+    language: string,
+    req?: Request
+): Promise<BlogSlugResponse | null> => {
     const article = await queryOne<Articles>(dbQueries.articles.getBySlug, [slug, language]);
 
     if (!article) {
         return null;
     }
 
-    query(dbQueries.articles.updateHits, [article.id]).catch((err: any) => {
-        console.error('Hit güncellenirken hata:', err?.message || err);
-    });
+    if (req) {
+        void recordArticleHit(article.id, req);
+    }
 
     article.contentHtml = await renderMarkdown(article.content);
 

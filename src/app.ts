@@ -10,6 +10,7 @@ import { closePool } from './config/db';
 import { closeRedis } from './config/redis';
 import { formatDate, formatLongDate, formatLongDateTime } from './utils/helper';
 import { hasNowWorking } from './utils/articleTranslation';
+import { flushArticleHits, startHitFlusher } from './utils/articleHitStore';
 import { defaultMid } from './middlewares/default';
 import { attachLocale, redirectLangQuery, skipIfEnPrefix } from './middlewares/locale';
 import { notFoundHandler } from './middlewares/notFoundHandler';
@@ -87,6 +88,8 @@ const server = app.listen(PORT, () => {
     console.log(`Sunucu aktif: ${env.APP_URL || `http://localhost:${PORT}`}`);
 });
 
+const stopHitFlusher = startHitFlusher();
+
 let shuttingDown = false;
 
 const shutdown = async (signal: string, exitCode = 0): Promise<void> => {
@@ -105,6 +108,14 @@ const shutdown = async (signal: string, exitCode = 0): Promise<void> => {
         if (closeErr) {
             console.error('HTTP sunucusu kapatılırken hata:', closeErr);
         }
+
+        try {
+            await flushArticleHits();
+        } catch (err) {
+            console.error('Hit flush kapanırken hata:', err);
+        }
+
+        stopHitFlusher();
 
         try {
             await closeRedis();

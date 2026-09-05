@@ -5,6 +5,8 @@ import { env } from '../../config/env';
 import articlesController from '../../controllers/admin/articlesController';
 import { verifyCsrf } from '../../middlewares/csrf';
 import { findSiblingInList, otherArticleLang } from '../../utils/articleTranslation';
+import { pendingHitsMap } from '../../utils/articleHitStore';
+import { renderMarkdown } from '../../utils/markdown';
 
 const router = express.Router();
 
@@ -33,10 +35,12 @@ const renderEditor = (
 router.get('/', async (req: Request, res: Response) => {
   try {
     const articles = await articlesController.getArticles();
+    const pending = await pendingHitsMap();
     const rows = articles.map((article) => {
       const sibling = findSiblingInList(articles, article);
       return {
         ...article,
+        hits: Number(article.hits || 0) + (pending.get(article.id) || 0),
         siblingId: sibling?.id ?? null,
         siblingLang: sibling?.language ?? null
       };
@@ -58,6 +62,21 @@ router.get('/new', (req: Request, res: Response) => {
     title: 'Yeni Makale',
     article: {}
   });
+});
+
+router.post('/preview-markdown', verifyCsrf, async (req: Request, res: Response) => {
+  const markdown = typeof req.body?.markdown === 'string' ? req.body.markdown : '';
+  if (markdown.length > 200_000) {
+    return res.status(413).json({ success: false, message: 'İçerik çok uzun.' });
+  }
+
+  try {
+    const html = await renderMarkdown(markdown);
+    return res.json({ success: true, html });
+  } catch (err) {
+    console.error('Markdown önizleme hatası:', err);
+    return res.status(500).json({ success: false, message: 'Önizleme üretilemedi.' });
+  }
 });
 
 // Yeni Makale Kaydetme

@@ -78,7 +78,7 @@ export const dbQueries = {
         getRss: "SELECT title, slug, excerpt, content, language, published_at, created_at, updated_at FROM articles WHERE language = ? AND status = 1 ORDER BY COALESCE(published_at, created_at) DESC LIMIT 50",
         add: "INSERT INTO articles (title, slug, excerpt, content, cover_image, created_by, status, reading_time, published_at, language, preview_token) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         update: "UPDATE articles SET title = ?, slug = ?, excerpt = ?, content = ?, cover_image = ?, status = ?, updated_by = ?, reading_time = ?, published_at = ?, language = ? WHERE id = ?",
-        updateHits: "UPDATE articles SET hits = hits + 1 WHERE id = ?",
+        addHits: "UPDATE articles SET hits = hits + ? WHERE id = ?",
         setPreviewToken: "UPDATE articles SET preview_token = ? WHERE id = ?",
         getByPreviewToken: "SELECT * FROM articles WHERE preview_token = ? LIMIT 1",
         delete: "DELETE FROM articles WHERE id = ?"

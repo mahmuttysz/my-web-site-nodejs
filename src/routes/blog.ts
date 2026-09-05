@@ -70,7 +70,7 @@ router.get('/:slug', async (req: Request, res: Response, next: NextFunction) => 
     try {
         const lang = (res.locals.lang as SiteLang) || 'tr';
         const slug = String(req.params.slug || '');
-        const blogData = await blogController.getBySlug(slug, lang);
+        const blogData = await blogController.getBySlug(slug, lang, req);
 
         if (!blogData) {
             const other = await blogController.findPublishedOtherLanguage(slug, lang);
