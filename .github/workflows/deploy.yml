@@ -26,12 +26,46 @@ jobs:
       - name: Test
         run: npm test
 
+      - name: Build
+        run: npm run build
+
+      - name: Pack release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        run: |
+          tar --exclude='public/uploads' -czf release.tar.gz \
+            dist views public migrations package.json package-lock.json
+
+      - name: Upload release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        uses: actions/upload-artifact@v4
+        with:
+          name: release
+          path: release.tar.gz
+          retention-days: 14
+
   deploy:
     needs: verify
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy via SSH
+      - name: Download release
+        uses: actions/download-artifact@v4
+        with:
+          name: release
+          path: .
+
+      - name: Copy release to VPS
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          port: ${{ secrets.VPS_SSH_PORT }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: release.tar.gz
+          target: /tmp
+          overwrite: true
+
+      - name: Unpack, migrate, reload
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -41,11 +75,19 @@ jobs:
           script_stop: true
           script: |
             set -eu
-            cd /var/www/nodejs/mahmuttuysuz.net
-            git pull origin master
-            npm ci
-            npm run build
-            npm run db:migrate
+            APP=/var/www/nodejs/mahmuttuysuz.net
+            REL=/var/www/nodejs/releases
+            SHA='${{ github.sha }}'
+            TAR=/tmp/release.tar.gz
+
+            mkdir -p "${REL}"
+            cp "${TAR}" "${REL}/${SHA}.tar.gz"
+            ls -t "${REL}"/*.tar.gz | tail -n +6 | xargs -r rm -f
+
+            cd "${APP}"
+            tar -xzf "${TAR}"
+            npm ci --omit=dev
+            node dist/scripts/migrate.js
             pm2 reload my-site --update-env
 
             PORT=3000

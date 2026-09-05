@@ -3,7 +3,6 @@ import messagesController from '../../controllers/admin/messagesController';
 
 const router = express.Router();
 
-// Gelen Mesajlar Ekranı
 router.get('/', async (req: Request, res: Response) => {
     try {
         const messages = await messagesController.getMessages();
@@ -19,7 +18,40 @@ router.get('/', async (req: Request, res: Response) => {
     }
 });
 
-// Mesaj Silme İşlemi
+router.post('/read', async (req: Request, res: Response) => {
+    try {
+        const ids = await messagesController.markMessagesRead(req.body?.ids);
+        if (ids.length === 0) {
+            return res.status(400).json({ success: false, error: 'Mesaj seçilmedi.' });
+        }
+
+        return res.json({ success: true, ids });
+    } catch (err: any) {
+        console.error('Mesaj okundu işaretleme hatası:', err);
+        return res.status(500).json({
+            success: false,
+            error: err?.message || 'Bir hata oluştu.'
+        });
+    }
+});
+
+router.post('/read/:id', async (req: Request, res: Response) => {
+    try {
+        const ids = await messagesController.markMessagesRead(req.params.id);
+        if (ids.length === 0) {
+            return res.status(400).json({ success: false, error: 'Geçersiz mesaj.' });
+        }
+
+        return res.json({ success: true, ids });
+    } catch (err: any) {
+        console.error('Mesaj okundu işaretleme hatası:', err);
+        return res.status(500).json({
+            success: false,
+            error: err?.message || 'Bir hata oluştu.'
+        });
+    }
+});
+
 router.post('/delete/:id', async (req: Request, res: Response) => {
     try {
         const contactId = Number(req.params.id || '0');

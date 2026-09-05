@@ -5,13 +5,13 @@
   "main": "dist/app.js",
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test ./test/i18n.test.ts ./test/helper.test.ts ./test/markdown.test.ts ./test/loginLock.test.ts ./test/health.test.ts ./test/sitemap.test.ts ./test/csrf-preview.test.ts ./test/articleTranslation.test.ts ./test/articleHits.test.ts",
+    "test": "tsx --test ./test/i18n.test.ts ./test/helper.test.ts ./test/markdown.test.ts ./test/loginLock.test.ts ./test/health.test.ts ./test/sitemap.test.ts ./test/csrf-preview.test.ts ./test/articleTranslation.test.ts ./test/articleHits.test.ts ./test/hardening.test.ts",
     "build": "tsc && npm run build:css",
     "start": "node dist/app.js",
     "dev": "concurrently -k -n ts,css -c cyan,magenta npm:dev:server npm:watch:css",
     "dev:server": "tsx watch src/app.ts",
     "seed:admin": "tsx scripts/create-admin.ts",
-    "db:migrate": "tsx scripts/migrate.ts",
+    "db:migrate": "tsx src/scripts/migrate.ts",
     "build:css": "npx @tailwindcss/cli -i ./src/styles/input.css -o ./public/css/style.css --minify",
     "watch:css": "npx @tailwindcss/cli -i ./src/styles/input.css -o ./public/css/style.css --watch --silent"
   },

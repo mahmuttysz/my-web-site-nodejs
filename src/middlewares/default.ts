@@ -15,6 +15,11 @@ export const langCookieOptions = {
     sameSite: 'lax' as const
 };
 
+export const assignNonce = (_req: Request, res: Response, next: NextFunction): void => {
+    res.locals.nonce = crypto.randomBytes(16).toString('base64');
+    next();
+};
+
 export const defaultMid = (req: Request, res: Response, next: NextFunction): void => {
     const siteUrl = env.SITE_URL || `http://localhost:${env.PORT || 3000}`;
     res.locals.siteUrl = siteUrl.replace(/\/$/, '');
@@ -45,7 +50,9 @@ export const defaultMid = (req: Request, res: Response, next: NextFunction): voi
     res.locals.lp = (path: string) => localizePath(lang, path);
     res.locals.langHref = (target: SiteLang) => localizePath(target, '/');
     res.locals.t = locales[lang] || locales.tr;
-    res.locals.nonce = crypto.randomBytes(16).toString('base64');
+    if (typeof res.locals.nonce !== 'string') {
+        res.locals.nonce = crypto.randomBytes(16).toString('base64');
+    }
 
     next();
 };

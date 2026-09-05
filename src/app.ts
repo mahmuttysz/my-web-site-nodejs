@@ -11,7 +11,7 @@ import { closeRedis } from './config/redis';
 import { formatDate, formatLongDate, formatLongDateTime } from './utils/helper';
 import { hasNowWorking } from './utils/articleTranslation';
 import { flushArticleHits, startHitFlusher } from './utils/articleHitStore';
-import { defaultMid } from './middlewares/default';
+import { assignNonce, defaultMid } from './middlewares/default';
 import { attachLocale, redirectLangQuery, skipIfEnPrefix } from './middlewares/locale';
 import { notFoundHandler } from './middlewares/notFoundHandler';
 import { errorHandler } from './middlewares/errorHandler';
@@ -35,22 +35,11 @@ app.locals.formatLongDate = formatLongDate;
 app.locals.formatLongDateTime = formatLongDateTime;
 app.locals.hasNowWorking = hasNowWorking;
 
-// 3. Parser ve Statik Dosya Servisi (Session öncesi performans optimizasyonu)
+// 3. Parser (static'ten önce nonce + Helmet: /css /js /uploads da CSP/HSTS alsın)
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(express.static(path.join(__dirname, '../public')));
-app.use(cookieParser());
-
-// Health is before session so a Redis outage still yields a 503 instead of hanging the probe.
-app.use(healthRouter);
-
-// 4. Session ve Özelleştirilmiş Context Middleware
-app.use(session(sessionOpt));
-app.use(redirectLangQuery);
-app.use(defaultMid);
-
-// 5. Güvenlik Başlıkları (Tek seferlik initialization)
-const helmetMiddleware = helmet({
+app.use(assignNonce);
+app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
@@ -67,10 +56,19 @@ const helmetMiddleware = helmet({
             imgSrc: ["'self'", "data:", "blob:", "https:"]
         }
     }
-});
-app.use(helmetMiddleware);
+}));
+app.use(express.static(path.join(__dirname, '../public')));
+app.use(cookieParser());
 
-// 6. Rota Tanımlamaları
+// Health is before session so a Redis outage still yields a 503 instead of hanging the probe.
+app.use(healthRouter);
+
+// 4. Session ve Özelleştirilmiş Context Middleware
+app.use(session(sessionOpt));
+app.use(redirectLangQuery);
+app.use(defaultMid);
+
+// 5. Rota Tanımlamaları
 const adminEndpoint = env.ADMIN_PANEL_ENDPOINT || '/admin';
 
 app.use(siteMapRouter);
@@ -79,7 +77,7 @@ app.use('/lang', languageRouter);
 app.use('/en', attachLocale('en'), publicSiteRouter);
 app.use(skipIfEnPrefix, attachLocale('tr'), publicSiteRouter);
 
-// 7. Merkezi Hata Yakalama Middleware Katmanları
+// 6. Merkezi Hata Yakalama Middleware Katmanları
 app.use(notFoundHandler);
 app.use(errorHandler);
 

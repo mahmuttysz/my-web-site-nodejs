@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { pool } from '../src/config/db';
+import { pool } from '../config/db';
 
 const MIGRATIONS_DIR = path.resolve(process.cwd(), 'migrations');
 const LOCK_NAME = 'schema_migrate';

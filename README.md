@@ -35,8 +35,9 @@ src/
   utils/              Helpers, mailer, locales, Markdown sanitize, health
 test/                 node:test unit tests (no live DB)
 scripts/
-  migrate.ts          Applies numbered SQL files
   create-admin.ts     Seeds the first admin user
+src/scripts/
+  migrate.ts          Applies numbered SQL files (also compiled to dist/)
 migrations/
   001_init.sql        Baseline schema (CREATE IF NOT EXISTS)
 views/                EJS (site, admin, errors, partials)
@@ -81,9 +82,9 @@ npm run seed:admin
 
 `db:migrate` runs `migrations/*.sql` in name order and records them in `schema_migrations`. Already-applied files are skipped. Existing tables are not dropped (`CREATE IF NOT EXISTS` in `001_init.sql`).
 
-New schema change: add `migrations/002_short_name.sql` (usually `ALTER TABLE ...`). Deploy runs migrate automatically.
+New schema change: add `migrations/006_short_name.sql` (usually `ALTER TABLE ...`). Deploy runs migrate automatically.
 
-Do **not** run `DumpSQL.sql` against a live database. It drops tables. Backups are `mysqldump` (or equivalent), not that script.
+Backups are `mysqldump` (or equivalent), not ad-hoc DROP scripts.
 
 Seed uses `ADMIN_USERNAME` / `ADMIN_PASSWORD` from `.env` (or CLI args). Skip if that user already exists.
 
@@ -106,18 +107,19 @@ pm2 reload my-site --update-env
 
 ## Deploy (GitHub Actions)
 
-Push to **`master`** (not `main`). GitHub Actions first runs `tsc` and unit tests. Only if that job passes does it SSH into the VPS:
+Push to **`master`** (not `main`). GitHub Actions first runs `tsc`, unit tests, and `npm run build`. Only if that job passes does it ship a tarball (`dist`, `views`, `public` without `uploads`, `migrations`, lockfile) over SCP, then SSH:
 
 ```text
-git pull origin master
-npm ci
-npm run build
-npm run db:migrate
+tar -xzf release.tar.gz
+npm ci --omit=dev
+node dist/scripts/migrate.js
 pm2 reload my-site --update-env
 curl -fsS http://127.0.0.1:3000/health
 ```
 
-`npm ci` installs from `package-lock.json`, including new packages. You do not run `npm install` by hand on the server.
+The VPS no longer `git pull`s. The last five tarballs stay in `/var/www/nodejs/releases/<sha>.tar.gz`. Rollback: extract an older archive into the app dir, `npm ci --omit=dev`, `pm2 reload`. `.env` and `public/uploads` stay on the server.
+
+`npm ci --omit=dev` installs from `package-lock.json` (including native `bcrypt`). You do not run `npm install` by hand on the server.
 
 If migrate or the app exits on `SESSION_SECRET`, the production `.env` on the VPS is too short or still a placeholder. Fix that file, then migrate and reload again.
 

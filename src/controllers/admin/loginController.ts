@@ -28,7 +28,7 @@ export const login = async (
       return fail('Kullanıcı adı ve şifre gereklidir.');
     }
 
-    const user = await queryOne<AdminUsers>(dbQueries.adminUsers.getByUsername, [username]);
+    const user = await queryOne<AdminUsers>(dbQueries.adminUsers.getActiveByUsername, [username]);
 
     if (!user) {
       return fail(AUTH_MESSAGE);
