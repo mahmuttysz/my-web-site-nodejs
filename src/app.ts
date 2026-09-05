@@ -16,7 +16,6 @@ import { attachLocale, redirectLangQuery, skipIfEnPrefix } from './middlewares/l
 import { notFoundHandler } from './middlewares/notFoundHandler';
 import { errorHandler } from './middlewares/errorHandler';
 
-import siteMapRouter from './routes/siteMap';
 import healthRouter from './routes/health';
 import languageRouter from './routes/language';
 import adminRouter from './routes/admin';
@@ -71,7 +70,6 @@ app.use(defaultMid);
 // 5. Rota Tanımlamaları
 const adminEndpoint = env.ADMIN_PANEL_ENDPOINT || '/admin';
 
-app.use(siteMapRouter);
 app.use(adminEndpoint, adminRouter);
 app.use('/lang', languageRouter);
 app.use('/en', attachLocale('en'), publicSiteRouter);

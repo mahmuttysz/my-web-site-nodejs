@@ -63,8 +63,10 @@ ${items}
   </channel>
 </rss>`;
 
-        res.header('Content-Type', 'application/rss+xml; charset=utf-8');
-        res.header('Cache-Control', 'public, max-age=3600');
+        res.removeHeader('Content-Security-Policy');
+        res.removeHeader('Content-Security-Policy-Report-Only');
+        res.setHeader('Content-Type', 'application/rss+xml; charset=utf-8');
+        res.setHeader('Cache-Control', 'public, max-age=3600');
         return res.send(xml);
     } catch (err) {
         console.error('❌ RSS oluşturma hatası:', err);
