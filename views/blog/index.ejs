@@ -1,7 +1,7 @@
 <%- include('../partials/header') %>
     <header class="border-b border-site-border bg-site-bg/80 backdrop-blur-md sticky top-0 z-50 shrink-0">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
-            <a href="/" class="flex items-center gap-2.5 group">
+            <a href="<%= lp('/') %>" class="flex items-center gap-2.5 group">
                 <div
                     class="w-7 h-7 rounded-lg bg-site-card border border-site-border flex items-center justify-center p-1 group-hover:border-site-accent transition-colors">
                     <img src="/favicon-32x32.png" alt="Logo" class="w-full h-full object-contain" />
@@ -12,13 +12,14 @@
                 </span>
             </a>
 
-            <nav class="flex items-center space-x-6 text-sm">
-                <a href="/" class="text-site-muted hover:text-site-text transition-colors font-medium">
+            <nav class="flex items-center gap-6 text-sm">
+                <a href="<%= lp('/') %>" class="text-site-muted hover:text-site-text transition-colors font-medium">
                     <%= t.nav.homePage %>
                 </a>
-                <a href="/blog" class="text-site-accent font-semibold">
+                <a href="<%= lp('/blog') %>" class="text-site-accent font-semibold">
                     <%= t.nav.blog %>
                 </a>
+                <%- include('../partials/lang-switch') %>
             </nav>
         </div>
     </header>
@@ -39,7 +40,7 @@
                         class="bg-site-card border border-site-border rounded-xl overflow-hidden transition-all duration-200 hover:border-site-accent hover:-translate-y-0.5 flex flex-col justify-between group">
                         <div>
                             <% if (article.cover_image) { %>
-                                <a href="/blog/<%= article.slug %>"
+                                <a href="<%= lp('/blog/' + article.slug) %>"
                                     class="block aspect-video overflow-hidden bg-slate-900 border-b border-site-border/50">
                                     <img src="<%= article.cover_image %>" alt="<%= article.title %>"
                                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
@@ -49,8 +50,8 @@
 
                                     <div class="p-5 sm:p-6 space-y-3">
                                         <div class="flex items-center gap-2 text-xs text-slate-400 font-medium">
-                                            <time datetime="<%= article.created_at %>">
-                                                <%= formatLongDate(article.created_at, lang) %>
+                                            <time datetime="<%= article.published_at || article.created_at %>">
+                                                <%= formatLongDate(article.published_at || article.created_at, lang) %>
                                             </time>
                                             <span>•</span>
                                             <span>
@@ -61,7 +62,7 @@
 
                                         <h2
                                             class="text-lg sm:text-xl font-bold text-site-text group-hover:text-site-accent transition-colors line-clamp-2 leading-snug">
-                                            <a href="/blog/<%= article.slug %>">
+                                            <a href="<%= lp('/blog/' + article.slug) %>">
                                                 <%= article.title %>
                                             </a>
                                         </h2>
@@ -76,7 +77,7 @@
 
                         <div
                             class="px-5 sm:px-6 pb-5 pt-3 border-t border-site-border/50 flex items-center justify-between mt-auto">
-                            <a href="/blog/<%= article.slug %>"
+                            <a href="<%= lp('/blog/' + article.slug) %>"
                                 class="text-xs sm:text-sm font-semibold text-site-accent hover:underline inline-flex items-center gap-1">
                                 <%= t.alert.readMore %> ↗
                             </a>

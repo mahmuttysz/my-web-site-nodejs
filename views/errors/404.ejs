@@ -15,7 +15,7 @@
                 </p>
             </div>
             <div class="pt-2">
-                <a href="/"
+                <a href="<%= typeof lp === 'function' ? lp('/') : '/' %>"
                     class="inline-flex items-center gap-2 px-5 py-2.5 bg-site-card border border-site-border text-site-text text-sm font-semibold rounded-lg transition-all duration-200 hover:border-site-accent hover:text-site-accent hover:-translate-y-0.5 group">
                     <span class="transition-transform duration-200 group-hover:-translate-x-1">←</span>
                     <span>

@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import { formLimiter } from '../../config/rate-limit';
 import loginController from '../../controllers/admin/loginController';
+import { verifyCsrf } from '../../middlewares/csrf';
 
 const router = express.Router();
 
@@ -13,7 +14,7 @@ router.get('/', (req: Request, res: Response) => {
 });
 
 // Login İşlemi
-router.post('/', formLimiter, async (req: Request, res: Response) => {
+router.post('/', formLimiter, verifyCsrf, async (req: Request, res: Response) => {
   const { username, password } = req.body;
 
   try {
@@ -64,7 +65,7 @@ router.post('/', formLimiter, async (req: Request, res: Response) => {
 });
 
 // Oturumu Kapatma
-router.get('/destroy', (req: Request, res: Response) => {
+router.post('/destroy', verifyCsrf, (req: Request, res: Response) => {
   const adminEndpoint = req.adminEndpoint || '/admin';
   req.session.destroy((_err) => {
     res.redirect(`${adminEndpoint}/login`);

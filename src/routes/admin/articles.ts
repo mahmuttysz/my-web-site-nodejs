@@ -3,6 +3,7 @@ import slugify from 'slugify';
 import upload, { unlinkArticleCover } from '../../config/upload';
 import { env } from '../../config/env';
 import articlesController from '../../controllers/admin/articlesController';
+import { verifyCsrf } from '../../middlewares/csrf';
 
 const router = express.Router();
 
@@ -47,6 +48,7 @@ router.post(
       next();
     });
   },
+  verifyCsrf,
   async (req: Request, res: Response) => {
     const { title, slug, excerpt, content, status, language } = req.body;
     const articleStatus = (parseInt(status, 10) || 0) === 1;
@@ -136,6 +138,7 @@ router.post(
       next();
     });
   },
+  verifyCsrf,
   async (req: Request, res: Response) => {
     const articleId = Number(req.params.id || '0');
     const { title, slug, excerpt, content, status, language } = req.body;
@@ -164,7 +167,8 @@ router.post(
         cover_image,
         articleStatus,
         language,
-        userId
+        userId,
+        current.published_at
       );
 
       if (uploadedCover && current.cover_image && current.cover_image !== uploadedCover) {
@@ -197,7 +201,7 @@ router.post(
 );
 
 // Makale Silme
-router.post('/delete/:id', async (req: Request, res: Response) => {
+router.post('/delete/:id', verifyCsrf, async (req: Request, res: Response) => {
   try {
     const articleId = Number(req.params.id || '0');
 

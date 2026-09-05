@@ -3,6 +3,7 @@ import { Request, Response, NextFunction } from 'express';
 import crypto from 'node:crypto';
 import { env } from '../config/env';
 import locales from '../utils/locales';
+import { DEFAULT_LANG, SiteLang, isSiteLang, localePrefix, localizePath } from '../utils/i18n';
 
 const LANG_COOKIE_MAX_AGE = 30 * 24 * 60 * 60 * 1000;
 
@@ -16,32 +17,34 @@ export const langCookieOptions = {
 
 export const defaultMid = (req: Request, res: Response, next: NextFunction): void => {
     const siteUrl = env.SITE_URL || `http://localhost:${env.PORT || 3000}`;
-    res.locals.siteUrl = siteUrl;
+    res.locals.siteUrl = siteUrl.replace(/\/$/, '');
 
-    // req.query.lang tipi string, array veya undefined gelebileceği için kontrol eklenmiştir
-    const queryLang = typeof req.query.lang === 'string' ? req.query.lang : undefined;
-    let lang: string = queryLang || req.cookies?.lang || 'tr';
-
-    if (!['tr', 'en'].includes(lang)) {
-        lang = 'tr';
-    }
-
-    if (queryLang) {
-        res.cookie('lang', lang, langCookieOptions);
+    let lang: SiteLang = DEFAULT_LANG;
+    if (isSiteLang(req.cookies?.lang)) {
+        lang = req.cookies.lang;
     }
 
     res.setHeader('Content-Language', lang);
 
     const adminEndpoint = env.ADMIN_PANEL_ENDPOINT || '/admin';
 
-    if (req.originalUrl.startsWith(adminEndpoint)) {
+    const isPreviewPath = /\/blog\/_preview(?:\/|$)/.test(req.originalUrl.split('?')[0] || '');
+    const noindex = req.originalUrl.startsWith(adminEndpoint) || isPreviewPath;
+    res.locals.noindex = noindex;
+
+    if (noindex) {
         res.setHeader('X-Robots-Tag', 'noindex, nofollow');
     } else {
         res.setHeader('X-Robots-Tag', 'index, follow');
     }
 
     res.locals.lang = lang;
-    res.locals.t = (locales as Record<string, any>)[lang] || (locales as Record<string, any>)['tr'];
+    res.locals.otherLang = lang === 'en' ? 'tr' : 'en';
+    res.locals.localePrefix = localePrefix(lang);
+    res.locals.publicPath = '/';
+    res.locals.lp = (path: string) => localizePath(lang, path);
+    res.locals.langHref = (target: SiteLang) => localizePath(target, '/');
+    res.locals.t = locales[lang] || locales.tr;
     res.locals.nonce = crypto.randomBytes(16).toString('base64');
 
     next();

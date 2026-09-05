@@ -6,17 +6,19 @@ import path from 'path';
 
 import { env } from './config/env';
 import { sessionOpt } from './config/session';
+import { closePool } from './config/db';
+import { closeRedis } from './config/redis';
 import { formatDate, formatLongDate, formatLongDateTime } from './utils/helper';
 import { defaultMid } from './middlewares/default';
+import { attachLocale, redirectLangQuery, skipIfEnPrefix } from './middlewares/locale';
 import { notFoundHandler } from './middlewares/notFoundHandler';
 import { errorHandler } from './middlewares/errorHandler';
 
-import homePageRouter from './routes/home';
 import siteMapRouter from './routes/siteMap';
+import healthRouter from './routes/health';
 import languageRouter from './routes/language';
 import adminRouter from './routes/admin';
-import blogRouter from './routes/blog';
-import contactRouter from './routes/contact';
+import publicSiteRouter from './routes/site';
 
 const app = express();
 
@@ -36,8 +38,12 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, '../public')));
 app.use(cookieParser());
 
+// Health is before session so a Redis outage still yields a 503 instead of hanging the probe.
+app.use(healthRouter);
+
 // 4. Session ve Özelleştirilmiş Context Middleware
 app.use(session(sessionOpt));
+app.use(redirectLangQuery);
 app.use(defaultMid);
 
 // 5. Güvenlik Başlıkları (Tek seferlik initialization)
@@ -67,24 +73,66 @@ const adminEndpoint = env.ADMIN_PANEL_ENDPOINT || '/admin';
 app.use(siteMapRouter);
 app.use(adminEndpoint, adminRouter);
 app.use('/lang', languageRouter);
-app.use('/blog', blogRouter);
-app.use('/contact', contactRouter);
-app.use('/', homePageRouter);
+app.use('/en', attachLocale('en'), publicSiteRouter);
+app.use(skipIfEnPrefix, attachLocale('tr'), publicSiteRouter);
 
 // 7. Merkezi Hata Yakalama Middleware Katmanları
 app.use(notFoundHandler);
 app.use(errorHandler);
 
-// 8. Process Seviyesi Hata Dinleyicileri
-process.on('unhandledRejection', (reason: any) => {
+const PORT = env.PORT || 3000;
+const server = app.listen(PORT, () => {
+    console.log(`Sunucu aktif: ${env.APP_URL || `http://localhost:${PORT}`}`);
+});
+
+let shuttingDown = false;
+
+const shutdown = async (signal: string, exitCode = 0): Promise<void> => {
+    if (shuttingDown) return;
+    shuttingDown = true;
+
+    console.log(`${signal} alındı, sunucu kapatılıyor...`);
+
+    const forceTimer = setTimeout(() => {
+        console.error('Kapanma zaman aşımı, süreç sonlandırılıyor.');
+        process.exit(1);
+    }, 10_000);
+    forceTimer.unref();
+
+    server.close(async (closeErr) => {
+        if (closeErr) {
+            console.error('HTTP sunucusu kapatılırken hata:', closeErr);
+        }
+
+        try {
+            await closeRedis();
+        } catch (err) {
+            console.error('Redis kapatılırken hata:', err);
+        }
+
+        try {
+            await closePool();
+        } catch (err) {
+            console.error('MariaDB kapatılırken hata:', err);
+        }
+
+        process.exit(closeErr ? 1 : exitCode);
+    });
+};
+
+process.on('SIGINT', () => {
+    void shutdown('SIGINT');
+});
+
+process.on('SIGTERM', () => {
+    void shutdown('SIGTERM');
+});
+
+process.on('unhandledRejection', (reason: unknown) => {
     console.error('Yakalanmamış Söz (Promise) Hatası:', reason);
 });
 
-process.on('uncaughtException', (err: any) => {
+process.on('uncaughtException', (err: unknown) => {
     console.error('Yakalanmamış İstisna (Uncaught Exception):', err);
-});
-
-const PORT = env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Sunucu aktif: ${env.APP_URL || `http://localhost:${PORT}`}`);
+    void shutdown('uncaughtException', 1);
 });

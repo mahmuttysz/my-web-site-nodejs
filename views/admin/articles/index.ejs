@@ -64,6 +64,13 @@
                                                 class="text-blue-400 hover:text-blue-300 font-medium text-xs">
                                                 Düzenle
                                             </a>
+                                            <% if (art.preview_token && Number(art.status) !== 1) { %>
+                                                <a href="<%= (art.language === 'en' ? '/en' : '') + '/blog/_preview/' + art.preview_token %>"
+                                                    target="_blank" rel="noopener noreferrer"
+                                                    class="text-emerald-400 hover:text-emerald-300 font-medium text-xs">
+                                                    Önizle
+                                                </a>
+                                            <% } %>
                                             <button admin-endpoint="<%=adminEndpoint%>" page-endpoint="articles"
                                                 data-id="<%= art.id %>"
                                                 class="btn-delete text-red-400 hover:text-red-300 font-medium text-xs">

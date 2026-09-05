@@ -4,7 +4,7 @@
         <%= t.nav.blog %>
     </h2>
     <% if (articles && articles.length> 0) { %>
-        <a href="/blog"
+        <a href="<%= lp('/blog') %>"
             class="text-site-muted hover:text-site-accent text-sm font-medium inline-flex items-center gap-1 transition-colors group">
             <%= t.alert.viewAll %>
                 <span class="transition-transform duration-200 group-hover:translate-x-1">→</span>
@@ -19,7 +19,7 @@
                 class="bg-site-card border border-site-border p-5 rounded-xl flex flex-col justify-between transition-all duration-200 hover:border-site-accent hover:-translate-y-0.5 group">
                 <div>
                     <% if (article.cover_image) { %>
-                        <a href="/blog/<%= article.slug %>"
+                        <a href="<%= lp('/blog/' + article.slug) %>"
                             class="block w-full aspect-video overflow-hidden rounded-lg mb-4 bg-slate-900">
                             <img src="<%= article.cover_image %>" alt="<%= article.title %>"
                                 class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
@@ -27,11 +27,11 @@
                         </a>
                         <% } %>
                             <div class="text-xs text-slate-500 font-medium mb-1.5">
-                                <%= formatLongDate(article.created_at, lang) %>
+                                <%= formatLongDate(article.published_at || article.created_at, lang) %>
                             </div>
                             <h3
                                 class="text-lg font-bold leading-snug mb-2 text-slate-100 group-hover:text-site-accent transition-colors">
-                                <a href="/blog/<%= article.slug %>">
+                                <a href="<%= lp('/blog/' + article.slug) %>">
                                     <%= article.title %>
                                 </a>
                             </h3>
@@ -41,7 +41,7 @@
                             </p>
                 </div>
                 <div class="pt-2 border-t border-site-border/50">
-                    <a href="/blog/<%= article.slug %>"
+                    <a href="<%= lp('/blog/' + article.slug) %>"
                         class="text-site-accent text-sm font-semibold inline-flex items-center gap-1 hover:underline">
                         <%= t.alert.readMore %> ↗
                     </a>

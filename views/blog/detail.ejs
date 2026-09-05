@@ -1,7 +1,7 @@
 <%- include('../partials/header') %>
     <header class="border-b border-site-border bg-site-bg/80 backdrop-blur-md sticky top-0 z-50 shrink-0">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
-            <a href="/" class="flex items-center gap-2.5 group">
+            <a href="<%= lp('/') %>" class="flex items-center gap-2.5 group">
                 <div class="w-7 h-7 rounded-lg bg-site-card border border-site-border flex items-center justify-center p-1 group-hover:border-site-accent transition-colors">
                     <img src="/favicon-32x32.png" alt="Logo" class="w-full h-full object-contain" />
                 </div>
@@ -10,18 +10,26 @@
                 </span>
             </a>
 
-            <a href="/blog" class="text-site-muted hover:text-site-accent transition-colors font-medium text-sm inline-flex items-center gap-1 group">
-                <span class="transition-transform group-hover:-translate-x-1">←</span>
-                <span><%= t.alert.allArticles || 'Tüm Yazılar' %></span>
-            </a>
+            <div class="flex items-center gap-4">
+                <%- include('../partials/lang-switch') %>
+                <a href="<%= lp('/blog') %>" class="text-site-muted hover:text-site-accent transition-colors font-medium text-sm inline-flex items-center gap-1 group">
+                    <span class="transition-transform group-hover:-translate-x-1">←</span>
+                    <span><%= t.alert.allArticles || 'Tüm Yazılar' %></span>
+                </a>
+            </div>
         </div>
     </header>
 
     <main class="flex-1 w-full max-w-3xl mx-auto px-4 sm:px-6 pt-8 sm:pt-10 pb-16 space-y-8">
+        <% if (typeof isPreview !== 'undefined' && isPreview) { %>
+            <p class="text-xs sm:text-sm text-amber-400/90 bg-amber-400/10 border border-amber-400/20 rounded-lg px-3 py-2">
+                Bu bir taslak önizlemesidir. Arama motorları bu adresi indekslemez.
+            </p>
+        <% } %>
         <header class="space-y-3 border-b border-site-border pb-6">
             <div class="flex items-center gap-2 text-xs sm:text-sm text-slate-400 font-medium">
-                <time datetime="<%= article.created_at %>">
-                    <%= formatLongDate(article.created_at, lang) %>
+                <time datetime="<%= article.published_at || article.created_at %>">
+                    <%= formatLongDate(article.published_at || article.created_at, lang) %>
                 </time>
                 <span>•</span>
                 <span>
@@ -52,7 +60,7 @@
             <%- article.contentHtml %>
         </article>
         <div class="pt-8 border-t border-site-border">
-            <a href="/blog" class="inline-flex items-center gap-2 px-4 py-2 bg-site-card border border-site-border text-site-text text-sm font-semibold rounded-lg transition-all duration-200 hover:border-site-accent hover:text-site-accent group">
+            <a href="<%= lp('/blog') %>" class="inline-flex items-center gap-2 px-4 py-2 bg-site-card border border-site-border text-site-text text-sm font-semibold rounded-lg transition-all duration-200 hover:border-site-accent hover:text-site-accent group">
                 <span class="transition-transform duration-200 group-hover:-translate-x-1">←</span>
                 <span><%= t.alert.backToBlog || 'Bloga Dön' %></span>
             </a>

@@ -9,13 +9,30 @@
                         </h1>
                         <p class="text-slate-400 text-sm mt-1">İçeriğinizi Markdown formatında kaleme alabilirsiniz.</p>
                     </div>
-                    <a href="<%=adminEndpoint%>/articles"
-                        class="text-xs text-slate-400 hover:text-white transition-colors">
-                        ← İptal ve Geri Dön</a>
+                    <div class="flex items-center gap-4">
+                        <a href="<%=adminEndpoint%>/articles"
+                            class="text-xs text-slate-400 hover:text-white transition-colors">
+                            ← İptal ve Geri Dön</a>
+                        <% const published = Number(article.status) === 1; %>
+                        <% if (article.preview_token && !published) { %>
+                            <a href="<%= (article.language === 'en' ? '/en' : '') + '/blog/_preview/' + article.preview_token %>"
+                                target="_blank" rel="noopener noreferrer"
+                                class="text-xs text-emerald-400 hover:text-emerald-300 transition-colors">
+                                Taslağı önizle ↗
+                            </a>
+                        <% } else if (published && article.slug) { %>
+                            <a href="<%= (article.language === 'en' ? '/en' : '') + '/blog/' + article.slug %>"
+                                target="_blank" rel="noopener noreferrer"
+                                class="text-xs text-emerald-400 hover:text-emerald-300 transition-colors">
+                                Yayındaki yazı ↗
+                            </a>
+                        <% } %>
+                    </div>
                 </header>
                 <form
                     action="<%= article.id ? adminEndpoint + '/articles/edit/' + article.id : adminEndpoint + '/articles/create' %>"
                     method="POST" enctype="multipart/form-data" class="space-y-6 max-w-4xl">
+                    <%- include('../partials/csrf') %>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">

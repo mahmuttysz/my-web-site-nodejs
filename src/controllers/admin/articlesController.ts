@@ -1,5 +1,6 @@
 import { query, queryOne, dbQueries } from '../../config/db';
-import { safeTrim, calculateReadingTime } from '../../utils/helper';
+import { safeTrim, calculateReadingTime, resolvePublishedAt } from '../../utils/helper';
+import { createPreviewToken, isPreviewToken } from '../../utils/preview';
 import Articles from '../../types/dbTables/articles';
 
 // Makaleleri Listeleme
@@ -9,7 +10,16 @@ export const getArticles = async (): Promise<Articles[]> => {
 
 // Makale Detayı Getirme
 export const getArticle = async (articleId: number): Promise<Articles | null> => {
-  return await queryOne<Articles>(dbQueries.articles.getById, [articleId]);
+  const article = await queryOne<Articles>(dbQueries.articles.getById, [articleId]);
+  if (!article) return null;
+
+  if (!isPreviewToken(article.preview_token)) {
+    const token = createPreviewToken();
+    await query(dbQueries.articles.setPreviewToken, [token, article.id]);
+    article.preview_token = token;
+  }
+
+  return article;
 };
 
 // Yeni Makale Kaydetme
@@ -24,7 +34,8 @@ export const addArticle = async (
   userId: number
 ): Promise<void> => {
   const readingTime = calculateReadingTime(content);
-  const publishedAt = status ? new Date() : null;
+  const publishedAt = resolvePublishedAt(status, null);
+  const previewToken = createPreviewToken();
 
   await query(dbQueries.articles.add, [
     safeTrim(title),
@@ -36,7 +47,8 @@ export const addArticle = async (
     status,
     readingTime,
     publishedAt,
-    language || 'tr'
+    language || 'tr',
+    previewToken
   ]);
 };
 
@@ -50,9 +62,10 @@ export const editArticle = async (
   coverImg: string | null,
   status: boolean,
   language: string,
-  userId: number
+  userId: number,
+  existingPublishedAt?: Date | string | null
 ): Promise<void> => {
-  const publishedAt = status ? new Date() : null;
+  const publishedAt = resolvePublishedAt(status, existingPublishedAt);
   const readingTime = calculateReadingTime(content);
 
   await query(dbQueries.articles.update, [

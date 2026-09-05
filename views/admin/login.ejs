@@ -27,6 +27,7 @@
             </div>
             <% } %>
                 <form action="<%= adminEndpoint %>/login" method="POST" class="space-y-5">
+                    <%- include('partials/csrf') %>
                     <div>
                         <label class="block text-xs font-medium text-slate-400 mb-2 uppercase tracking-wider">
                             Kullanıcı Adı

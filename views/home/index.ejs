@@ -3,17 +3,7 @@
     <div class="hero-parallax-bg relative h-[60vh] flex items-center justify-center text-center px-4">
         <div class="max-w-xl">
             <div class="flex items-center justify-center gap-2 mb-6">
-                <button type="button" data-lang="tr" class="lang-btn cursor-pointer text-xs font-bold px-2.5 py-1 rounded-md transition-all <%= lang === 'tr' ? 
-                    'border border-site-accent bg-site-accent/10 text-site-accent' 
-                    : 'text-site-muted hover:text-site-text' %>">
-                    TR
-                </button>
-                <span class="text-site-border">|</span>
-                <button type="button" data-lang="en" class="lang-btn cursor-pointer text-xs font-bold px-2.5 py-1 rounded-md transition-all <%= lang === 'en' ? 
-                    'border border-site-accent bg-site-accent/10 text-site-accent' 
-                    : 'text-site-muted hover:text-site-text' %>">
-                    EN
-                </button>
+                <%- include('../partials/lang-switch') %>
             </div>
             <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight mb-2 text-site-text">Mahmut Tüysüz</h1>
             <div class="text-site-accent text-lg font-semibold tracking-wider uppercase">

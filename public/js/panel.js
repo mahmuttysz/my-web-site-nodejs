@@ -7,7 +7,14 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!confirm('Bu kaydı silmek istediğinizden emin misiniz?')) return;
 
             try {
-                const res = await fetch(`${adminEndpoint}/${pageEndpoint}/delete/${dataId}`, { method: 'POST' });
+                const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+                const res = await fetch(`${adminEndpoint}/${pageEndpoint}/delete/${dataId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'x-csrf-token': csrf
+                    }
+                });
                 const data = await res.json();
                 if (data.success) location.reload();
                 else alert('Silinirken hata oluştu.');

@@ -8,6 +8,28 @@ export interface ContactResponse {
     message: string;
 }
 
+type MailOutcome =
+    | { status: 'pending' }
+    | { status: 'fulfilled'; messageId?: string }
+    | { status: 'rejected'; reason: string };
+
+const mailOutcome = (result: PromiseSettledResult<{ messageId?: string }>): MailOutcome => {
+    if (result.status === 'fulfilled') {
+        return { status: 'fulfilled', messageId: result.value?.messageId };
+    }
+
+    return {
+        status: 'rejected',
+        reason: result.reason?.message || String(result.reason)
+    };
+};
+
+const insertIdOf = (result: unknown): number => {
+    const insertId = (result as { insertId?: number | bigint } | null)?.insertId;
+    if (typeof insertId === 'bigint') return Number(insertId);
+    return Number(insertId || 0);
+};
+
 export const saveContact = async (
     fullName: string,
     email: string,
@@ -25,41 +47,47 @@ export const saveContact = async (
     const cleanMessage = safeTrim(message);
 
     try {
-        // Mail gönderimlerinin birbirini engellememesi için paralel yürütme
+        const pendingLog = {
+            visitorMail: { status: 'pending' } satisfies MailOutcome,
+            adminMail: { status: 'pending' } satisfies MailOutcome
+        };
+
+        const insertResult = await query(dbQueries.contacts.add, [
+            cleanFullName,
+            cleanEmail,
+            cleanSubject,
+            cleanMessage,
+            clientIp,
+            JSON.stringify(pendingLog),
+            activeLang
+        ]);
+
+        const contactId = insertIdOf(insertResult);
+
         const sendMailResults = await Promise.allSettled([
             sendVisitorMail(cleanEmail, cleanFullName, activeLang),
             sendNotificationMailToAdmin(cleanFullName, cleanEmail, cleanSubject, cleanMessage, activeLang)
         ]);
 
         const [visitorRes, adminRes] = sendMailResults;
-
-        // Type narrowing sayesinde casting kalabalığı olmadan log nesnesi oluşturma
         const mailLog = {
-            visitorMail:
-                visitorRes.status === 'fulfilled'
-                    ? { status: 'fulfilled', messageId: (visitorRes.value as any)?.messageId }
-                    : {
-                        status: 'rejected',
-                        reason: visitorRes.reason?.message || String(visitorRes.reason)
-                    },
-            adminMail:
-                adminRes.status === 'fulfilled'
-                    ? { status: 'fulfilled', messageId: (adminRes.value as any)?.messageId }
-                    : {
-                        status: 'rejected',
-                        reason: adminRes.reason?.message || String(adminRes.reason)
-                    }
+            visitorMail: mailOutcome(visitorRes),
+            adminMail: mailOutcome(adminRes)
         };
 
-        await query(dbQueries.contacts.add, [
-            cleanFullName,
-            cleanEmail,
-            cleanSubject,
-            cleanMessage,
-            clientIp,
-            JSON.stringify(mailLog),
-            activeLang
-        ]);
+        if (adminRes.status === 'rejected') {
+            console.error('Admin bildirim maili gönderilemedi:', adminRes.reason?.message || adminRes.reason);
+        }
+
+        if (contactId > 0) {
+            try {
+                await query(dbQueries.contacts.updateMailLog, [JSON.stringify(mailLog), contactId]);
+            } catch (logErr) {
+                console.error('mail_log güncellenirken hata:', logErr);
+            }
+        } else {
+            console.error('İletişim kaydı yazıldı ama insertId alınamadı; mail_log güncellenemedi.');
+        }
 
         return {
             success: true,

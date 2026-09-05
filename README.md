@@ -12,12 +12,14 @@ Node.js, Express 5, TypeScript, EJS, and MariaDB. Server-side rendering plus Tai
 
 ## What it does
 
-- Public site: home, blog, contact form, `sitemap.xml`, `tr` / `en`
+- Public site: home, blog, contact form, `sitemap.xml`, `rss.xml`, `tr` (`/`) / `en` (`/en`)
 - Admin CMS behind `ADMIN_PANEL_ENDPOINT` (default `/admin`)
 - Contact form: Cloudflare Turnstile, Redis-backed limiter, HTML-escaped mail
 - Blog Markdown rendered with `marked`, then `sanitize-html`
 - Login: bcrypt, session regenerate, 5 failed attempts → 15 minute lock (`wrong_try`)
 - Helmet CSP (nonce), `httpOnly` session cookie, `noindex` on the admin path
+- Admin CSRF token on forms/AJAX; draft preview at `/blog/_preview/:token` (`noindex`)
+- `GET /health` — MariaDB + Redis probe (`200` / `503`), checked after deploy
 
 ## Layout
 
@@ -30,7 +32,8 @@ src/
   routes/             Public and admin routes
   styles/             Tailwind input.css
   types/              dbTables and view/response types
-  utils/              Helpers, mailer, locales, Markdown sanitize
+  utils/              Helpers, mailer, locales, Markdown sanitize, health
+test/                 node:test unit tests (no live DB)
 scripts/
   migrate.ts          Applies numbered SQL files
   create-admin.ts     Seeds the first admin user
@@ -103,7 +106,7 @@ pm2 reload my-site --update-env
 
 ## Deploy (GitHub Actions)
 
-Push to **`master`** (not `main`). The workflow SSHs into the VPS and runs:
+Push to **`master`** (not `main`). GitHub Actions first runs `tsc` and unit tests. Only if that job passes does it SSH into the VPS:
 
 ```text
 git pull origin master
@@ -111,6 +114,7 @@ npm ci
 npm run build
 npm run db:migrate
 pm2 reload my-site --update-env
+curl -fsS http://127.0.0.1:3000/health
 ```
 
 `npm ci` installs from `package-lock.json`, including new packages. You do not run `npm install` by hand on the server.
@@ -124,6 +128,8 @@ If migrate or the app exits on `SESSION_SECRET`, the production `.env` on the VP
 | `npm run dev` | Watch `src/app.ts` |
 | `npm run build` | Compile TS and CSS |
 | `npm start` | `node dist/app.js` |
+| `npm run typecheck` | `tsc --noEmit` |
+| `npm test` | Unit tests (`node:test` via tsx) |
 | `npm run db:migrate` | Apply pending SQL migrations |
 | `npm run seed:admin` | Create the first admin |
 | `npm run build:css` / `watch:css` | Tailwind |

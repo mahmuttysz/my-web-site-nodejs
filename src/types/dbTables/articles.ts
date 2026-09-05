@@ -6,6 +6,7 @@ interface Articles {
     contentHtml?: string | null,
     slug: string,
     cover_image?: string | null,
+    preview_token?: string | null,
     hits: number,
     created_by: number,
     updated_by?: number | null,

@@ -1,14 +1,35 @@
-name: Deploy to Production
+name: CI
 
 on:
   push:
     branches:
       - master
+  pull_request:
 
 jobs:
-  deploy:
+  verify:
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test
+
+  deploy:
+    needs: verify
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
     steps:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
@@ -18,9 +39,19 @@ jobs:
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
+            set -eu
             cd /var/www/nodejs/mahmuttuysuz.net
             git pull origin master
             npm ci
             npm run build
             npm run db:migrate
             pm2 reload my-site --update-env
+            ok=0
+            for _ in 1 2 3 4 5 6 7 8 9 10; do
+              if curl -fsS "http://127.0.0.1:3000/health"; then
+                ok=1
+                break
+              fi
+              sleep 1
+            done
+            [ "$ok" -eq 1 ]

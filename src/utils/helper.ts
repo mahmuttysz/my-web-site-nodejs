@@ -77,6 +77,24 @@ export const escapeXml = (str: string): string => {
         .replace(/'/g, '&apos;');
 };
 
+/** Keep the first publish time; only stamp now when a draft goes live. */
+export const resolvePublishedAt = (
+    isPublished: boolean,
+    existing?: Date | string | null
+): Date | null => {
+    const existingDate = (() => {
+        if (!existing) return null;
+        const ts = new Date(existing);
+        return Number.isNaN(ts.getTime()) ? null : ts;
+    })();
+
+    if (!isPublished) {
+        return existingDate;
+    }
+
+    return existingDate ?? new Date();
+};
+
 export default {
     formatDate,
     formatLongDate,
@@ -85,5 +103,6 @@ export default {
     calculateReadingTime,
     safeTrim,
     isValidEmail,
-    escapeXml
+    escapeXml,
+    resolvePublishedAt
 };

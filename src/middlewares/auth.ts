@@ -7,6 +7,7 @@ declare module 'express-session' {
     interface SessionData {
         adminUser?: any;
         returnTo?: string;
+        csrfToken?: string;
     }
 }
 

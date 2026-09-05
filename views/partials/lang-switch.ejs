@@ -1,0 +1,11 @@
+<nav class="flex items-center justify-center gap-2" aria-label="Language">
+    <a href="<%= langHref('tr') %>" hreflang="tr"
+        class="lang-btn text-xs font-bold px-2.5 py-1 rounded-md transition-all <%= lang === 'tr' ?
+            'border border-site-accent bg-site-accent/10 text-site-accent' :
+            'text-site-muted hover:text-site-text' %>">TR</a>
+    <span class="text-site-border">|</span>
+    <a href="<%= langHref('en') %>" hreflang="en"
+        class="lang-btn text-xs font-bold px-2.5 py-1 rounded-md transition-all <%= lang === 'en' ?
+            'border border-site-accent bg-site-accent/10 text-site-accent' :
+            'text-site-muted hover:text-site-text' %>">EN</a>
+</nav>

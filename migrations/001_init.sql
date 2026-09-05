@@ -42,6 +42,7 @@ CREATE TABLE IF NOT EXISTS `articles` (
   `excerpt` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
   `content` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `slug` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `preview_token` char(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
   `cover_image` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
   `hits` int(11) NOT NULL DEFAULT 0,
   `language` char(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'tr',
@@ -53,7 +54,8 @@ CREATE TABLE IF NOT EXISTS `articles` (
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE INDEX `uk_slug`(`slug` ASC) USING BTREE,
+  UNIQUE INDEX `uk_lang_slug`(`language` ASC, `slug` ASC) USING BTREE,
+  UNIQUE INDEX `uk_preview_token`(`preview_token` ASC) USING BTREE,
   INDEX `idx_list_articles`(`language` DESC, `status` DESC, `published_at` DESC) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
 

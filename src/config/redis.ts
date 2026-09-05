@@ -33,6 +33,12 @@ redisClient.on('reconnecting', () => {
     console.warn('⚠️ Redis sunucusuna yeniden bağlanılıyor...');
 });
 
+export const closeRedis = async (): Promise<void> => {
+    if (redisClient.isOpen) {
+        await redisClient.quit();
+    }
+};
+
 (async () => {
     try {
         if (!redisClient.isOpen) {

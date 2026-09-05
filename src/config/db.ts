@@ -62,19 +62,24 @@ export const dbQueries = {
         getLastFive: "SELECT * FROM contacts ORDER BY created_at DESC LIMIT 5",
         get: "SELECT * FROM contacts WHERE language = ?",
         add: "INSERT INTO contacts (full_name, email, subject, message, ip, mail_log, language) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        updateMailLog: "UPDATE contacts SET mail_log = ? WHERE id = ?",
         update: "UPDATE contacts SET is_read = 1 WHERE id = ?",
         markedAsRead: "UPDATE contacts SET is_read = 1",
         delete: "DELETE FROM contacts WHERE id = ?"
     },
     articles: {
         getAll: "SELECT * FROM articles ORDER BY created_at DESC",
-        get: "SELECT * FROM articles WHERE language = ? AND status = 1 ORDER BY created_at DESC",
+        get: "SELECT * FROM articles WHERE language = ? AND status = 1 ORDER BY COALESCE(published_at, created_at) DESC",
         getById: "SELECT * FROM articles WHERE id = ? LIMIT 1",
-        getBySlug: "SELECT * FROM articles WHERE slug = ? AND status = 1",
-        getSitemap: "SELECT slug, created_at, updated_at FROM articles WHERE status = 1 ORDER BY created_at DESC",
-        add: "INSERT INTO articles (title, slug, excerpt, content, cover_image, created_by, status, reading_time, published_at, language) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        getBySlug: "SELECT * FROM articles WHERE slug = ? AND language = ? AND status = 1 LIMIT 1",
+        getPublishedOtherLang: "SELECT slug, language FROM articles WHERE slug = ? AND language <> ? AND status = 1 LIMIT 1",
+        getSitemap: "SELECT slug, language, created_at, updated_at, published_at FROM articles WHERE status = 1 ORDER BY COALESCE(published_at, created_at) DESC",
+        getRss: "SELECT title, slug, excerpt, content, language, published_at, created_at, updated_at FROM articles WHERE language = ? AND status = 1 ORDER BY COALESCE(published_at, created_at) DESC LIMIT 50",
+        add: "INSERT INTO articles (title, slug, excerpt, content, cover_image, created_by, status, reading_time, published_at, language, preview_token) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         update: "UPDATE articles SET title = ?, slug = ?, excerpt = ?, content = ?, cover_image = ?, status = ?, updated_by = ?, reading_time = ?, published_at = ?, language = ? WHERE id = ?",
         updateHits: "UPDATE articles SET hits = hits + 1 WHERE id = ?",
+        setPreviewToken: "UPDATE articles SET preview_token = ? WHERE id = ?",
+        getByPreviewToken: "SELECT * FROM articles WHERE preview_token = ? LIMIT 1",
         delete: "DELETE FROM articles WHERE id = ?"
     }
 } as const;
@@ -97,16 +102,7 @@ export const query = async <T = any>(sql: string, params: any[] = []): Promise<T
     return (await pool.query(sql, params)) as T;
 };
 
-const gracefulShutdown = async (): Promise<void> => {
-    try {
-        console.log('📦 MariaDB havuz bağlantıları kapatılıyor...');
-        await pool.end();
-    } catch (err) {
-        console.error('❌ MariaDB Kapatma Hatası:', err);
-    } finally {
-        process.exit(0);
-    }
+export const closePool = async (): Promise<void> => {
+    console.log('MariaDB havuz bağlantıları kapatılıyor...');
+    await pool.end();
 };
-
-process.on('SIGINT', gracefulShutdown);
-process.on('SIGTERM', gracefulShutdown);

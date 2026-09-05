@@ -4,6 +4,8 @@
   "description": "TypeScript Express & MariaDB Portfolio Engine",
   "main": "dist/app.js",
   "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test ./test/i18n.test.ts ./test/helper.test.ts ./test/markdown.test.ts ./test/loginLock.test.ts ./test/health.test.ts ./test/sitemap.test.ts ./test/csrf-preview.test.ts",
     "build": "tsc && npm run build:css",
     "start": "node dist/app.js",
     "dev": "tsx watch src/app.ts",

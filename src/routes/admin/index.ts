@@ -2,6 +2,7 @@
 import express, { Request, Response, NextFunction } from 'express';
 import { env } from '../../config/env';
 import { isAdmin } from '../../middlewares/auth';
+import { issueCsrf, verifyCsrf } from '../../middlewares/csrf';
 
 import loginRouter from './login';
 import dashboardRouter from './dashboard';
@@ -30,12 +31,14 @@ router.use((req: Request, res: Response, next: NextFunction) => {
     next();
 });
 
+router.use(issueCsrf);
 router.use('/login', loginRouter);
 
 router.use(isAdmin);
 
-router.use('/about-me', aboutMeRouter);
 router.use('/articles', articlesRouter);
+router.use(verifyCsrf);
+router.use('/about-me', aboutMeRouter);
 router.use('/experiences', experiencesRouter);
 router.use('/messages', messagesRouter);
 router.use('/projects', projectsRouter);
