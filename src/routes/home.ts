@@ -10,7 +10,7 @@ router.get('/', async (_req: Request, res: Response, next: NextFunction) => {
         const lang = (res.locals.lang as string) || 'tr';
 
         const homePageData = await getHomePage(lang);
-        homePageData.turnstileSiteKey = env.TURNSTILE_SITE_KEY;
+        homePageData.turnstileSiteKey = env.APP_ENV === 'dev' ? env.TURNSTILE_TEST_SITE_KEY : env.TURNSTILE_SITE_KEY;
 
         assignSeo(res, { type: 'home', path: '/' });
 
