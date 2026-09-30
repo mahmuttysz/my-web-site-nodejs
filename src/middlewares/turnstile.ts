@@ -14,7 +14,7 @@ export const verifyTurnstile = async (
     next: NextFunction
 ): Promise<any> => {
     const token = req.body?.['cf-turnstile-response'];
-    const secretKey = env.TURNSTILE_SECRET_KEY || '';
+    const secretKey = env.APP_ENV === 'dev' ? env.TURNSTILE_TEST_SECRET_KEY : env.TURNSTILE_SECRET_KEY;
 
     if (env.APP_ENV === 'dev' && !secretKey) {
         console.warn('⚠️ Turnstile: Dev ortamında TURNSTILE_SECRET_KEY bulunamadı, doğrulama atlandı.');
