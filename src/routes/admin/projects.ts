@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import { env } from '../../config/env';
 import projectsController from '../../controllers/admin/projectsController';
+import { logAdminAction } from '../../utils/auditLogger';
 
 const router = express.Router();
 
@@ -53,6 +54,11 @@ router.post('/create', async (req: Request, res: Response) => {
             language,
             userId
         );
+
+        logAdminAction(req, 'PROJECT_CREATE', `Yeni proje eklendi: ${title}`, {
+            language,
+            turn: turnCnv
+        });
 
         return res.redirect(`${adminEndpoint}/projects`);
     } catch (err: any) {
@@ -119,6 +125,12 @@ router.post('/edit/:id', async (req: Request, res: Response) => {
             userId
         );
 
+        logAdminAction(req, 'PROJECT_UPDATE', `Proje güncellendi: ${title} (ID: ${projectId})`, {
+            projectId,
+            language,
+            turn: turnCnv
+        });
+
         return res.redirect(`${adminEndpoint}/projects`);
     } catch (err: any) {
         console.error('Proje güncelleme hatası:', err);
@@ -138,6 +150,10 @@ router.post('/delete/:id', async (req: Request, res: Response) => {
     try {
         const projectId = Number(req.params?.id || 0);
         await projectsController.deleteProject(projectId);
+
+        logAdminAction(req, 'PROJECT_DELETE', `Proje silindi (ID: ${projectId})`, {
+            projectId
+        });
 
         return res.json({ success: true });
     } catch (err: any) {

@@ -30,7 +30,9 @@ const cols = {
     contacts:
         'id, subject, full_name, email, message, ip, language, is_read, created_at',
     articles:
-        'id, title, excerpt, content, slug, preview_token, cover_image, hits, language, created_by, updated_by, reading_time, status, published_at, created_at, updated_at'
+        'id, title, excerpt, content, slug, preview_token, cover_image, hits, language, created_by, updated_by, reading_time, status, published_at, created_at, updated_at',
+    auditLogs:
+        'id, user_id, username, action, description, ip, user_agent, details, created_at'
 } as const;
 
 export const dbQueries = {
@@ -101,6 +103,12 @@ export const dbQueries = {
         setPreviewToken: "UPDATE articles SET preview_token = ? WHERE id = ?",
         getByPreviewToken: `SELECT ${cols.articles} FROM articles WHERE preview_token = ? LIMIT 1`,
         delete: "DELETE FROM articles WHERE id = ?"
+    },
+    auditLogs: {
+        getAll: `SELECT ${cols.auditLogs} FROM audit_logs ORDER BY created_at DESC LIMIT 100`,
+        getRecent: `SELECT ${cols.auditLogs} FROM audit_logs ORDER BY created_at DESC LIMIT ?`,
+        add: "INSERT INTO audit_logs (user_id, username, action, description, ip, user_agent, details) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        cleanOld: "DELETE FROM audit_logs WHERE created_at < DATE_SUB(NOW(), INTERVAL ? DAY)"
     }
 } as const;
 

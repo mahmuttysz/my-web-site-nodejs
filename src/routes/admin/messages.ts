@@ -1,5 +1,6 @@
 import express, { Request, Response } from 'express';
 import messagesController from '../../controllers/admin/messagesController';
+import { logAdminAction } from '../../utils/auditLogger';
 
 const router = express.Router();
 
@@ -56,6 +57,10 @@ router.post('/delete/:id', async (req: Request, res: Response) => {
     try {
         const contactId = Number(req.params.id || '0');
         await messagesController.deleteMessage(contactId);
+
+        logAdminAction(req, 'MESSAGE_DELETE', `İletişim mesajı silindi (ID: ${contactId})`, {
+            contactId
+        });
 
         return res.json({ success: true });
     } catch (err: any) {

@@ -12,6 +12,7 @@ import experiencesRouter from './experiences';
 import messagesRouter from './messages';
 import projectsRouter from './projects';
 import socialMediasRouter from './social-medias';
+import logsRouter from './logs';
 
 // Express Request nesnesine adminEndpoint özelliğini ekleyerek tip güvenliği sağlıyoruz
 declare global {
@@ -43,6 +44,7 @@ router.use('/experiences', experiencesRouter);
 router.use('/messages', messagesRouter);
 router.use('/projects', projectsRouter);
 router.use('/social-medias', socialMediasRouter);
+router.use('/logs', logsRouter);
 router.use('/', dashboardRouter);
 
 export default router;

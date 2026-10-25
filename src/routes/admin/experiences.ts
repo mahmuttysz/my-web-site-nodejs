@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import { env } from '../../config/env';
 import experiencesController from '../../controllers/admin/experiencesController';
+import { logAdminAction } from '../../utils/auditLogger';
 
 const router = express.Router();
 
@@ -56,6 +57,12 @@ router.post('/create', async (req: Request, res: Response) => {
             experienceStatus,
             userId
         );
+
+        logAdminAction(req, 'EXPERIENCE_CREATE', `Yeni deneyim eklendi: ${company_name} - ${title}`, {
+            company_name,
+            title,
+            language
+        });
 
         return res.redirect(`${adminEndpoint}/experiences`);
     } catch (err: any) {
@@ -124,6 +131,13 @@ router.post('/edit/:id', async (req: Request, res: Response) => {
             userId
         );
 
+        logAdminAction(req, 'EXPERIENCE_UPDATE', `Deneyim güncellendi: ${company_name} - ${title} (ID: ${experienceId})`, {
+            experienceId,
+            company_name,
+            title,
+            language
+        });
+
         return res.redirect(`${adminEndpoint}/experiences`);
     } catch (err: any) {
         console.error('Deneyim güncelleme hatası:', err);
@@ -143,6 +157,10 @@ router.post('/delete/:id', async (req: Request, res: Response) => {
     try {
         const experienceId = Number(req.params?.id || '0');
         await experiencesController.deleteExperience(experienceId);
+
+        logAdminAction(req, 'EXPERIENCE_DELETE', `Deneyim silindi (ID: ${experienceId})`, {
+            experienceId
+        });
 
         return res.json({ success: true });
     } catch (err: any) {
