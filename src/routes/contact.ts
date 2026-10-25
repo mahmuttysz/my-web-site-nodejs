@@ -3,6 +3,7 @@ import validateTurnstile from '../middlewares/turnstile';
 import { formLimiter } from '../config/rate-limit';
 import { isValidEmail, safeTrim } from '../utils/helper';
 import contactController from '../controllers/contactController';
+import { getClientIp, getUserAgent, logAudit } from '../utils/auditLogger';
 
 const router = express.Router();
 
@@ -29,16 +30,8 @@ router.post('/', formLimiter, validateTurnstile, async (req: Request, res: Respo
     }
 
     try {
-        const xForwardedFor = req.headers['x-forwarded-for'];
-        const xForwardedIp = Array.isArray(xForwardedFor)
-            ? xForwardedFor[0]
-            : xForwardedFor?.split(',')[0];
-
-        const clientIp =
-            (req.headers['cf-connecting-ip'] as string) ||
-            xForwardedIp ||
-            req.ip ||
-            '';
+        const clientIp = getClientIp(req);
+        const userAgent = getUserAgent(req);
 
         const contactSave = await contactController.saveContact(
             cleanFullName,
@@ -48,6 +41,22 @@ router.post('/', formLimiter, validateTurnstile, async (req: Request, res: Respo
             lang,
             clientIp
         );
+
+        if (contactSave.success) {
+            void logAudit({
+                username: cleanFullName,
+                action: 'CONTACT_FORM_SUBMIT',
+                description: `İletişim formu dolduruldu: ${cleanFullName} (${cleanEmail})`,
+                ip: clientIp,
+                userAgent,
+                details: {
+                    fullName: cleanFullName,
+                    email: cleanEmail,
+                    subject: safeTrim(subject) || (lang === 'tr' ? 'Konusuz' : 'No Subject'),
+                    language: lang
+                }
+            });
+        }
 
         const statusCode = contactSave.success ? 200 : 500;
         return res.status(statusCode).json(contactSave);
