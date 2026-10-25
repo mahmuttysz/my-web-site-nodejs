@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import { env } from '../../config/env';
 import aboutMeController from '../../controllers/admin/aboutMeController';
+import { logAdminAction } from '../../utils/auditLogger';
 
 const router = express.Router();
 
@@ -37,6 +38,11 @@ router.post('/:lang', async (req: Request, res: Response) => {
       meta_description,
       Number(userId)
     );
+
+    logAdminAction(req, 'ABOUT_UPDATE', `Hakkımda içeriği güncellendi (${lang})`, {
+      language: lang,
+      title
+    });
 
     const adminEndpoint = req.adminEndpoint || env.ADMIN_PANEL_ENDPOINT || '/admin';
     return res.redirect(`${adminEndpoint}/about-me`);

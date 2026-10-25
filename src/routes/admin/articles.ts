@@ -7,6 +7,7 @@ import { verifyCsrf } from '../../middlewares/csrf';
 import { findSiblingInList, otherArticleLang } from '../../utils/articleTranslation';
 import { pendingHitsMap } from '../../utils/articleHitStore';
 import { renderMarkdown } from '../../utils/markdown';
+import { logAdminAction } from '../../utils/auditLogger';
 
 const router = express.Router();
 
@@ -124,6 +125,12 @@ router.post(
         userId
       );
 
+      logAdminAction(req, 'ARTICLE_CREATE', `Yeni makale eklendi: ${title}`, {
+        slug,
+        language,
+        status: articleStatus
+      });
+
       return res.redirect(`${adminEndpoint}/articles`);
     } catch (err: any) {
       console.error('Makale ekleme hatası:', err);
@@ -231,6 +238,13 @@ router.post(
         await unlinkArticleCover(current.cover_image);
       }
 
+      logAdminAction(req, 'ARTICLE_UPDATE', `Makale güncellendi: ${title} (ID: ${articleId})`, {
+        articleId,
+        slug,
+        language,
+        status: articleStatus
+      });
+
       return res.redirect(`${adminEndpoint}/articles`);
     } catch (err: any) {
       console.error('Makale güncelleme hatası:', err);
@@ -265,6 +279,10 @@ router.post('/translate/:id', verifyCsrf, async (req: Request, res: Response) =>
 
   try {
     const siblingId = await articlesController.copyToOtherLanguage(articleId, userId);
+    logAdminAction(req, 'ARTICLE_TRANSLATE', `Makale çeviri kopyası oluşturuldu (Kaynak ID: ${articleId}, Yeni ID: ${siblingId})`, {
+      sourceId: articleId,
+      siblingId
+    });
     return res.redirect(`${adminEndpoint}/articles/edit/${siblingId}`);
   } catch (err: any) {
     console.error('Makale çeviri kopyası hatası:', err);
@@ -283,6 +301,11 @@ router.post('/delete/:id', verifyCsrf, async (req: Request, res: Response) => {
     }
 
     await articlesController.deleteArticle(articleId);
+    logAdminAction(req, 'ARTICLE_DELETE', `Makale silindi (ID: ${articleId})`, {
+      articleId,
+      title: article?.title,
+      slug: article?.slug
+    });
     return res.json({ success: true });
   } catch (err: any) {
     return res.status(500).json({ success: false, error: err?.message || 'Bir hata oluştu.' });

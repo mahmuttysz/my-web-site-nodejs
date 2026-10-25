@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import { formLimiter } from '../../config/rate-limit';
 import loginController from '../../controllers/admin/loginController';
 import { verifyCsrf } from '../../middlewares/csrf';
+import { getClientIp, getUserAgent, logAudit } from '../../utils/auditLogger';
 
 const router = express.Router();
 
@@ -18,20 +19,19 @@ router.post('/', formLimiter, verifyCsrf, async (req: Request, res: Response) =>
   const { username, password } = req.body;
 
   try {
-    const xForwardedFor = req.headers['x-forwarded-for'];
-    const xForwardedIp = Array.isArray(xForwardedFor)
-      ? xForwardedFor[0]
-      : xForwardedFor?.split(',')[0];
-
-    const clientIp =
-      (req.headers['cf-connecting-ip'] as string) ||
-      xForwardedIp ||
-      req.ip ||
-      '';
+    const clientIp = getClientIp(req);
+    const userAgent = getUserAgent(req);
 
     const checkLogin = await loginController.login(username, password, clientIp);
 
     if (!checkLogin.success || !checkLogin.user) {
+      void logAudit({
+        username: typeof username === 'string' ? username : null,
+        action: 'LOGIN_FAILED',
+        description: `Hatalı giriş denemesi (${checkLogin.error || 'Geçersiz kimlik'})`,
+        ip: clientIp,
+        userAgent
+      });
       return res.render('admin/login', { error: checkLogin.error });
     }
 
@@ -55,6 +55,15 @@ router.post('/', formLimiter, verifyCsrf, async (req: Request, res: Response) =>
           return res.render('admin/login', { error: 'Giriş yapılırken bir hata oluştu.' });
         }
 
+        void logAudit({
+          userId: adminUser.id,
+          username: adminUser.username,
+          action: 'LOGIN_SUCCESS',
+          description: 'Yönetici oturumu başarıyla açıldı',
+          ip: clientIp,
+          userAgent
+        });
+
         return res.redirect(redirectUrl);
       });
     });
@@ -67,6 +76,19 @@ router.post('/', formLimiter, verifyCsrf, async (req: Request, res: Response) =>
 // Oturumu Kapatma
 router.post('/destroy', verifyCsrf, (req: Request, res: Response) => {
   const adminEndpoint = req.adminEndpoint || '/admin';
+  const adminUser = req.session?.adminUser;
+
+  if (adminUser) {
+    void logAudit({
+      userId: adminUser.id,
+      username: adminUser.username,
+      action: 'LOGOUT',
+      description: 'Yönetici oturumu kapatıldı',
+      ip: getClientIp(req),
+      userAgent: getUserAgent(req)
+    });
+  }
+
   req.session.destroy((_err) => {
     res.redirect(`${adminEndpoint}/login`);
   });

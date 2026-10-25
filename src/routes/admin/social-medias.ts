@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import { env } from '../../config/env';
 import socialMediasController from '../../controllers/admin/socialMediasController';
+import { logAdminAction } from '../../utils/auditLogger';
 
 const router = express.Router();
 
@@ -51,6 +52,12 @@ router.post('/create', async (req: Request, res: Response) => {
       sMediaStatus,
       userId
     );
+
+    logAdminAction(req, 'SOCIAL_CREATE', `Yeni sosyal medya hesabı eklendi: ${title}`, {
+      title,
+      username,
+      turn: turnCnv
+    });
 
     return res.redirect(`${adminEndpoint}/social-medias`);
   } catch (err: any) {
@@ -115,6 +122,13 @@ router.post('/edit/:id', async (req: Request, res: Response) => {
       userId
     );
 
+    logAdminAction(req, 'SOCIAL_UPDATE', `Sosyal medya hesabı güncellendi: ${title} (ID: ${sMediaId})`, {
+      sMediaId,
+      title,
+      username,
+      turn: turnCnv
+    });
+
     return res.redirect(`${adminEndpoint}/social-medias`);
   } catch (err: any) {
     console.error('Sosyal medya güncelleme hatası:', err);
@@ -134,6 +148,10 @@ router.post('/delete/:id', async (req: Request, res: Response) => {
   try {
     const sMediaId = Number(req.params.id || 0);
     await socialMediasController.deleteSocialMedia(sMediaId);
+
+    logAdminAction(req, 'SOCIAL_DELETE', `Sosyal medya hesabı silindi (ID: ${sMediaId})`, {
+      sMediaId
+    });
 
     return res.json({ success: true });
   } catch (err: any) {
