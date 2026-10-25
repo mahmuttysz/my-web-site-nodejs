@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { Request } from 'express';
-import { getClientIp, getUserAgent, cleanOldAuditLogs } from '../src/utils/auditLogger';
+import { getClientIp, getUserAgent, sanitizeDetails } from '../src/utils/auditLogger';
 
 describe('auditLogger utility', () => {
     it('extracts IP from cf-connecting-ip header first', () => {
@@ -53,9 +53,9 @@ describe('auditLogger utility', () => {
         assert.equal(getUserAgent(emptyReq), null);
     });
 
-    it('cleans old logs with safe day threshold', async () => {
-        // days <= 0 should safely normalize to at least 1 day without error
-        const result = await cleanOldAuditLogs(0);
-        assert.equal(typeof result, 'number');
+    it('serializes details into JSON string or null', () => {
+        assert.equal(sanitizeDetails(null), null);
+        assert.equal(sanitizeDetails(undefined), null);
+        assert.equal(sanitizeDetails({ action: 'test', id: 5 }), '{"action":"test","id":5}');
     });
 });

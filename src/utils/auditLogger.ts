@@ -1,6 +1,5 @@
 // src/utils/auditLogger.ts
 import { Request } from 'express';
-import { query, dbQueries } from '../config/db';
 
 export interface AuditLogEntry {
     userId?: number | null;
@@ -33,14 +32,24 @@ export const getUserAgent = (req: Request): string | null => {
     return String(raw).substring(0, 255);
 };
 
+export const sanitizeDetails = (details?: Record<string, unknown> | null): string | null => {
+    if (!details) return null;
+    try {
+        return JSON.stringify(details);
+    } catch {
+        return null;
+    }
+};
+
 /**
  * Audit logunu asenkron ve güvenli şekilde veritabanına yazar.
- * Asla hata fırlatmaz, ana iş akışını (login, create vs.) bloke etmez.
+ * DB modülünü çalışma anında yükler; testlerde gereksiz env yüklenmesini engeller.
  */
 export const logAudit = async (entry: AuditLogEntry): Promise<void> => {
     try {
-        const detailsJson = entry.details ? JSON.stringify(entry.details) : null;
-        await query(dbQueries.auditLogs.add, [
+        const db = await import('../config/db.js');
+        const detailsJson = sanitizeDetails(entry.details);
+        await db.query(db.dbQueries.auditLogs.add, [
             entry.userId ?? null,
             entry.username ?? null,
             entry.action,
@@ -83,8 +92,11 @@ export const logAdminAction = (
  */
 export const cleanOldAuditLogs = async (days = 90): Promise<number> => {
     try {
+        const db = await import('../config/db.js');
         const safeDays = Math.max(1, Math.floor(days));
-        const res = await query<{ affectedRows: number }>(dbQueries.auditLogs.cleanOld, [safeDays]);
+        const res = (await db.query(db.dbQueries.auditLogs.cleanOld, [safeDays])) as
+            | { affectedRows?: number }
+            | undefined;
         return res?.affectedRows ?? 0;
     } catch (err: any) {
         console.error('Eski audit logları temizleme hatası:', err?.message || err);
@@ -95,6 +107,7 @@ export const cleanOldAuditLogs = async (days = 90): Promise<number> => {
 export default {
     getClientIp,
     getUserAgent,
+    sanitizeDetails,
     logAudit,
     logAdminAction,
     cleanOldAuditLogs
